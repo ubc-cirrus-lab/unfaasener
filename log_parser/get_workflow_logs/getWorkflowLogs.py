@@ -104,5 +104,9 @@ class GetWorkflowLogs:
         if (self.finalWord == True):
             for func in self.functions:
                 self.writeLogs[func]= self.allLogs[func]
-            with open(os.getcwd()+"/data/" + str(self.workflow)+ "/"+str(self.count)+ ', data.json', 'a') as outfile:
-                json.dump(self.writeLogs, outfile)       
+            if (os.path.isfile(os.getcwd()+"/data/" + str(self.workflow)+ "/"+str(self.count)+ ', data.json')):
+                with open(os.getcwd()+"/data/" + str(self.workflow)+ "/"+str(self.count)+ ', data.json', 'a') as outfile:
+                    json.dump(self.writeLogs, outfile)     
+            else: 
+                with open(os.getcwd()+"/data/" + str(self.workflow)+ "/"+str(self.count)+ ', data.json', 'w') as outfile:
+                    json.dump(self.writeLogs, outfile)    
