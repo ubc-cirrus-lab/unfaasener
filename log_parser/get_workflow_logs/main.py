@@ -18,7 +18,7 @@ from getWorkflowLogs import GetWorkflowLogs
 workflow = "ImageProcessingWorkflow"
 # workflow = "Text2SpeechCensoringWorkflow"
 
-with open(os.getcwd()+"/data/"+ workflow+ ".json") as json_file:
+with open(os.getcwd()+"/data/"+ workflow+ ".json", 'r') as json_file:
     workflow_json = json.load(json_file)
 
 initFunc = workflow_json["initFunc"]
@@ -34,5 +34,7 @@ for func in workflowFunctions:
     funcPath = AnalyzeLogsObj.getData()
     funcPaths.append(funcPath)
 
-generateData = generateData(funcPaths, workflow, initFunc, workflowFunctions, successors)
-
+generateData(funcPaths, workflow, initFunc, workflowFunctions, successors)
+# workflow_json["dataframe"] = os.getcwd()+"/data/"+workflow +"/generatedData.pkl"
+# with open(os.getcwd()+"/data/"+ workflow+ ".json", 'w') as json_file:
+#     json.dump(workflow_json, json_file)

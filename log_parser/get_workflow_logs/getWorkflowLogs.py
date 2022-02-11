@@ -16,7 +16,7 @@ import pandas as pd
 
 class GetWorkflowLogs:
     def __init__(self, workflow, messages, functions, initFunc):
-        self.count = 3
+        self.count = 20
         self.sleepTime = 0.5
         self.initFunc = initFunc
         self.msgExeDic = {}
