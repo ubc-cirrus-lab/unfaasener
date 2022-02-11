@@ -57,5 +57,5 @@ class generateData:
         df = pd.DataFrame(generatedData)
         print(df)
         df.to_pickle(os.getcwd()+"/data/"+self.workflow +"/generatedData.pkl")
-        df.to_csv(os.getcwd()+"/data/"+self.workflow ++"/CSV-generatedData.pkl")
+        df.to_csv(os.getcwd()+"/data/"+self.workflow +"/CSV-generatedData.csv")
         print("Data File Saved")
