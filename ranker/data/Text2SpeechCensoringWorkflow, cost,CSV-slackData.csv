@@ -1,0 +1,7 @@
+,cost,Memory(GB),NI,duration,function
+0,4e-07,0.256,20.0,63.21,Text2SpeechCensoringWorkflow_GetInput
+1,4e-07,0.256,20.0,58.83,Text2SpeechCensoringWorkflow_Profanity
+2,4e-07,0.256,20.0,558.5,Text2SpeechCensoringWorkflow_Text2Speech
+3,4e-07,0.256,20.0,410.74,Text2SpeechCensoringWorkflow_Conversion
+4,4e-07,0.256,20.0,540.24,Text2SpeechCensoringWorkflow_Compression
+5,4e-07,0.256,20.0,509.2,Text2SpeechCensoringWorkflow_Censor

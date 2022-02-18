@@ -15,25 +15,29 @@ from criticalpath import Node
 import plotly.express as px
 from IPython.display import Image
 from pathlib import Path
+import rankerConfig
 
 class slackAnalysis:
 
-    def __init__(self, mode, sp, inputName, workflow):
+    def __init__(self, workflow):
         self.workflow = workflow
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
         dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedData.pkl"
         with open(jsonPath, 'r') as json_file:
             workflow_json = json.load(json_file)
         dataframe = pd.read_pickle(dataframePath)
-        df = dataframe.loc[dataframe["inputs"] == inputName]
-        df = df.drop(columns=["reqID", "inputs"])
-        NI = len(df)
+        # df = dataframe.loc[dataframe["inputs"] == inputName]
+        input_set = set(dataframe["inputs"])
+        number_of_unique_values = len(input_set)
+        df = dataframe.drop(columns=["reqID", "inputs"])
+        NI = len(df)/number_of_unique_values
         initial = workflow_json["initFunc"]
         self.initial = initial
         workflowFunctions = workflow_json["workflowFunctions"]
         successors = workflow_json["successors"]
         self.successors = successors
         memory = workflow_json["memory"]
+        self.memory = memory
         self.slackAnalysisData = {}
         self.pricing_resolution = 100
         self.workflowFunctions = workflowFunctions
@@ -48,62 +52,90 @@ class slackAnalysis:
         self.searchFuns= []
         self.dependencies = []
         self.tasks = {}
-        self.mode = mode
-        if mode == "cost":
-            self.costCalc(df, sp, workflowFunctions, successors)
-            self.memory = memory
-        if mode == "latency":
-            self.latencyCalc(df, sp)
-        self.duration, self.crPath = self.findCriticalPath(self.tasks, self.dependencies)
-        self.completeESEF(initial)
-        self.completeLSLF(self.duration, self.crPath)
+        self.sp = rankerConfig.sp
+        self.mode = rankerConfig.mode
+        if self.mode == "cost":
+            self.costCalc(df, self.sp, workflowFunctions, successors)
+            # self.memory = memory
+        if self.mode == "latency":
+            self.latencyCalc(df, self.sp)
+            self.duration, self.crPath = self.findCriticalPath(self.tasks, self.dependencies)
+            self.completeESEF(self.initial)
+            self.completeLSLF(self.duration, self.crPath)
         # self.getSlackDataframe()
         
         
     def getSlackDataframe(self):
-        self.slackAnalysisData["es"] = []
-        self.slackAnalysisData["id"] = []
+        
+        # Ignore ID for now
+        # self.slackAnalysisData["id"] = []
         self.slackAnalysisData["cost"] = [0]*len(self.df.columns)
-        self.slackAnalysisData["path"] = [0]*len(self.df.columns)
-        self.slackAnalysisData["NI"] = [self.NI]*len(self.df.columns)
-        self.slackAnalysisData["ls"] = []
-        self.slackAnalysisData["ef"] = []
-        self.slackAnalysisData["lf"] = []
+        self.slackAnalysisData["Memory(GB)"] = [0]*len(self.df.columns)
+        # self.slackAnalysisData["path"] = [0]*len(self.df.columns)
+        self.slackAnalysisData["NI"] = [self.NI]*(len(self.df.columns))
+
+
+        if self.mode == "latency" :
+            self.slackAnalysisData["es"] = []
+            self.slackAnalysisData["ls"] = []
+            self.slackAnalysisData["ef"] = []
+            self.slackAnalysisData["lf"] = []
+            self.slackAnalysisData["slackTime"] = []
         self.slackAnalysisData["duration"] = []
-        self.slackAnalysisData["slackTime"] = []
         self.slackAnalysisData["function"] = self.df.columns
         for func in self.slackAnalysisData["function"]:
-            if func in self.workflowFunctions:
-                self.slackAnalysisData["id"].append(self.workflowFunctions.index(func))
-            else:
-#                 TO_DO: Ask about communication ID 
-                self.slackAnalysisData["id"].append("-")
-                
-            self.slackAnalysisData["es"].append(self.es[func])
-            self.slackAnalysisData["ls"].append(self.ls[func])
-            self.slackAnalysisData["ef"].append(self.ef[func])
-            self.slackAnalysisData["lf"].append(self.lf[func])
+#             if func in self.workflowFunctions:
+#                 self.slackAnalysisData["id"].append(self.workflowFunctions.index(func))
+#             else:
+# #                 TO_DO: Ask about communication ID 
+#                 self.slackAnalysisData["id"].append("-"
+
+
+            if self.mode == "latency" :
+
+                self.slackAnalysisData["es"].append(self.es[func])
+                self.slackAnalysisData["ls"].append(self.ls[func])
+                self.slackAnalysisData["ef"].append(self.ef[func])
+                self.slackAnalysisData["lf"].append(self.lf[func])
+                slack = self.lf[func] - self.ef[func]
+                if slack < 10^-12 or slack< -10^-12:
+                    slack = 0
+                self.slackAnalysisData["slackTime"].append(slack)
+
+    
             self.slackAnalysisData["duration"].append(self.tasks[func])
-            slack = self.lf[func] - self.ef[func]
-            if slack < 10^-12 or slack< -10^-12:
-                slack = 0
-            self.slackAnalysisData["slackTime"].append(slack)
-        if self.mode == "cost":
-            self.slackAnalysisData["Memory(GB)"] = self.memory
-            priceDuration = (np.ceil(np.array(self.slackAnalysisData["duration"])/self.pricing_resolution)*self.pricing_resolution)
-            # self.slackAnalysisData["GB-sec"] = (np.array(self.slackAnalysisData["Memory(GB)"]) * priceDuration)/1000
-            for i in range(len(self.df.columns)):
-                self.slackAnalysisData["cost"][i] = self.cost_estimator(self.slackAnalysisData["NI"][i], self.slackAnalysisData["duration"][i], self.slackAnalysisData["Memory(GB)"][i])
-        self.findPaths()
+        for i in range(len(self.df.columns)):
+                if self.slackAnalysisData["function"][i] in self.workflowFunctions:
+                    self.slackAnalysisData["Memory(GB)"][i] = self.memory[self.workflowFunctions.index(self.slackAnalysisData["function"][i])]
+
+                    self.slackAnalysisData["cost"][i] = self.cost_estimator(1, self.slackAnalysisData["duration"][i], self.slackAnalysisData["Memory(GB)"][i])
+                else:
+                    self.slackAnalysisData["Memory(GB)"][i] = "-"
+                    self.slackAnalysisData["cost"][i] = "-"    
+        # if self.mode == "cost":
+        #     self.slackAnalysisData["Memory(GB)"] = self.memory
+        #     # priceDuration = (np.ceil(np.array(self.slackAnalysisData["duration"])/self.pricing_resolution)*self.pricing_resolution)
+        #     # self.slackAnalysisData["GB-sec"] = (np.array(self.slackAnalysisData["Memory(GB)"]) * priceDuration)/1000
+            
+        #     # Next2 lines Should be called in optimizer class
+        #     for i in range(len(self.df.columns)):
+        #         self.slackAnalysisData["cost"][i] = self.cost_estimator(self.slackAnalysisData["NI"][i], self.slackAnalysisData["duration"][i], self.slackAnalysisData["Memory(GB)"][i])
+        
+
+
+        # Change the path algorithm to cover all possible paths
+        # self.findPaths()
+
+        # pathID = 1
+        # for key in self.slackPath.keys():
+        #     print(key)
+        #     for f in self.slackPath[key]:
+        #         self.slackAnalysisData["path"][listFuns.index(f)] = pathID
+        #     pathID +=1
         listFuns = list(self.slackAnalysisData["function"])
-        pathID = 1
-        for key in self.slackPath.keys():
-            print(key)
-            for f in self.slackPath[key]:
-                self.slackAnalysisData["path"][listFuns.index(f)] = pathID
-            pathID +=1
         slackDF = pd.DataFrame(self.slackAnalysisData)
         slackDF.to_pickle(os.getcwd()+ "/data/"+self.workflow +", "+self.mode+",slackData.pkl")
+        slackDF.to_csv(os.getcwd()+"/data/"+self.workflow +", "+self.mode+",CSV-slackData.csv")
         return slackDF
 
 
@@ -137,16 +169,18 @@ class slackAnalysis:
         df = df[workflowFunctions]
         self.df = df
         for col in df.columns:
+            # self.tasks[col] = df[col]
             if sp == "mean":
                 self.tasks[col] = df[col].mean()
+                
             else:
                 self.tasks[col] = df[col].quantile(sp)
 
-        functionTasks = workflowFunctions
-        for func in workflowFunctions:
-            index = workflowFunctions.index(func)
-            for i in successors[index]:
-                self.dependencies.append((func, i ))
+        # functionTasks = workflowFunctions
+        # for func in workflowFunctions:
+        #     index = workflowFunctions.index(func)
+        #     for i in successors[index]:
+        #         self.dependencies.append((func, i ))
         
     def completeESEF(self, initial):
         self.es[initial] = 0
@@ -221,7 +255,7 @@ class slackAnalysis:
 
 
     def findCriticalPath(self, tasks, dependencies):
-        print(tasks)
+        # print(tasks)
         workflow = Node("Workflow")
         for t in tasks:
             workflow.add(Node(t, duration = tasks[t]))
@@ -237,13 +271,25 @@ class slackAnalysis:
         return workflow_duration, crit_path
     
     def cost_estimator(self, NI, ET, GB):
-        free_tier_invocations = 2000000
-        free_tier_GB = 400000
-        free_tier_GHz = 200000
+        free_tier_invocations = 2000000 
+        free_tier_GB = 400000 
+        free_tier_GHz = 200000 
+        prev_Json = self.prev_cost()
+        if prev_Json["NI"] > free_tier_invocations:
+            free_tier_invocations = 0
+        else:
+            free_tier_invocations = free_tier_invocations - prev_Json["NI"]
+        if prev_Json["GB-Sec"] > free_tier_GB:
+            free_tier_GB = 0
+        else:
+            free_tier_GB = free_tier_GB - prev_Json["GB-Sec"]
+        if prev_Json["GHz-Sec"] > free_tier_GHz:
+            free_tier_GHz = 0
+        else:
+            free_tier_GHz = free_tier_GHz - prev_Json["GHz-Sec"]
         unit_price_invocation = 0.0000004
         unit_price_GB = 0.0000025
         unit_price_GHz = 0.0000100
-
         if GB ==  0.128:
             Ghz = 0.2
         elif GB == 0.256:
@@ -258,21 +304,26 @@ class slackAnalysis:
             Ghz = 4.8
         elif GB == 8:
             Ghz = 4.8
-        cost = ((NI-free_tier_invocations)*unit_price_invocation) + ( ( (NI*(math.ceil(ET/100))*0.1*GB) - free_tier_GB )*unit_price_GB ) + ( ( (NI*(math.ceil(ET/100))*0.1*Ghz) - free_tier_GHz )*unit_price_GHz )
-        return max(0, cost)
+        costInvoke = max(0,(NI-free_tier_invocations)*unit_price_invocation) 
+        costGB = max(0, ( ( (NI*(math.ceil(ET/100))*0.1*GB) - free_tier_GB )*unit_price_GB ))
+        costGhz = max(0, ( ( (NI*(math.ceil(ET/100))*0.1*Ghz) - free_tier_GHz )*unit_price_GHz))
+        cost = costInvoke + costGB + costGhz
+        return cost
+
+    def prev_cost(self):
+        
+        with open(os.getcwd()+"/data/"+self.workflow+ "-prevCost.json", 'r') as json_file:
+            workflow_json = json.load(json_file)
+        return workflow_json
+
 
 
 if __name__ == "__main__":
-    # mode = "cost"
-    # sp = "mean"
-    mode = "latency"
-    sp = 0.95
     workflow = "ImageProcessingWorkflow"
-    input = "Final-test1.jpg"
-    # workflow = "Text2SpeechCensoringWorkflow"
-    # input = "Ach it was hopeless. That was what ye felt. These bastards. What can ye do but. Except start again so he started again. That was what he did he started again … ye just plough on, ye plough on, ye just fucking plough on … ye just fucking push ahead, ye get fucking on with it"
 
-    slackAnalysisObj = slackAnalysis(mode,sp, input, workflow)
+    # workflow = "Text2SpeechCensoringWorkflow"
+
+    slackAnalysisObj = slackAnalysis(workflow)
     slackDF = slackAnalysisObj.getSlackDataframe()
     print(slackDF)
 
