@@ -17,7 +17,7 @@ import pandas as pd
 class GetWorkflowLogs:
     def __init__(self, workflow, messages, functions, initFunc):
         self.count = 20
-        self.sleepTime = 0.5
+        self.sleepTime = 1
         self.initFunc = initFunc
         self.msgExeDic = {}
         self.workflow = workflow
@@ -33,7 +33,6 @@ class GetWorkflowLogs:
             self.writeLogs[func] = []
         self.subscriberExe = {}
         self.publisherFinishedTime = {}
-        self.getLogPeriod = math.floor(1000 / (self.count*3))
         self.finalWord = False
         self.execute()
 

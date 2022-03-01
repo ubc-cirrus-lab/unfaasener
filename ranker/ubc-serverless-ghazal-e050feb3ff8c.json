@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "ubc-serverless-ghazal",
+  "private_key_id": "e050feb3ff8c284056b37fbd50a6d15b38c0de3d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDa4ZdcdJKqTgIn\n+t43O2RHCPTdVYQ7TuzeC+2HGsxOlRojEEdhy1o/1AqeY/2kY5LjOnoQwEmo8mQX\nvyDDSLJ/Q6gnUebQIvWPARjcK7C6FHxtqMT2vsA2E4OW/FnAajVTbmGkf2gBdEOk\n06rUeWBbz+HC/Q7jjTdVXQfO2n3xCuPf2GKPFFLGNW9lrz1xRXaTNE7/wRmJJGpr\nB97MTL3Gg+sP1S16RQMTvc5yfJJcmdCBt4dtS6ygMqVtK5AellTtCTHztC62IwOT\n50P4xu1HKdi6+Y6kw741C1WK1hB4X9CxEeXSJ1bkkGd2FukvXWx+yFmKhDI7OoYl\nqzfD9Xq7AgMBAAECggEAWlvM75cUQQgpLbYL7IMxN34EECdQimdfs5769M5kT4CQ\nJK+AuGeJn1X6+D5RJH8S0Yl/gNDQ19UQ6xi0/slRHuagUXMnNP9pnhqW17WVpIv2\nfhKxFSfUE77kkP0mVB/EWef0mUMbfZYwoqfbGxHsbJqaGbP8ZIYUtMHOCl/6o/nW\nbhD1vxluzWrKIaOuyeO7eX4EvLMOPgSCs30uNgfbjoACTJVoWVAgoQ2WNkr3WnG2\nGOsF0kLtpJfMeDxSKSXXqMzPulKh1Nz6GWkEiFX0KaLxd91deq7+zHKtSishkGPH\nzizJiviwjLQbHDUOzpNtMMlm64IfpFhb6hwt5Q8EoQKBgQDymM+WIg/4WwX+TQvx\noQcdQkGAyqB3NG3g93Hlge0Lx4mw+qwAEcIxCXneCMMCwWkAgY68PRGlyauXvtyo\nFCus5JmQoKhdiODM2v7d9lw5+VrWECry9eunMsCTf3Kwfh2cmgq59k4gU/71Ileh\nDWAOrF3mHyXVjqUflhvdwKUZ8QKBgQDm+Vr9MYkvQOcPZ4Q/IPEYktuGu5GHOv9B\nsxjnugb2bsl4VDNqhvv5oNXfSZvCI9VzJFxRYPMvH4Y4XVUoPMFqzAPx/QpvJMXa\nMnolN+bszNjjUhwjYUmQyIooQbdYVi5BWzxGoTCobd+dmrPjnoUE1lsf9q4lWolr\nRL3NMbLTawKBgQCuK9/93f6xREiNRyuoEwBUlVkJ6nBCpTWuKnlvWVSi/GNy2MXc\nVuOg6TjBnHDF7a5BWsLriry81omHrNQnKDQjMQy/tVirrrYW3bPWECYuyUPaJElx\nnfXOWLXCL+JbrG/+GupQkPGObD/EJx/a1Qt9/Wp86Sf0pzEN+GuRTdo7QQKBgQDM\n/TlXxQLvwTZQYZrpPB89o/jZFtcNobqxYHYWEu/i/mgoNvJ69Nnkrm2iAf4OyybB\nTd/xCY5KoDvLAmp1j5ZJZk+KEP2Vrpk6Edp99aMpPpSvC0yVyd40dQbIu6ow6Cud\nLY/NT3mTwg/YHFjTBvkfVe8B6zibRkL3xMZ+ukDviQKBgC1krHznPiYYdAIyiqn7\nY61WMmxgIR9DSmvqYSkRNxxYRieuz92Djq9g19et1ChhFaku9bBmT7oW4bTiDA4C\nES7vQjtaPCv4iUPzqQgheh1t90EphMOZ5Oqfq5NgcWrhrr8oFjtl4ZpULEhXkdeM\nGyGNgHoy8ObxnFjzWjzKwOMZ\n-----END PRIVATE KEY-----\n",
+  "client_email": "monitoring@ubc-serverless-ghazal.iam.gserviceaccount.com",
+  "client_id": "109278938178228714215",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/monitoring%40ubc-serverless-ghazal.iam.gserviceaccount.com"
+}

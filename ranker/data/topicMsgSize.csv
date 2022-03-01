@@ -1,0 +1,15 @@
+,Topic,PubsubMsgSize
+0,ImageProcessing_Filter,275.1034728483665
+1,ImageProcessing_Flip,216.08168693763994
+2,ImageProcessing_Greyscale,280.08036963338617
+3,ImageProcessing_Resize,291.07608648595004
+4,ImageProcessing_Rotate,265.0881237094942
+5,Merging,357.28711171695886
+6,Text2SpeechCensoringWorkflow_Compression,279.97765177299806
+7,dag-Censor,328.8776399926972
+8,dag-Conversion,268.95660810605716
+9,dag-MergingPoint,331.6621734166118
+10,dag-Profanity,465.1401250526931
+11,dag-Text2Speech,464.8046209208707
+12,dag-test-vm,285.32156862745103
+13,imageprocessing_GC,133.71212121212122
