@@ -33,4 +33,5 @@ Ideally, both these options (i.e Composer and Workflows) will be compared by lat
 <figcaption><b>Google Workflows Pricing</b></figcaption>
 </figure>
 
+
 [Link](https://cloud.google.com/composer#section-6) to Google Composer pricing policy (consumption based).
