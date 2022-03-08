@@ -25,9 +25,9 @@ You can find the Composer environment [here](https://console.cloud.google.com/co
 </figure>
 
 ## Note: 
-For comparison purposes, another implementation of Text-to-speech workflow using [Google Cloud Workflow](https://cloud.google.com/workflows) is in progress. You cna find the current version of the workflow [here](https://console.cloud.google.com/workflows/workflow/us-central1/text2speech?authuser=1&project=ubc-serverless-ghazal). 
+For comparison purposes, another implementation of Text-to-speech workflow using [Google Cloud Workflow](https://cloud.google.com/workflows) is in progress. You can find the current version of the workflow [here](https://console.cloud.google.com/workflows/workflow/us-central1/text2speech?authuser=1&project=ubc-serverless-ghazal). 
 
-Ideally, both these options (i.e Composer and Workflows) will be compared by latency and cost. Their pricing policies is as below: 
+Ideally, both these options (i.e Composer and Workflows) will be compared by latency and cost. Their pricing policies are as below: 
 <figure>
 <img src="./workflow_pricing.png" alt="Google Workflows Pricing"/>
 <figcaption><b>Google Workflows Pricing</b></figcaption>
