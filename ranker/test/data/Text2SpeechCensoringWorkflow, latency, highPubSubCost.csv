@@ -1,0 +1,15 @@
+,cost,Memory(GB),PubsubMessageSize(Bytes),path,NI,es,ls,ef,lf,slackTime,duration,function
+0,4.64E-07,0.256,-,1,20,0,0,91.35,91.35,0,91.35,Text2SpeechCensoringWorkflow_GetInput
+1,4.64E-07,0.256,-,2,20,1025.05,4993.45,1059.2,5027.6,3968.4,34.15,Text2SpeechCensoringWorkflow_Profanity
+2,7.84E-07,0.256,-,1,20,1088.35,1088.35,2040.5,2040.5,0,952.15,Text2SpeechCensoringWorkflow_Text2Speech
+3,6.56E-07,0.256,-,1,20,2624.15,2624.15,3479.5,3479.5,0,855.35,Text2SpeechCensoringWorkflow_Conversion
+4,2.90E-06,2,-,1,20,4473.6,4473.6,4976.7,4976.7,0,503.1,Text2SpeechCensoringWorkflow_Compression
+5,8.48E-07,0.256,-,1,20,7126.85,7126.85,8021.25,8021.25,0,894.4,Text2SpeechCensoringWorkflow_Censor
+6,5.92E-07,0.256,-,1,20,5974.7,5974.7,6133.85,6133.85,0,159.15,Text2SpeechCensoringWorkflow_MergedFunction
+7,1.00E+07,-,452.3565424,0,20,91.35,4059.75,1025.05,4993.45,3968.4,933.7,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Profanity
+8,1.00E+07,-,455.013315,0,20,91.35,91.35,1088.35,1088.35,0,997,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Text2Speech
+9,1.00E+07,-,331.6621734,0,20,1059.2,5027.6,2006.3,5974.7,3968.4,947.1,Text2SpeechCensoringWorkflow_Profanity-Text2SpeechCensoringWorkflow_MergedFunction
+10,1.00E+07,-,268.9425047,0,20,2040.5,2040.5,2624.15,2624.15,0,583.65,Text2SpeechCensoringWorkflow_Text2Speech-Text2SpeechCensoringWorkflow_Conversion
+11,1.00E+07,-,273.5862168,0,20,3479.5,3479.5,4473.6,4473.6,0,994.1,Text2SpeechCensoringWorkflow_Conversion-Text2SpeechCensoringWorkflow_Compression
+12,1.00E+07,-,331.6621734,0,20,4976.7,4976.7,5974.7,5974.7,0,998,Text2SpeechCensoringWorkflow_Compression-Text2SpeechCensoringWorkflow_MergedFunction
+13,1.00E+07,-,327.7768631,0,20,6133.85,6133.85,7126.85,7126.85,0,993,Text2SpeechCensoringWorkflow_MergedFunction-Text2SpeechCensoringWorkflow_Censor

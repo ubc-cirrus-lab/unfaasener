@@ -1,4 +1,4 @@
 | Benchmark Application  | Language  | Function Dependency Graph | Summary | Original Source |
 | ------------- | ----- |:-------------:| --- | --- |
-| ImageProcessing | Python | <img src="ImageProcessing.png" alt="Alt text" title="Image Processing Graph"> | [TODO] | [FunctionBench](https://github.com/kmu-bigdata/serverless-faas-workbench) |
-| Text2SpeechCensoring | Python | <img src="Text2SpeechCensoring.png" alt="Alt text" title="Text2Speech Censoring Graph"> | [TODO] | [Eismann et al.](https://github.com/SimonEismann/FunctionsAndWorkflows) |
+| ImageProcessing | Python | <img src="ImageProcessing.png" alt="Alt text" title="Image Processing Graph"> | [Workflow that performs image processing on the input image.] | [FunctionBench](https://github.com/kmu-bigdata/serverless-faas-workbench) |
+| Text2SpeechCensoring | Python | <img src="Text2SpeechCensoring.png" alt="Alt text" title="Text2Speech Censoring Graph"> | [Workflow that turns short text segments into speech and censors any profanities within the text segment.] | [Eismann et al.](https://github.com/SimonEismann/FunctionsAndWorkflows) |

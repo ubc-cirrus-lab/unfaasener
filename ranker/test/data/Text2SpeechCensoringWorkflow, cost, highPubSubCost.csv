@@ -1,0 +1,15 @@
+,cost,Memory(GB),PubsubMessageSize(Bytes),path,NI,duration,function
+0,4.64E-07,0.256,-,0,20,41.05,Text2SpeechCensoringWorkflow_GetInput
+1,4.64E-07,0.256,-,0,20,25.93,Text2SpeechCensoringWorkflow_Profanity
+2,7.84E-07,0.256,-,0,20,534.64,Text2SpeechCensoringWorkflow_Text2Speech
+3,6.56E-07,0.256,-,0,20,367.35,Text2SpeechCensoringWorkflow_Conversion
+4,2.90E-06,2,-,0,20,414.27,Text2SpeechCensoringWorkflow_Compression
+5,8.48E-07,0.256,-,0,20,642.99,Text2SpeechCensoringWorkflow_Censor
+6,5.92E-07,0.256,-,0,20,200.56,Text2SpeechCensoringWorkflow_MergedFunction
+7,1.00E+01,-,452.3565424,0,20,73.63,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Profanity
+8,1.00E+01,-,455.013315,0,20,940.46,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Text2Speech
+9,1.00E+01,-,331.6621734,0,20,480.38,Text2SpeechCensoringWorkflow_Profanity-Text2SpeechCensoringWorkflow_MergedFunction
+10,1.00E+01,-,268.9425047,0,20,76.63,Text2SpeechCensoringWorkflow_Text2Speech-Text2SpeechCensoringWorkflow_Conversion
+11,1.00E+01,-,273.5862168,0,20,82.98,Text2SpeechCensoringWorkflow_Conversion-Text2SpeechCensoringWorkflow_Compression
+12,1.00E+01,-,331.6621734,0,20,123.61,Text2SpeechCensoringWorkflow_Compression-Text2SpeechCensoringWorkflow_MergedFunction
+13,1.00E+01,-,327.7768631,0,20,917.31,Text2SpeechCensoringWorkflow_MergedFunction-Text2SpeechCensoringWorkflow_Censor

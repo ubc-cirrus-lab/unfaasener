@@ -1,1933 +1,6 @@
-resource_type,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic
-project_id,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal
-topic_id,ImageProcessing_Filter,ImageProcessing_Flip,ImageProcessing_Greyscale,ImageProcessing_Resize,ImageProcessing_Rotate,Merging,Text2SpeechCensoringWorkflow_Compression,dag-Censor,dag-Conversion,dag-MergingPoint,dag-Profanity,dag-Text2Speech,dag-test-vm,imageprocessing_GC
-2022-02-01 03:26:00,,,,,,"count: 20
-mean: 407.2512135835844
-sum_of_squared_deviation: 10180.138296495701
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 10
-bucket_counts: 10
-","count: 8
-mean: 420.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 8
-","count: 5
-mean: 410.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 5
-","count: 12
-mean: 269.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 12
-",,"count: 10
-mean: 485.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 10
-","count: 12
-mean: 481.0277777777778
-sum_of_squared_deviation: 2082.7685185184237
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 12
-",,
-2022-02-01 03:27:00,,,,,,"count: 71
-mean: 356.7102217790314
-sum_of_squared_deviation: 104610.88706344937
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 22
-bucket_counts: 44
-bucket_counts: 5
-","count: 29
-mean: 341.32970188354375
-sum_of_squared_deviation: 88055.21328971528
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 20
-bucket_counts: 0
-bucket_counts: 9
-","count: 38
-mean: 346.57855915294004
-sum_of_squared_deviation: 128098.09467227847
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 21
-bucket_counts: 17
-","count: 34
-mean: 269.14962897096433
-sum_of_squared_deviation: 4.326164828423305
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 34
-",,"count: 43
-mean: 594.6313865510089
-sum_of_squared_deviation: 2553481.085728314
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 11
-bucket_counts: 15
-bucket_counts: 0
-bucket_counts: 4
-bucket_counts: 0
-bucket_counts: 13
-","count: 34
-mean: 538.1311885172039
-sum_of_squared_deviation: 1448806.8616600987
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 6
-bucket_counts: 19
-bucket_counts: 0
-bucket_counts: 2
-bucket_counts: 0
-bucket_counts: 7
-",,
-2022-02-01 03:28:00,,,,,,"count: 20
-mean: 350.30249999999995
-sum_of_squared_deviation: 28397.019875
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 8
-bucket_counts: 12
-","count: 9
-mean: 296.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 9
-","count: 10
-mean: 286.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 10
-","count: 9
-mean: 269.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 9
-",,"count: 6
-mean: 733.8611111111113
-sum_of_squared_deviation: 27158.24537037057
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 4
-bucket_counts: 0
-bucket_counts: 2
-","count: 7
-mean: 687.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 7
-",,
-2022-02-01 04:43:00,,,,,,"count: 30
-mean: 366.43333333333334
-sum_of_squared_deviation: 50347.366666666676
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 7
-bucket_counts: 18
-bucket_counts: 5
-","count: 21
-mean: 336.0
-sum_of_squared_deviation: 52959.99999999999
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 16
-bucket_counts: 0
-bucket_counts: 5
-","count: 18
-mean: 332.6666666666667
-sum_of_squared_deviation: 47360.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 13
-bucket_counts: 5
-","count: 20
-mean: 269.15
-sum_of_squared_deviation: 2.549999999999985
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 20
-",,"count: 22
-mean: 555.6363636363636
-sum_of_squared_deviation: 1079829.0909090908
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 5
-bucket_counts: 10
-bucket_counts: 0
-bucket_counts: 2
-bucket_counts: 0
-bucket_counts: 5
-","count: 20
-mean: 544.05
-sum_of_squared_deviation: 918710.9500000001
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 5
-bucket_counts: 9
-bucket_counts: 0
-bucket_counts: 2
-bucket_counts: 0
-bucket_counts: 4
-",,
-2022-02-01 05:25:00,,,,,,"count: 5
-mean: 417.6
-sum_of_squared_deviation: 2163.199999999997
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-bucket_counts: 4
-",,,"count: 4
-mean: 269.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 4
-",,"count: 6
-mean: 518.8055555555555
-sum_of_squared_deviation: 78113.13425925921
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-bucket_counts: 4
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-","count: 6
-mean: 491.1666666666667
-sum_of_squared_deviation: 16476.833333333372
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 5
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-",,
-2022-02-01 05:26:00,,,,,,"count: 21
-mean: 349.76190476190476
-sum_of_squared_deviation: 27490.476190476187
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 7
-bucket_counts: 13
-bucket_counts: 1
-","count: 23
-mean: 332.5217391304348
-sum_of_squared_deviation: 55881.739130434784
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 18
-bucket_counts: 0
-bucket_counts: 5
-","count: 22
-mean: 324.1818181818182
-sum_of_squared_deviation: 54487.27272727273
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 17
-bucket_counts: 5
-","count: 16
-mean: 269.1875
-sum_of_squared_deviation: 2.437500000000072
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 16
-",,"count: 14
-mean: 554.8690476190476
-sum_of_squared_deviation: 685420.0099206349
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 4
-bucket_counts: 5
-bucket_counts: 0
-bucket_counts: 2
-bucket_counts: 0
-bucket_counts: 3
-","count: 15
-mean: 556.6
-sum_of_squared_deviation: 842400.4333333332
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 5
-bucket_counts: 5
-bucket_counts: 0
-bucket_counts: 2
-bucket_counts: 0
-bucket_counts: 3
-",,
-2022-02-01 09:07:00,,"bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 16
-    growth_factor: 4.0
-    scale: 1.0
-  }
-}
-",,,,,,,,,,,,
-2022-02-01 09:08:00,"count: 1
-mean: 273.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-","count: 1
-mean: 214.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-","count: 1
-mean: 278.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-","count: 1
-mean: 289.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-","count: 1
-mean: 263.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-",,,,,,,,,"count: 1
-mean: 134.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-"
-2022-02-01 09:09:00,,,,,,,,,,,,,"count: 1
-mean: 253.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-",
-2022-02-01 09:10:00,,,,,,,,,,,,,"bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 16
-    growth_factor: 4.0
-    scale: 1.0
-  }
-}
-",
-2022-02-01 09:11:00,,,,,,,,,,,,,"count: 5
-mean: 253.4
-sum_of_squared_deviation: 371.20000000000005
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 5
-","count: 1
-mean: 115.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 1
-"
-2022-02-01 09:12:00,,,,,,,,,,,,,,"bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 16
-    growth_factor: 4.0
-    scale: 1.0
-  }
-}
-"
+resource_type,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic,pubsub_topic
+project_id,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal,ubc-serverless-ghazal
+topic_id,ImageProcessing_Filter,ImageProcessing_Flip,ImageProcessing_Greyscale,ImageProcessing_Resize,ImageProcessing_Rotate,Merging,Text2SpeechCensoringWorkflow_Compression,dag-Censor,dag-Conversion,dag-MergingPoint,dag-Profanity,dag-Text2Speech,dag-test-vm,imageprocessing_GC,northamerica-northeast1-ben-2f02ddc6-composer-agent-to-backend-topic-2f02ddc6-a465-41ec-92f5-02f9e7d95d87,northamerica-northeast1-ben-2f02ddc6-composer-agent-to-backend-topic-6853c801-e5b7-44bd-896b-4f0717e7c339,northamerica-northeast1-ben-2f02ddc6-composer-backend-to-agent-topic-2f02ddc6-a465-41ec-92f5-02f9e7d95d87,northamerica-northeast1-ben-2f02ddc6-composer-backend-to-agent-topic-6853c801-e5b7-44bd-896b-4f0717e7c339
 2022-02-04 02:24:00,,,,,,"count: 17
 mean: 333.20588235294116
 sum_of_squared_deviation: 21669.2794117647
@@ -2178,7 +251,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 11
-",,
+",,,,,,
 2022-02-04 02:25:00,,,,,,"count: 93
 mean: 343.52029744023343
 sum_of_squared_deviation: 141238.04869946942
@@ -2432,7 +505,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 41
-",,
+",,,,,,
 2022-02-04 02:26:00,,,,,,"count: 87
 mean: 343.58297968629876
 sum_of_squared_deviation: 132108.9932522106
@@ -2684,7 +757,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 37
-",,
+",,,,,,
 2022-02-04 02:27:00,,,,,,"count: 85
 mean: 345.30865779887233
 sum_of_squared_deviation: 128354.48660344667
@@ -2937,7 +1010,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 41
-",,
+",,,,,,
 2022-02-04 02:28:00,,,,,,"count: 37
 mean: 348.6379279892599
 sum_of_squared_deviation: 53186.542744347826
@@ -3190,7 +1263,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 23
-",,
+",,,,,,
 2022-02-04 02:42:00,,,,,,"count: 19
 mean: 408.82813283208014
 sum_of_squared_deviation: 11152.724180018515
@@ -3453,7 +1526,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 11
-",,
+",,,,,,
 2022-02-04 02:43:00,,,,,,"count: 84
 mean: 366.74899445858796
 sum_of_squared_deviation: 106847.51057943919
@@ -3728,7 +1801,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 3
-",,
+",,,,,,
 2022-02-04 02:44:00,,,,,,"count: 60
 mean: 344.58167336364767
 sum_of_squared_deviation: 87727.0359633217
@@ -3997,7 +2070,7 @@ bucket_counts: 0
 bucket_counts: 8
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-04 02:58:00,,,,,,"count: 21
 mean: 337.35714285714283
 sum_of_squared_deviation: 24601.571428571435
@@ -4247,7 +2320,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-04 02:59:00,,,,,,"count: 84
 mean: 342.5827877101763
 sum_of_squared_deviation: 127735.47011272883
@@ -4501,7 +2574,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 48
-",,
+",,,,,,
 2022-02-04 03:00:00,,,,,,"count: 101
 mean: 344.7239336265521
 sum_of_squared_deviation: 152459.74484842608
@@ -4752,7 +2825,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 45
-",,
+",,,,,,
 2022-02-04 03:01:00,,,,,,"count: 91
 mean: 343.5794709701437
 sum_of_squared_deviation: 138183.97970235706
@@ -5006,7 +3079,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 49
-",,
+",,,,,,
 2022-02-04 03:02:00,,,,,,"count: 36
 mean: 343.0526936026936
 sum_of_squared_deviation: 54716.10610243852
@@ -5259,7 +3332,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 17
-",,
+",,,,,,
 2022-02-04 03:10:00,"count: 1
 mean: 276.0
 bucket_options {
@@ -5430,7 +3503,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,,,,,,,,
+",,,,,,,,,,,,,
 2022-02-04 03:11:00,,,,"count: 1
 mean: 292.0
 bucket_options {
@@ -5510,7 +3583,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-"
+",,,,
 2022-02-04 03:17:00,,,,,,"count: 24
 mean: 336.6916666666667
 sum_of_squared_deviation: 31433.718333333327
@@ -5761,7 +3834,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 15
-",,
+",,,,,,
 2022-02-04 03:18:00,,,,,,"count: 6
 mean: 350.23333333333335
 sum_of_squared_deviation: 3182.833333333343
@@ -6013,7 +4086,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 3
-",,
+",,,,,,
 2022-02-04 03:19:00,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -6021,7 +4094,7 @@ bucket_counts: 3
     scale: 1.0
   }
 }
-",,,,,,,,,,,,
+",,,,,,,,,,,,,,,,
 2022-02-04 03:20:00,"count: 19
 mean: 275.10526315789474
 sum_of_squared_deviation: 1.7894736842105086
@@ -6269,7 +4342,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 17
-"
+",,,,
 2022-02-04 03:21:00,"count: 35
 mean: 275.0
 bucket_options {
@@ -6513,7 +4586,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 32
-"
+",,,,
 2022-02-04 03:22:00,"count: 32
 mean: 275.0
 bucket_options {
@@ -6758,7 +4831,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 38
-"
+",,,,
 2022-02-04 03:23:00,"count: 35
 mean: 275.0
 bucket_options {
@@ -7002,7 +5075,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 28
-"
+",,,,
 2022-02-04 03:24:00,"count: 22
 mean: 275.31308158284503
 sum_of_squared_deviation: 4.628443418232859
@@ -7251,7 +5324,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 27
-"
+",,,,
 2022-02-04 03:34:00,"count: 19
 mean: 275.0
 sum_of_squared_deviation: 4.9541644647460175e-17
@@ -7499,7 +5572,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 28
-"
+",,,,
 2022-02-04 03:35:00,"count: 37
 mean: 275.0
 bucket_options {
@@ -7744,7 +5817,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 40
-"
+",,,,
 2022-02-04 03:36:00,"count: 34
 mean: 275.0
 bucket_options {
@@ -7988,7 +6061,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 32
-"
+",,,,
 2022-02-04 03:37:00,"count: 31
 mean: 275.30218626884425
 sum_of_squared_deviation: 6.471298947468801
@@ -8237,7 +6310,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 33
-"
+",,,,
 2022-02-04 03:38:00,"count: 3
 mean: 276.0
 sum_of_squared_deviation: 6.938893903907228e-17
@@ -8483,7 +6556,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 2
-"
+",,,,
 2022-02-04 03:41:00,"count: 33
 mean: 275.00190852636143
 sum_of_squared_deviation: 0.06286116832337685
@@ -8731,7 +6804,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 36
-"
+",,,,
 2022-02-04 03:42:00,"count: 10
 mean: 275.3
 sum_of_squared_deviation: 2.0999999999999837
@@ -8980,7 +7053,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 12
-"
+",,,,
 2022-02-04 03:49:00,"count: 22
 mean: 275.0
 bucket_options {
@@ -9226,7 +7299,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 30
-"
+",,,,
 2022-02-04 03:50:00,"count: 38
 mean: 274.99999999999994
 bucket_options {
@@ -9469,7 +7542,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 38
-"
+",,,,
 2022-02-04 03:51:00,"count: 27
 mean: 275.14528257468146
 sum_of_squared_deviation: 3.352739800735539
@@ -9718,7 +7791,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 24
-"
+",,,,
 2022-02-04 04:07:00,"count: 35
 mean: 275.0
 sum_of_squared_deviation: 1.8984813721057865e-14
@@ -9966,7 +8039,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 39
-"
+",,,,
 2022-02-04 04:08:00,"count: 31
 mean: 275.0
 bucket_options {
@@ -10211,7 +8284,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 41
-"
+",,,,
 2022-02-04 04:09:00,"count: 22
 mean: 275.38929307043475
 sum_of_squared_deviation: 5.015907876893756
@@ -10460,7 +8533,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 21
-"
+",,,,
 2022-02-04 04:12:00,"count: 7
 mean: 275.0
 bucket_options {
@@ -10704,7 +8777,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 5
-"
+",,,,
 2022-02-04 04:13:00,"count: 34
 mean: 275.0
 sum_of_squared_deviation: 4.965125532940817e-14
@@ -10950,7 +9023,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 41
-"
+",,,,
 2022-02-04 04:14:00,"count: 34
 mean: 275.0009054283594
 sum_of_squared_deviation: 0.030756691001443737
@@ -11198,7 +9271,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 31
-"
+",,,,
 2022-02-04 04:15:00,"count: 8
 mean: 275.875
 sum_of_squared_deviation: 0.8750000000000077
@@ -11446,7 +9519,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 5
-"
+",,,,
 2022-02-10 22:51:00,"count: 23
 mean: 275.0
 bucket_options {
@@ -11689,7 +9762,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 30
-"
+",,,,
 2022-02-10 22:52:00,"count: 1
 mean: 276.0
 bucket_options {
@@ -11934,7 +10007,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-"
+",,,,
 2022-02-10 22:57:00,"count: 11
 mean: 275.0
 bucket_options {
@@ -12178,7 +10251,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 10
-"
+",,,,
 2022-02-10 22:58:00,"count: 7
 mean: 275.0
 sum_of_squared_deviation: 3.2311742677852644e-27
@@ -12425,7 +10498,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 14
-"
+",,,,
 2022-02-10 23:00:00,"count: 16
 mean: 275.0
 bucket_options {
@@ -12670,7 +10743,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 18
-"
+",,,,
 2022-02-10 23:02:00,"count: 3
 mean: 275.0
 bucket_options {
@@ -12879,7 +10952,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-"
+",,,,
 2022-02-10 23:03:00,"count: 22
 mean: 275.0
 sum_of_squared_deviation: 1.1510392976388249e-26
@@ -13126,7 +11199,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 24
-"
+",,,,
 2022-02-10 23:04:00,"count: 1
 mean: 275.00000000000006
 bucket_options {
@@ -13257,7 +11330,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,,,,,,,,
+",,,,,,,,,,,,,
 2022-02-10 23:06:00,"count: 17
 mean: 275.0
 bucket_options {
@@ -13501,7 +11574,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 17
-"
+",,,,
 2022-02-10 23:08:00,"count: 16
 mean: 275.0
 bucket_options {
@@ -13744,7 +11817,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 15
-"
+",,,,
 2022-02-10 23:09:00,"count: 15
 mean: 275.0
 bucket_options {
@@ -13988,7 +12061,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 17
-"
+",,,,
 2022-02-10 23:10:00,"count: 3
 mean: 275.0
 sum_of_squared_deviation: 3.2311742677852644e-27
@@ -14167,7 +12240,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 5
-"
+",,,,
 2022-02-10 23:13:00,"count: 5
 mean: 275.0
 bucket_options {
@@ -14410,7 +12483,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 2
-"
+",,,,
 2022-02-10 23:14:00,"count: 13
 mean: 275.0
 bucket_options {
@@ -14657,7 +12730,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 16
-"
+",,,,
 2022-02-11 01:31:00,"count: 3
 mean: 275.0
 bucket_options {
@@ -14870,7 +12943,7 @@ bucket_counts: 3
     scale: 1.0
   }
 }
-"
+",,,,
 2022-02-11 01:32:00,"count: 18
 mean: 275.0
 bucket_options {
@@ -15116,7 +13189,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 22
-"
+",,,,
 2022-02-11 01:39:00,"count: 23
 mean: 275.0
 bucket_options {
@@ -15361,7 +13434,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 24
-"
+",,,,
 2022-02-11 01:46:00,"count: 9
 mean: 275.0
 bucket_options {
@@ -15604,7 +13677,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 9
-"
+",,,,
 2022-02-11 01:47:00,,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -15612,7 +13685,7 @@ bucket_counts: 9
     scale: 1.0
   }
 }
-"
+",,,,
 2022-02-11 02:12:00,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -15620,7 +13693,7 @@ bucket_counts: 9
     scale: 1.0
   }
 }
-",,,,,,,,,,,,
+",,,,,,,,,,,,,,,,
 2022-02-11 02:13:00,"count: 20
 mean: 275.0
 bucket_options {
@@ -15866,7 +13939,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 28
-"
+",,,,
 2022-02-11 02:16:00,"count: 17
 mean: 275.0
 bucket_options {
@@ -16110,7 +14183,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 22
-"
+",,,,
 2022-02-11 02:18:00,"count: 15
 mean: 275.0
 bucket_options {
@@ -16355,7 +14428,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 17
-"
+",,,,
 2022-02-11 02:19:00,"count: 1
 mean: 276.0
 bucket_options {
@@ -16491,7 +14564,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-"
+",,,,
 2022-02-11 02:21:00,"count: 17
 mean: 275.0
 bucket_options {
@@ -16735,7 +14808,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 18
-"
+",,,,
 2022-02-11 02:22:00,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -16904,7 +14977,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 5
-"
+",,,,
 2022-02-11 02:54:00,"count: 29
 mean: 275.0
 sum_of_squared_deviation: 1.636659714811753e-26
@@ -17150,7 +15223,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 37
-"
+",,,,
 2022-02-11 02:55:00,"count: 27
 mean: 275.0
 bucket_options {
@@ -17395,7 +15468,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 41
-"
+",,,,
 2022-02-11 02:56:00,"count: 15
 mean: 275.396615470869
 sum_of_squared_deviation: 3.541484033504639
@@ -17643,7 +15716,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 15
-"
+",,,,
 2022-02-11 08:03:00,,,,,,"count: 34
 mean: 387.44905591314233
 sum_of_squared_deviation: 47154.97271879649
@@ -17909,7 +15982,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 2
 bucket_counts: 14
-",,
+",,,,,,
 2022-02-11 08:04:00,,,,,,"count: 96
 mean: 357.57544857595946
 sum_of_squared_deviation: 147023.52342481722
@@ -18184,7 +16257,7 @@ bucket_counts: 0
 bucket_counts: 9
 bucket_counts: 0
 bucket_counts: 10
-",,
+",,,,,,
 2022-02-11 08:05:00,,,,,,"count: 2
 mean: 349.1714285714287
 sum_of_squared_deviation: 2.11591836734745
@@ -18250,7 +16323,7 @@ bucket_counts: 2
     scale: 1.0
   }
 }
-",,
+",,,,,,
 2022-02-15 18:26:00,"count: 22
 mean: 275.0
 bucket_options {
@@ -18495,7 +16568,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 33
-"
+",,,,
 2022-02-15 18:27:00,"count: 28
 mean: 275.0
 bucket_options {
@@ -18739,7 +16812,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 32
-"
+",,,,
 2022-02-15 18:28:00,"count: 20
 mean: 275.1380365933504
 sum_of_squared_deviation: 2.197630951407855
@@ -18987,7 +17060,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 27
-"
+",,,,
 2022-02-15 18:29:00,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -18995,7 +17068,7 @@ bucket_counts: 27
     scale: 1.0
   }
 }
-",,,,,,,,,
+",,,,,,,,,,,,,
 2022-02-15 18:32:00,"count: 15
 mean: 275.0
 bucket_options {
@@ -19238,7 +17311,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 16
-"
+",,,,
 2022-02-15 18:33:00,"count: 28
 mean: 275.0
 bucket_options {
@@ -19481,7 +17554,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 31
-"
+",,,,
 2022-02-15 18:34:00,"count: 28
 mean: 275.08645015699125
 sum_of_squared_deviation: 2.2113427657303397
@@ -19730,7 +17803,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 34
-"
+",,,,
 2022-02-15 18:35:00,"count: 1
 mean: 276.0
 bucket_options {
@@ -19977,7 +18050,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 4
-"
+",,,,
 2022-02-15 18:37:00,"count: 29
 mean: 275.0
 bucket_options {
@@ -20223,7 +18296,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 33
-"
+",,,,
 2022-02-15 18:38:00,"count: 25
 mean: 275.0
 bucket_options {
@@ -20468,7 +18541,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 27
-"
+",,,,
 2022-02-15 18:39:00,"count: 17
 mean: 275.3523329153226
 sum_of_squared_deviation: 3.6477631989991828
@@ -20716,7 +18789,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 17
-"
+",,,,
 2022-02-15 18:41:00,"count: 27
 mean: 275.0
 sum_of_squared_deviation: 1.6140441871881176e-16
@@ -20964,7 +19037,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 25
-"
+",,,,
 2022-02-15 18:42:00,"count: 27
 mean: 275.0
 bucket_options {
@@ -21208,7 +19281,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 32
-"
+",,,,
 2022-02-15 18:43:00,"count: 19
 mean: 275.2649575093909
 sum_of_squared_deviation: 3.700345524557306
@@ -21456,7 +19529,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 21
-"
+",,,,
 2022-02-15 18:45:00,"count: 17
 mean: 275.0
 bucket_options {
@@ -21699,7 +19772,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 21
-"
+",,,,
 2022-02-15 18:46:00,"count: 32
 mean: 275.0
 bucket_options {
@@ -21942,7 +20015,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 30
-"
+",,,,
 2022-02-15 18:47:00,"count: 19
 mean: 275.1578947368421
 sum_of_squared_deviation: 2.5263157894736485
@@ -22190,7 +20263,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 28
-"
+",,,,
 2022-02-15 18:48:00,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -22198,7 +20271,7 @@ bucket_counts: 28
     scale: 1.0
   }
 }
-",,,,,,,,,,,,
+",,,,,,,,,,,,,,,,
 2022-02-22 01:09:00,,,,,,,,,"count: 1
 mean: 269.0
 bucket_options {
@@ -22362,7 +20435,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 01:14:00,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -22377,7 +20450,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",,
+",,,,,,
 2022-02-22 01:15:00,,,,,,,,,"count: 1
 mean: 269.0
 bucket_options {
@@ -22542,7 +20615,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 01:21:00,,,,,,,,,"count: 1
 mean: 269.0
 bucket_options {
@@ -22707,7 +20780,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 01:25:00,,,,,,,"count: 1
 mean: 254.0
 bucket_options {
@@ -22913,7 +20986,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 01:30:00,,,,,,,"count: 1
 mean: 254.0
 bucket_options {
@@ -23164,7 +21237,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 01:50:00,,,,,,,"count: 17
 mean: 253.0
 sum_of_squared_deviation: 1.6155871338926322e-27
@@ -23426,7 +21499,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 2
 bucket_counts: 15
-",,
+",,,,,,
 2022-02-22 01:51:00,,,,,,,"count: 42
 mean: 253.0
 sum_of_squared_deviation: 5.551115124902929e-17
@@ -23698,7 +21771,7 @@ bucket_counts: 0
 bucket_counts: 7
 bucket_counts: 0
 bucket_counts: 9
-",,
+",,,,,,
 2022-02-22 01:52:00,,,,,,,"count: 1
 mean: 253.00000000000006
 bucket_options {
@@ -23874,7 +21947,7 @@ bucket_counts: 2
     scale: 1.0
   }
 }
-",,,
+",,,,,,,
 2022-02-22 01:57:00,,,,,,,"count: 4
 mean: 253.0
 sum_of_squared_deviation: 1.6155871338926322e-27
@@ -24136,7 +22209,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 9
-",,
+",,,,,,
 2022-02-22 01:58:00,,,,,,,"count: 55
 mean: 253.0
 sum_of_squared_deviation: 4.4335937377362074e-26
@@ -24408,7 +22481,7 @@ bucket_counts: 0
 bucket_counts: 6
 bucket_counts: 0
 bucket_counts: 8
-",,
+",,,,,,
 2022-02-22 01:59:00,,,,,,,"count: 4
 mean: 253.0
 bucket_options {
@@ -24671,7 +22744,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 5
-",,
+",,,,,,
 2022-02-22 02:00:00,,,,,,,"count: 17
 mean: 253.0
 bucket_options {
@@ -24932,7 +23005,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 4
 bucket_counts: 19
-",,
+",,,,,,
 2022-02-22 02:01:00,,,,,,,"count: 49
 mean: 253.0
 sum_of_squared_deviation: 2.1654340739104483e-26
@@ -25202,7 +23275,7 @@ bucket_counts: 0
 bucket_counts: 10
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-22 02:02:00,,,,,,,"count: 1
 mean: 253.0
 bucket_options {
@@ -25251,7 +23324,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",,,,
+",,,,,,,,
 2022-02-22 02:08:00,,,,,,,"count: 32
 mean: 253.0
 sum_of_squared_deviation: 9.693522803355793e-27
@@ -25514,7 +23587,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 4
 bucket_counts: 23
-",,
+",,,,,,
 2022-02-22 02:09:00,,,,,,,"count: 26
 mean: 253.0
 sum_of_squared_deviation: 8.077935669463161e-28
@@ -25783,7 +23856,7 @@ bucket_counts: 0
 bucket_counts: 8
 bucket_counts: 0
 bucket_counts: 7
-",,
+",,,,,,
 2022-02-22 02:12:00,,,,,,,"count: 11
 mean: 253.0
 sum_of_squared_deviation: 1.6155871338926322e-27
@@ -26045,7 +24118,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 15
-",,
+",,,,,,
 2022-02-22 02:13:00,,,,,,,"count: 40
 mean: 253.0
 sum_of_squared_deviation: 1.1280488010972774e-26
@@ -26317,7 +24390,7 @@ bucket_counts: 0
 bucket_counts: 5
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-22 02:14:00,,,,,,,"count: 3
 mean: 252.99999999999997
 sum_of_squared_deviation: 4.8467614016778965e-27
@@ -26539,7 +24612,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 02:19:00,,,,,,,"count: 12
 mean: 253.0
 sum_of_squared_deviation: 4.8467614016778965e-27
@@ -26800,7 +24873,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 13
-",,
+",,,,,,
 2022-02-22 02:20:00,,,,,,,"count: 38
 mean: 253.0
 sum_of_squared_deviation: 2.1502445627238784e-26
@@ -27072,7 +25145,7 @@ bucket_counts: 0
 bucket_counts: 6
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-22 02:21:00,,,,,,,"count: 3
 mean: 253.0
 bucket_options {
@@ -27296,7 +25369,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",,
+",,,,,,
 2022-02-22 02:26:00,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -27311,7 +25384,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",,
+",,,,,,
 2022-02-22 02:27:00,,,,,,,"count: 41
 mean: 253.0
 sum_of_squared_deviation: 7.768282414763629e-26
@@ -27583,7 +25656,7 @@ bucket_counts: 0
 bucket_counts: 2
 bucket_counts: 0
 bucket_counts: 10
-",,
+",,,,,,
 2022-02-22 02:28:00,,,,,,,"count: 9
 mean: 253.0
 sum_of_squared_deviation: 8.077935669463161e-28
@@ -27851,7 +25924,7 @@ bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 02:38:00,,,,,,,"count: 15
 mean: 253.0
 bucket_options {
@@ -28113,7 +26186,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 15
-",,
+",,,,,,
 2022-02-22 02:39:00,,,,,,,"count: 27
 mean: 253.0
 sum_of_squared_deviation: 8.077935669463161e-28
@@ -28383,7 +26456,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 7
-",,
+",,,,,,
 2022-02-22 02:40:00,,,,,,,"count: 19
 mean: 253.0
 sum_of_squared_deviation: 3.2311742677852644e-27
@@ -28652,7 +26725,7 @@ bucket_counts: 0
 bucket_counts: 7
 bucket_counts: 0
 bucket_counts: 3
-",,
+",,,,,,
 2022-02-22 05:27:00,,,,,,,"count: 10
 mean: 253.0
 sum_of_squared_deviation: 8.077935669463161e-28
@@ -28912,7 +26985,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-22 05:28:00,,,,,,,"count: 28
 mean: 253.0
 sum_of_squared_deviation: 6.462348535570529e-27
@@ -29184,7 +27257,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 05:29:00,,,,,,,"count: 20
 mean: 253.0
 sum_of_squared_deviation: 8.077935669463161e-28
@@ -29453,7 +27526,7 @@ bucket_counts: 0
 bucket_counts: 9
 bucket_counts: 0
 bucket_counts: 8
-",,
+",,,,,,
 2022-02-22 05:30:00,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -29461,7 +27534,7 @@ bucket_counts: 8
     scale: 1.0
   }
 }
-",,,,
+",,,,,,,,
 2022-02-22 19:33:00,,,,,,,,,,,,,"count: 3
 mean: 275.6666666666667
 sum_of_squared_deviation: 68.66666666666667
@@ -29504,7 +27577,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 3
-",
+",,,,,
 2022-02-22 19:34:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -29512,7 +27585,7 @@ bucket_counts: 3
     scale: 1.0
   }
 }
-",
+",,,,,
 2022-02-22 19:35:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -29520,7 +27593,7 @@ bucket_counts: 3
     scale: 1.0
   }
 }
-",
+",,,,,
 2022-02-22 19:36:00,,,,,,,,,,,,,"count: 1
 mean: 269.0
 bucket_options {
@@ -29562,7 +27635,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:37:00,,,,,,,,,,,,,"count: 3
 mean: 275.6666666666667
 sum_of_squared_deviation: 68.66666666666667
@@ -29605,7 +27678,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 3
-",
+",,,,,
 2022-02-22 19:39:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -29613,7 +27686,7 @@ bucket_counts: 3
     scale: 1.0
   }
 }
-",
+",,,,,
 2022-02-22 19:40:00,,,,,,,,,,,,,"count: 8
 mean: 301.75
 sum_of_squared_deviation: 8251.5
@@ -29658,7 +27731,7 @@ bucket_counts: 0
 bucket_counts: 5
 bucket_counts: 0
 bucket_counts: 3
-",
+",,,,,
 2022-02-22 19:41:00,,,,,,,,,,,,,"count: 1
 mean: 269.0
 bucket_options {
@@ -29700,7 +27773,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:42:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -29708,7 +27781,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",
+",,,,,
 2022-02-22 19:43:00,,,,,,,,,,,,,"count: 1
 mean: 270.0
 bucket_options {
@@ -29750,7 +27823,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:47:00,,,,,,,,,,,,,"count: 5
 mean: 288.0
 sum_of_squared_deviation: 3874.0
@@ -29795,7 +27868,7 @@ bucket_counts: 0
 bucket_counts: 4
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:48:00,,,,,,,,,,,,,"count: 4
 mean: 292.75
 sum_of_squared_deviation: 3422.75
@@ -29840,7 +27913,7 @@ bucket_counts: 0
 bucket_counts: 3
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:49:00,,,,,,,,,,,,,"count: 2
 mean: 322.5
 sum_of_squared_deviation: 5724.5
@@ -29885,7 +27958,7 @@ bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:50:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -29893,7 +27966,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",
+",,,,,
 2022-02-22 19:52:00,,,,,,,,,,,,,"count: 6
 mean: 280.3333333333333
 sum_of_squared_deviation: 12681.333333333332
@@ -29938,7 +28011,7 @@ bucket_counts: 0
 bucket_counts: 5
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:53:00,,,,,,,,,,,,,"count: 2
 mean: 306.0
 sum_of_squared_deviation: 2738.0
@@ -29983,7 +28056,7 @@ bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 19:54:00,,,,,,,,,,,,,"count: 2
 mean: 279.0
 sum_of_squared_deviation: 2.0
@@ -30026,7 +28099,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 2
-",
+",,,,,
 2022-02-22 19:55:00,,,,,,,,,,,,,"count: 5
 mean: 309.4
 sum_of_squared_deviation: 6785.200000000004
@@ -30071,7 +28144,7 @@ bucket_counts: 0
 bucket_counts: 2
 bucket_counts: 1
 bucket_counts: 2
-",
+",,,,,
 2022-02-22 21:09:00,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -30123,7 +28196,7 @@ bucket_counts: 0
 bucket_counts: 3
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 21:10:00,,,,,,,,"count: 1
 mean: 249.00000000000003
 bucket_options {
@@ -30209,7 +28282,7 @@ bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 0
 bucket_counts: 1
-",
+",,,,,
 2022-02-22 21:11:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -30217,7 +28290,7 @@ bucket_counts: 1
     scale: 1.0
   }
 }
-",
+",,,,,
 2022-02-22 21:12:00,,,,,,,"count: 1
 mean: 257.0
 bucket_options {
@@ -30428,7 +28501,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 21:13:00,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -30521,7 +28594,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,,,
+",,,,,,,,
 2022-02-22 21:25:00,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -30623,7 +28696,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-22 21:26:00,,,,,,,"count: 27
 mean: 253.0
 sum_of_squared_deviation: 6.4204923033121664e-27
@@ -30886,7 +28959,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 12
 bucket_counts: 21
-",,
+",,,,,,
 2022-02-22 21:27:00,,,,,,,"count: 27
 mean: 253.0
 sum_of_squared_deviation: 1.341205352680633e-27
@@ -31155,7 +29228,7 @@ bucket_counts: 0
 bucket_counts: 11
 bucket_counts: 0
 bucket_counts: 12
-",,
+",,,,,,
 2022-02-22 21:28:00,,,,,,,"count: 7
 mean: 253.0
 bucket_options {
@@ -31415,7 +29488,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
-",,
+",,,,,,
 2022-02-25 07:01:00,,,,,,,"count: 12
 mean: 253.0
 sum_of_squared_deviation: 5.6545549686242126e-27
@@ -31679,7 +29752,7 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 3
 bucket_counts: 14
-",,
+",,,,,,
 2022-02-25 07:02:00,,,,,,,"count: 51
 mean: 253.0
 sum_of_squared_deviation: 4.1821402871129696e-26
@@ -31952,7 +30025,7 @@ bucket_counts: 0
 bucket_counts: 1
 bucket_counts: 0
 bucket_counts: 8
-",,
+",,,,,,
 2022-02-25 07:03:00,,,,,,,"count: 42
 mean: 253.0
 sum_of_squared_deviation: 1.8976921505679468e-26
@@ -32222,7 +30295,7 @@ bucket_counts: 0
 bucket_counts: 20
 bucket_counts: 0
 bucket_counts: 14
-",,
+",,,,,,
 2022-02-25 07:04:00,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -32259,6 +30332,270 @@ bucket_counts: 14
   }
 }
 ","bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 16
+    growth_factor: 4.0
+    scale: 1.0
+  }
+}
+",,,,,,
+2022-03-04 01:04:00,,,,,,,,,,,,,,,,,"count: 1
+mean: 347.0
+bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 122
+    growth_factor: 1.2
+    scale: 1.0
+  }
+}
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 1
+",
+2022-03-04 01:08:00,,,,,,,,,,,,,,,"count: 4
+mean: 1246.0
+sum_of_squared_deviation: 5127090.0
+bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 122
+    growth_factor: 1.2
+    scale: 1.0
+  }
+}
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 1
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 1
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 2
+",,,
+2022-03-04 01:17:00,,,,,,,,,,,,,,,"bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 16
+    growth_factor: 4.0
+    scale: 1.0
+  }
+}
+",,,
+2022-03-04 01:18:00,,,,,,,,,,,,,,,"count: 2
+mean: 2372.0
+sum_of_squared_deviation: 512.0
+bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 122
+    growth_factor: 1.2
+    scale: 1.0
+  }
+}
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 2
+",,,
+2022-03-04 04:55:00,,,,,,,,,,,,,,,,"count: 4
+mean: 1825.0
+sum_of_squared_deviation: 4023620.0000000005
+bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 122
+    growth_factor: 1.2
+    scale: 1.0
+  }
+}
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 1
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 3
+",,"count: 1
+mean: 175.0
+bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 122
+    growth_factor: 1.2
+    scale: 1.0
+  }
+}
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 1
+"
+2022-03-04 04:56:00,,,,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
     growth_factor: 4.0
