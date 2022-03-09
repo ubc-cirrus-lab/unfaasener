@@ -4,7 +4,9 @@ import os
 import json
 import pandas as pd
 from pathlib import Path
-class Solver:
+
+
+class OffloadingSolver:
 
     def __init__(self, dataframePath, workflow, mode):
         self.addedLatency = 200
@@ -22,7 +24,7 @@ class Solver:
         self.offloadingCandidates = self.workflow_json["workflowFunctions"]
         self.lastDecision = self.workflow_json["lastDecision"]
         self.successors = self.workflow_json["successors"]
-        self.paths= {}
+        self.paths = {}
    
     # Function for getting Paths with the same slack time
     def getPaths(self):
@@ -110,11 +112,6 @@ class Solver:
         """
         cost = (self.dataframe.loc[self.dataframe['function'] == (offloadingCandidate+"-"+child), 'cost'].item())
         return cost
-
-
-
-
-
 
     def suggestBestOffloadingSingleVM(self, availResources, alpha, verbose):
         """
@@ -211,12 +208,6 @@ class Solver:
         self.workflow_json["lastDecision"] = offloadingDecisions
         with open(self.jsonPath, 'w') as json_file:
             json.dump(self.workflow_json, json_file)
-
-
-
-
-
-
 
 
 
