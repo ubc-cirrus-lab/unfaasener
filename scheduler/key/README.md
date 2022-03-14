@@ -1,28 +1,28 @@
-## How to get private key for having access to google cloud monitoring?
+## How to get a private key for having access to google cloud monitoring?
 
-1. Go to the Service Account's section of IAM & Admin in google cloud console. 
+1. Go to the Service Account's section of IAM & Admin in the google cloud console. 
 
 <img src="./ServiceAccount.png" alt="Service Account Section"/>
 
 
-2. Click on create service account.
+2. Click on create a service account.
 
 <img src="./CreateServiceAccount.png" alt="Creating a service account"/>
 
-3. Choose a name, and select Monitoring Admin and Monitoring Viewer's roles for this service acount.
+3. Choose a name, and select Monitoring Admin and Monitoring Viewer's roles for this service account.
 
 <img src="./Roles.png" alt="Roles"/>
 
-4. When the service account is created, click on the keys section, and add a new key for this sevice account.
+4. When the service account is created, click on the keys section, and add a new key for this service account.
 
 <img src="./AddKey.png" alt="Adding a key"/>
 
-5. Download the key's file and replace the path in monitoring.py's code with the path to the downloaded key:
+5. Download the key's file and replace the path in monitoring.py with the path to the downloaded key:
 ```
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = THE-PATH-TO-YOUR-KEY	
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = THE-PATH-TO-YOUR-KEY 
 ```
 
-The key will looks like the following pattern:
+The key will look like the following pattern:
 
 ```
 {
