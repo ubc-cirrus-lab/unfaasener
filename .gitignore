@@ -2,4 +2,6 @@
 __pycache__
 venv
 .idea
+.vscode
+*.pyc
 monitoringKey.json
