@@ -33,6 +33,6 @@ jobs:
     #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unittest
       run: |
-        cd ranker
+        cd scheduler
         python solver_cost_test.py
         python solver_latency_test.py
