@@ -7,7 +7,7 @@ import pandas as pd
 
 class monitoring:
     def __init__(self):
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/ubc-serverless-ghazal-e050feb3ff8c.json"
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "key/monitoringKey.json"
 
         project = 'ubc-serverless-ghazal'
         client = monitoring_v3.MetricServiceClient()
