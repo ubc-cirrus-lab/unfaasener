@@ -7,6 +7,7 @@
 #include <ring.h>
 #include <predictor.h>
 #include <parser.h>
+#include <meminfoparser.h>
 #include <chrono>
 
 using namespace std;
@@ -14,15 +15,18 @@ int main(int, char *[]) {
 
     size_t ring_size=10; // keep last 10 records, i.e. 1 second  
     size_t current_readings[2]= { 0 };
+    size_t current_mem_readings[2]= { 0 };
     size_t previous_readings[2] = { 0 };
     int monitor_intervals=100000; // 100ms in microseconds
     double prediction_buffer   = 6; //extra buffer for CPU prediction
     ring buffer(ring_size);
     predictor simple(&buffer);
     parser procstat(current_readings);
+    meminfoparser memstat(current_mem_readings);
     while (true) 
 	{
 	 procstat.get_proc_stat_times(current_readings);
+         memstat.get_meminfo(current_mem_readings);
 	 float idle_diff = current_readings[0] - previous_readings[0];
 	 float total_diff = current_readings[1] - previous_readings[1];
 	 float utilization = 100.0 * (1.0 - idle_diff/total_diff);
