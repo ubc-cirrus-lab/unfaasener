@@ -24,13 +24,13 @@ public:
      {
 	if ( token == "MemTotal:")
 	{	
-		meminfo >> memtotal;
-		std::cout << "MemFotal: " << memtotal << ")\n";	
+		meminfo >> results[0];
+//		std::cout << "MemFotal: " << results[0] << ")\n";	
 	}
 	if ( token == "MemFree:" )
 	{
-		meminfo >> memfree;
-                std::cout << "MemFree: " << memfree << ")\n";
+		meminfo >> results[1];
+//               std::cout << "MemFree: " << results[1] << ")\n";
 
 	}
 
