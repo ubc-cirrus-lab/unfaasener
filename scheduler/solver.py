@@ -1,3 +1,4 @@
+import math
 from tabnanny import verbose
 from mip import *
 import os
@@ -9,7 +10,11 @@ from pathlib import Path
 class OffloadingSolver:
 
     def __init__(self, dataframePath, workflow, mode):
-        self.addedLatency = 200
+        self.slacks = {}
+        self.terminals = []
+        self.allPaths = []
+        self.dataframePath = dataframePath
+        self.addedLatency = 30
         self.GCP_MB2GHz = {128:0.2, 256:0.4, 512:0.8, 1000:1.4, 2000:2.4, 4000:4.8, 8000:4.8}
         if dataframePath == None:
             dataframePath = (os.getcwd()+ "/data/"+workflow +", "+mode+",slackData.pkl")
@@ -24,8 +29,65 @@ class OffloadingSolver:
         self.offloadingCandidates = self.workflow_json["workflowFunctions"]
         self.lastDecision = self.workflow_json["lastDecision"]
         self.successors = self.workflow_json["successors"]
+        self.initial = self.workflow_json["initFunc"]
         self.paths = {}
    
+
+
+    def getAllPaths(self):
+        """
+        Returns all possible paths in the dag starting from the initial node to a terminal node
+        """
+        terminals = []
+        for node in self.offloadingCandidates:
+            if len(self.successors[ self.offloadingCandidates.index(node) ]) == 0:
+                terminals.append(node)
+        queue = [[self.initial]]
+        visited = set()
+        results = []
+        while queue:
+            path = queue.pop(0)
+            lastNode = path[-1]
+            if lastNode in terminals:
+                results.append(path)
+                continue
+            elif tuple(path) not in visited:
+                for successor in self.successors[ self.offloadingCandidates.index(lastNode) ]:
+                    new_path = path.copy()
+                    new_path.append(successor)
+                    queue.append(new_path)
+                visited.add(tuple(path))
+        for path in results:
+            boolArray = [0]*len(self.offloadingCandidates)
+            for node in path:
+                boolArray[self.offloadingCandidates.index(node)] = 1
+            self.allPaths.append(boolArray)
+
+
+
+    def checkNeighbour(self, node, neighbour):
+        """
+        - node, neighbour: nodes to be checked
+        Returns 0 if the two functions are not in the same path
+        Returns 1 ifthe two functions are in the same path
+        """
+        if self.slacks[self.offloadingCandidates[node]] == 0:
+            return 0
+        else:
+            for path in self.allPaths:
+                if (path[node] == 1) and (path[neighbour] == 1):
+                    return 1
+        return 0
+
+
+    def getSlacks(self):
+        """
+        Returns estimated slack time for each function based on the dataframe
+        """
+        for func in self.offloadingCandidates:
+            self.slacks[func] = (self.dataframe.loc[self.dataframe['function'] == func, 'slackTime'].item())
+
+
     # Function for getting Paths with the same slack time
     def getPaths(self):
         """
@@ -37,6 +99,7 @@ class OffloadingSolver:
                 self.paths[slack][self.offloadingCandidates.index(func)]  = 1
             else:
                 self.paths[slack] = [0]*len(self.offloadingCandidates)
+                self.paths[slack][self.offloadingCandidates.index(func)]  = 1
 
     def getMem(self, offloadingCandidate):
         """
@@ -157,7 +220,9 @@ class OffloadingSolver:
                 print("No solution could be found!")
 
         elif self.optimizationMode == "latency":
+            self.getSlacks()
             self.getPaths()
+            self.getAllPaths()
             model = Model(sense=MINIMIZE, solver_name=CBC)
             # List of functions as the variables
             x = [model.add_var(var_type=BINARY, name = s) for s in offloadingCandidates]
@@ -179,14 +244,15 @@ class OffloadingSolver:
                                 for i in range(len(x))] ) <= availResources['cores'],
                                 priority=1)
             # Constraint on not offloading functions on criticalpath
-            model.add_constr( xsum( [x[i]+self.onCriticalPath(offloadingCandidates[i]) \
-                    for i in range(len(x))] ) <= 1*len(x),
+            model.add_constr( xsum( [x[i]*self.onCriticalPath(offloadingCandidates[i]) \
+                    for i in range(len(x))] ) == 0 ,
                     priority=1)
-            # Constraint on checking slack time for each path
-            for path in self.paths.keys():
-                model.add_constr( xsum( [x[i]*self.checkOnPath(offloadingCandidates[i], path)*self.addedLatency \
-                    for i in range(len(x))] ) <= path,
-                    priority=1)
+
+            # Constraint on checking slack time for each Node
+            for node in range(len(x)):
+                model.add_constr( xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*self.addedLatency \
+                for neighbour in range(len(x))] ) <= self.slacks[offloadingCandidates[node]],
+                priority=1)
 
             # solve
             status = model.optimize(max_seconds=30)
@@ -218,9 +284,10 @@ if __name__ == "__main__":
     mode = "latency"
     # path = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/test/data/Text2SpeechCensoringWorkflow, latency, highPubSubCost.csv"
     # path = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/test/data/Text2SpeechCensoringWorkflow, cost, highCost.csv"
-    solver = Solver(None, workflow, mode)
+    # solver = OffloadingSolver(None, workflow, mode)
+    solver = OffloadingSolver("/Users/ghazal/Desktop/UBC/Research/de-serverlessization/scheduler/test/data/TestWorkflow.csv", "TestWorkflow", mode)
     availResources =  {'cores':1000, 'mem_mb':500000}
     verbose = True
     alpha = 1
-    x = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
-    print(x)
+    # x = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
+    # print(x)

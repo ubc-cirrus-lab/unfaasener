@@ -49,8 +49,8 @@ class slackAnalysis:
         self.slackAnalysisData = {}
         self.pricing_resolution = 100
         self.workflowFunctions = workflowFunctions
-        self.es = {}
         self.NI = NI
+        self.es = {}
         self.ef = {}
         self.ls = {}
         self.lf = {}
@@ -60,7 +60,7 @@ class slackAnalysis:
         self.searchFuns= []
         self.dependencies = []
         self.tasks = {}
-        self.sp = rankerConfig.sp
+        self.statisticalParameter = rankerConfig.statisticalParameter
         self.mode = rankerConfig.mode
         if self.mode == "cost":
             removedCols = []
@@ -70,7 +70,7 @@ class slackAnalysis:
                 elif "Cost" in col:
                     df.rename(columns={col: col.replace(", Cost", "")}, inplace=True)
             self.df = df.drop(columns=removedCols)
-            self.costCalc(self.df, self.sp, workflowFunctions, successors)
+            self.costCalc(self.df, self.statisticalParameter, workflowFunctions, successors)
             # self.memory = memory
         if self.mode == "latency":
             self.durationForCost = {}
@@ -82,7 +82,7 @@ class slackAnalysis:
                 elif "Latency" in col:
                     df.rename(columns={col: col.replace(", Latency", "")}, inplace=True)
             self.df = df.drop(columns=removedCols)
-            self.latencyCalc(self.df, self.sp)
+            self.latencyCalc(self.df, self.statisticalParameter)
             self.duration, self.crPath = self.findCriticalPath(self.tasks, self.dependencies)
             self.completeESEF(self.initial)
             self.completeLSLF(self.duration, self.crPath)
