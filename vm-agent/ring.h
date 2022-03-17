@@ -1,6 +1,7 @@
 #include <vector>
 #include <stdexcept>
-
+// Circular buffer reusing code from
+// https://codereview.stackexchange.com/questions/164148/circular-buffer-c-implementation
 class ring
 {
     static const size_t EMPTY = ~0u;

@@ -5,11 +5,11 @@
 #include <vector>
 #include <memory>
 
-class parser
+class procstatparser
 {
 //    size_t results[2];
 public:
-    parser(size_t* results)
+    procstatparser(size_t* results)
     {
 	results[0] = 0;
 	results[1] = 0;
