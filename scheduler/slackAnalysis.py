@@ -41,7 +41,7 @@ class slackAnalysis:
         # self.finalPaths = {}
         # self.startPaths = []
         # self.endPaths = {}
-        self.pathID = 1
+        # self.pathID = 1
         self.topics = workflow_json["topics"]
         self.successors = successors
         memory = workflow_json["memory"]
@@ -77,7 +77,7 @@ class slackAnalysis:
             removedCols = []
             for col in df.columns:
                 if "Cost" in col:
-                    self.durationForCost[col.replace(", Cost", "")] = df[col].mean()
+                    self.durationForCost[col.replace(", Cost", "")] = df[col].quantile(0.5)
                     removedCols.append(col)
                 elif "Latency" in col:
                     df.rename(columns={col: col.replace(", Latency", "")}, inplace=True)
@@ -96,8 +96,8 @@ class slackAnalysis:
         self.slackAnalysisData["cost"] = [0]*len(self.df.columns)
         self.slackAnalysisData["Memory(GB)"] = [0]*len(self.df.columns)
         self.slackAnalysisData["PubsubMessageSize(Bytes)"] = [0]*len(self.df.columns)
-        self.slackAnalysisData["path"] = [0]*len(self.df.columns)
-        self.slackAnalysisData["NI"] = [self.NI]*(len(self.df.columns))
+        # self.slackAnalysisData["path"] = [0]*len(self.df.columns)
+        # self.slackAnalysisData["NI"] = [self.NI]*(len(self.df.columns))
         pubsubsizeDF = self.getPubsubSize()
 
         if self.mode == "latency" :
@@ -170,14 +170,14 @@ class slackAnalysis:
 
         listFuns = list(self.slackAnalysisData["function"])
         # Change the path algorithm to cover all possible paths
-        self.findPaths()
+        # self.findPaths()
 
-        pathID = 1
-        for key in self.slackPath.keys():
-            print(key)
-            for f in self.slackPath[key]:
-                self.slackAnalysisData["path"][listFuns.index(f)] = pathID
-            pathID +=1
+        # pathID = 1
+        # for key in self.slackPath.keys():
+        #     print(key)
+        #     for f in self.slackPath[key]:
+        #         self.slackAnalysisData["path"][listFuns.index(f)] = pathID
+        #     pathID +=1
         slackDF = pd.DataFrame(self.slackAnalysisData)
         slackDF.to_pickle(os.getcwd()+ "/data/"+self.workflow +", "+self.mode+",slackData.pkl")
         slackDF.to_csv(os.getcwd()+"/data/"+self.workflow +", "+self.mode+",CSV-slackData.csv")
@@ -408,9 +408,9 @@ class slackAnalysis:
 
 
 if __name__ == "__main__":
-    # workflow = "ImageProcessingWorkflow"
+    workflow = "ImageProcessingWorkflow"
 
-    workflow = "Text2SpeechCensoringWorkflow"
+    # workflow = "Text2SpeechCensoringWorkflow"
 
     slackAnalysisObj = slackAnalysis(workflow)
     slackDF = slackAnalysisObj.getSlackDataframe()

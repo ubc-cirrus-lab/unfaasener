@@ -9,12 +9,13 @@ from pathlib import Path
 
 class OffloadingSolver:
 
-    def __init__(self, dataframePath, workflow, mode):
+    def __init__(self, dataframePath, workflow, mode, toleranceWindow):
         self.slacks = {}
         self.terminals = []
         self.allPaths = []
         self.dataframePath = dataframePath
         self.addedLatency = 30
+        self.toleranceWindow = toleranceWindow
         self.GCP_MB2GHz = {128:0.2, 256:0.4, 512:0.8, 1000:1.4, 2000:2.4, 4000:4.8, 8000:4.8}
         if dataframePath == None:
             dataframePath = (os.getcwd()+ "/data/"+workflow +", "+mode+",slackData.pkl")
@@ -72,7 +73,10 @@ class OffloadingSolver:
         Returns 1 ifthe two functions are in the same path
         """
         if self.slacks[self.offloadingCandidates[node]] == 0:
-            return 0
+            if node == neighbour:
+                return 1
+            else:
+                return 0
         else:
             for path in self.allPaths:
                 if (path[node] == 1) and (path[neighbour] == 1):
@@ -243,16 +247,16 @@ class OffloadingSolver:
             model.add_constr( xsum( [x[i]*self.getCPU( self.getMem( offloadingCandidates[i] ) ) \
                                 for i in range(len(x))] ) <= availResources['cores'],
                                 priority=1)
-            # Constraint on not offloading functions on criticalpath
-            model.add_constr( xsum( [x[i]*self.onCriticalPath(offloadingCandidates[i]) \
-                    for i in range(len(x))] ) == 0 ,
-                    priority=1)
 
             # Constraint on checking slack time for each Node
             for node in range(len(x)):
                 model.add_constr( xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*self.addedLatency \
-                for neighbour in range(len(x))] ) <= self.slacks[offloadingCandidates[node]],
+                for neighbour in range(len(x))] ) <= self.slacks[offloadingCandidates[node]] + self.toleranceWindow,
                 priority=1)
+
+            # Constraint on checking the toleranceWindow
+            model.add_constr(xsum( [ (xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*self.addedLatency \
+            for neighbour in range(len(x))] ) - self.slacks[offloadingCandidates[node]]) for node in range(len(x))] )<= self.toleranceWindow, priority=1)
 
             # solve
             status = model.optimize(max_seconds=30)

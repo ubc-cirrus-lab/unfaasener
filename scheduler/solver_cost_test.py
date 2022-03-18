@@ -14,8 +14,9 @@ class TestSolver(unittest.TestCase):
     mode = "cost"
 
     def test_similar2prevdecision(self):
+        toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=None, workflow=self.workflow, mode=self.mode
+            dataframePath=None, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
         alpha = 0
@@ -35,8 +36,9 @@ class TestSolver(unittest.TestCase):
             + "highPubSubCost"
             + ".csv"
         )
+        toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=path, workflow=self.workflow, mode=self.mode
+            dataframePath=path, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
         alpha = 1
@@ -56,8 +58,9 @@ class TestSolver(unittest.TestCase):
             + "highCost"
             + ".csv"
         )
+        toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=path, workflow=self.workflow, mode=self.mode
+            dataframePath=path, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
         alpha = 1
@@ -67,8 +70,9 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
     def test_limitedVMresources(self):
+        toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=None, workflow=self.workflow, mode=self.mode
+            dataframePath=None, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 0, "mem_mb": 0}
         alpha = 1
