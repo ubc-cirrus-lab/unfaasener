@@ -1,4 +1,4 @@
-# mode = "cost"
-# sp = "mean"
-mode = "latency"
-sp = 0.95
+mode = "cost"
+statisticalParameter = 0.5
+# mode = "latency"
+# statisticalParameter = 0.95

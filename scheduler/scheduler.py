@@ -3,10 +3,12 @@ from scipy import rand
 from sympy import N
 import numpy as np
 import math
+import logging
 
 class scheduler:
 
     def __init__(self, windowSize) :
+        logging.basicConfig(filename='logs/scheduler.log', level=logging.INFO)
         self.windowSize = windowSize
         self.lastServerlessCV = 100000
         self.lastVMCV = 100000
@@ -17,8 +19,8 @@ class scheduler:
         # if len(array) < self.windowSize:
         #     return 1
         cv = lambda x: np.std(x) / np.mean(x)
-        print("std: {}".format(np.std(np.array(array))))
-        print("mean: {}".format(np.mean(np.array(array))))
+        logging.info("std: {}".format(np.std(np.array(array))))
+        logging.info("mean: {}".format(np.mean(np.array(array))))
         return cv(array)
 
     def getConfidence(self):
@@ -27,9 +29,9 @@ class scheduler:
         newServerlessCV = self.getCV(self.serverlessObservations[-1*self.windowSize:])
         newVMCV= self.getCV(self.vmObservations[-1*self.windowSize:])
         x = abs(newServerlessCV - self.lastServerlessCV) + abs(newVMCV - self.lastVMCV)
-        print("x:{}".format(x))
-        print("Serverless Last Observations: {},  new CV: {}, old CV: {}".format((self.serverlessObservations[-1*self.windowSize:]), newServerlessCV, self.lastServerlessCV))
-        print("VM Last Observations:{}, new CV: {}, old CV: {}".format((self.vmObservations[-1*self.windowSize:]), newVMCV, self.lastVMCV))
+        logging.info("x:{}".format(x))
+        logging.info("Serverless Last Observations: {},  new CV: {}, old CV: {}".format((self.serverlessObservations[-1*self.windowSize:]), newServerlessCV, self.lastServerlessCV))
+        logging.info("VM Last Observations:{}, new CV: {}, old CV: {}".format((self.vmObservations[-1*self.windowSize:]), newVMCV, self.lastVMCV))
         self.lastServerlessCV = newServerlessCV
         self.lastVMCV = newVMCV
         confidence = math.exp(-1*x)
