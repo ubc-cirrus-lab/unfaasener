@@ -65,10 +65,11 @@ int main(int, char *[]) {
  
 //wait for the next monitor_interval to repreat this cycle
 	usleep(monitor_intervals);
+//communicate the collected prediciton via http
         typedef std::chrono::high_resolution_clock Time;
         typedef std::chrono::microseconds us;
         typedef std::chrono::duration<float> fsec;
-
+//measure the time taken to communicate that prediction via http
         auto t0 = Time::now();
 	com.sendprediction();
         auto t1 = Time::now();
