@@ -8,6 +8,7 @@
 #include <predictor.h>
 #include <procstatparser.h>
 #include <meminfoparser.h>
+#include <communicator.h>
 #include <chrono>
 
 using namespace std;
@@ -19,6 +20,7 @@ int main(int, char *[]) {
     size_t previous_readings[2] = { 0 };
     int monitor_intervals=100000; // 100ms in microseconds
     double prediction_buffer   = 6; //extra buffer for CPU prediction
+    communicator com;
     ring cpu_utilization_buffer(ring_size);
     ring mem_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
@@ -63,6 +65,19 @@ int main(int, char *[]) {
  
 //wait for the next monitor_interval to repreat this cycle
 	usleep(monitor_intervals);
+//communicate the collected prediciton via http
+        typedef std::chrono::high_resolution_clock Time;
+        typedef std::chrono::microseconds us;
+        typedef std::chrono::duration<float> fsec;
+//measure the time taken to communicate that prediction via http
+        auto t0 = Time::now();
+	com.sendprediction();
+        auto t1 = Time::now();
+        fsec fs = t1 - t0;
+        us d = std::chrono::duration_cast<us>(fs);
+        std::cout <<"Time taken to transmit the prediction "<< d.count() << "us\n";
+        std::cout <<"#####################################################\n";
+
 	
 
 
