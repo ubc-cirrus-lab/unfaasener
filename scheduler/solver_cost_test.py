@@ -16,7 +16,7 @@ class TestSolver(unittest.TestCase):
     def test_similar2prevdecision(self):
         toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=None, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
+            dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
         alpha = 0
@@ -38,7 +38,7 @@ class TestSolver(unittest.TestCase):
         )
         toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=path, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
+            dataframePath=path, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
         alpha = 1
@@ -60,7 +60,7 @@ class TestSolver(unittest.TestCase):
         )
         toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=path, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
+            dataframePath=path, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
         alpha = 1
@@ -72,7 +72,7 @@ class TestSolver(unittest.TestCase):
     def test_limitedVMresources(self):
         toleranceWindow = 0
         solver = OffloadingSolver(
-            dataframePath=None, workflow=self.workflow, mode=self.mode, toleranceWindow=toleranceWindow
+            dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 0, "mem_mb": 0}
         alpha = 1

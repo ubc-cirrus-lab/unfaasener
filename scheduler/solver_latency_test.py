@@ -6,6 +6,7 @@ import os
 import json
 import pandas as pd
 from pathlib import Path
+from CIScheduler import CIScheduler
 
 class TestSolver(unittest.TestCase):
     mode = "latency"
@@ -20,7 +21,7 @@ class TestSolver(unittest.TestCase):
             json.dump(workflow_json, json_file)
         workflow = "Text2SpeechCensoringWorkflow"
         toleranceWindow = 0
-        solver = OffloadingSolver(None,workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(None, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 0
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
@@ -31,7 +32,7 @@ class TestSolver(unittest.TestCase):
         workflow = "Text2SpeechCensoringWorkflow"
         path  = os.getcwd()+ "/test/data/"+workflow +", "+self.mode+","+"highCost"+".csv"
         toleranceWindow = 0
-        solver = OffloadingSolver(path, workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(path, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 1
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
@@ -43,7 +44,7 @@ class TestSolver(unittest.TestCase):
         workflow = "Text2SpeechCensoringWorkflow"
         path = os.getcwd()+ "/test/data/"+workflow +", "+self.mode+", "+"highPubSubCost"+".csv"
         toleranceWindow = 0
-        solver = OffloadingSolver(path, workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(path, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 1
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
@@ -53,7 +54,7 @@ class TestSolver(unittest.TestCase):
     def test_limitedVMresources(self):
         workflow = "Text2SpeechCensoringWorkflow"
         toleranceWindow = 0
-        solver = OffloadingSolver(None, workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(None, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':0, 'mem_mb':0}
         alpha = 1
 
@@ -65,13 +66,14 @@ class TestSolver(unittest.TestCase):
         workflow = "TestWorkflow"
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "TestWorkflow"+".json"
         path = os.getcwd()+ "/test/data/"+workflow +", SameSlackForPaths.csv"
+        vmPath = os.getcwd()+ "/test/data/"+"VM-"+workflow +", SameSlackForPaths.csv"
         with open(jsonPath, 'r') as json_file:
             workflow_json = json.load(json_file)
         workflow_json["lastDecision"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         with open(jsonPath, 'w') as json_file:
             json.dump(workflow_json, json_file)
         toleranceWindow = 0
-        solver = OffloadingSolver(path,workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(path,vmPath, workflow, self.mode,  None,toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 1
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
@@ -84,11 +86,12 @@ class TestSolver(unittest.TestCase):
         path = os.getcwd()+ "/test/data/"+workflow +".csv"
         with open(jsonPath, 'r') as json_file:
             workflow_json = json.load(json_file)
+        vmPath = os.getcwd()+ "/test/data/"+"VM-"+workflow +".csv"
         workflow_json["lastDecision"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         with open(jsonPath, 'w') as json_file:
             json.dump(workflow_json, json_file)
         toleranceWindow = 0
-        solver = OffloadingSolver(path,workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(path,vmPath, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 1
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
@@ -99,13 +102,14 @@ class TestSolver(unittest.TestCase):
         workflow = "TestWorkflow"
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "TestWorkflow"+".json"
         path = os.getcwd()+ "/test/data/"+workflow +".csv"
+        vmPath = os.getcwd()+ "/test/data/"+"VM-"+workflow +".csv"
         with open(jsonPath, 'r') as json_file:
             workflow_json = json.load(json_file)
         workflow_json["lastDecision"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         with open(jsonPath, 'w') as json_file:
             json.dump(workflow_json, json_file)
         toleranceWindow = 30
-        solver = OffloadingSolver(path,workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(path,vmPath, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 1
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
@@ -116,11 +120,21 @@ class TestSolver(unittest.TestCase):
         workflow = "Text2SpeechCensoringWorkflow"
         path  = os.getcwd()+ "/test/data/"+workflow +", "+self.mode+","+"highCost"+".csv"
         toleranceWindow = 1000000
-        solver = OffloadingSolver(path, workflow, self.mode, toleranceWindow)
+        solver = OffloadingSolver(path, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
         alpha = 1
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
         self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+
+    def test_confidenctInterval(self):
+        workflow = "TestWorkflow"
+        mode = "latency"
+        toleranceWindow = 0
+        solver = CIScheduler(workflow, mode,toleranceWindow)
+        availResources =  {'cores':1000, 'mem_mb':500000}
+        alpha = 1
+        x = solver.suggestBestOffloadingSingleVM(availResources, alpha)
+        self.assertEqual(x, [0.0, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333, 0.9, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 0.3333333333333333])
 
 
 

@@ -1,4 +1,5 @@
-mode = "cost"
+# mode = "cost"
 statisticalParameter = 0.5
-# mode = "latency"
+decisionMode = ["best-case", "worst-case", "default"]
+mode = "latency"
 # statisticalParameter = 0.95

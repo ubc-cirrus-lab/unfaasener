@@ -20,7 +20,7 @@ import rankerConfig
 
 class slackAnalysis:
 
-    def __init__(self, workflow):
+    def __init__(self, workflow, decisionMode):
         self.workflow = workflow
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
         dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedData.pkl"
@@ -62,6 +62,7 @@ class slackAnalysis:
         self.tasks = {}
         self.statisticalParameter = rankerConfig.statisticalParameter
         self.mode = rankerConfig.mode
+        self.decisionMode = decisionMode
         if self.mode == "cost":
             removedCols = []
             for col in df.columns:
@@ -70,24 +71,51 @@ class slackAnalysis:
                 elif "Cost" in col:
                     df.rename(columns={col: col.replace(", Cost", "")}, inplace=True)
             self.df = df.drop(columns=removedCols)
-            self.costCalc(self.df, self.statisticalParameter, workflowFunctions, successors)
+            self.costCalc(self.df, workflowFunctions, successors)
             # self.memory = memory
         if self.mode == "latency":
             self.durationForCost = {}
+  
             removedCols = []
             for col in df.columns:
                 if "Cost" in col:
-                    self.durationForCost[col.replace(", Cost", "")] = df[col].quantile(0.5)
+                    if self.decisionMode == "best-case":
+                        self.durationForCost[col.replace(", Cost", "")] = self.getUpperBound(df[col]) 
+                    elif self.decisionMode == "worst-case":
+                        self.durationForCost[col.replace(", Cost", "")] = self.getLowerBound(df[col]) 
+                    elif self.decisionMode == "defualt" :
+                        self.durationForCost[col.replace(", Cost", "")] = self.getMedian(df[col])
+                    else:
+                        self.durationForCost[col.replace(", Cost", "")] = self.getMedian(df[col])    
                     removedCols.append(col)
                 elif "Latency" in col:
                     df.rename(columns={col: col.replace(", Latency", "")}, inplace=True)
             self.df = df.drop(columns=removedCols)
-            self.latencyCalc(self.df, self.statisticalParameter)
+            self.latencyCalc(self.df)
             self.duration, self.crPath = self.findCriticalPath(self.tasks, self.dependencies)
             self.completeESEF(self.initial)
             self.completeLSLF(self.duration, self.crPath)
         # self.getSlackDataframe()
         
+    def getUpperBound(self, array):
+        n = len(array)
+        sortedArray = np.sort(array)
+        z = 1.96
+        index = int(np.ceil(1 + ((n + (z * (np.sqrt(n)) ) )/2)) )
+        upperBound = sortedArray[index]
+        return upperBound
+
+    def getMedian(self, array):
+        median = array.quantile(0.5)
+        return median
+
+    def getLowerBound(self, array):
+        n = len(array)
+        sortedArray = np.sort(array)
+        z = 1.96
+        index = int(np.floor((n - (z * (np.sqrt(n)) ) )/2) )
+        lowerBound = sortedArray[index]
+        return lowerBound
         
     def getSlackDataframe(self):
         
@@ -179,8 +207,8 @@ class slackAnalysis:
         #         self.slackAnalysisData["path"][listFuns.index(f)] = pathID
         #     pathID +=1
         slackDF = pd.DataFrame(self.slackAnalysisData)
-        slackDF.to_pickle(os.getcwd()+ "/data/"+self.workflow +", "+self.mode+",slackData.pkl")
-        slackDF.to_csv(os.getcwd()+"/data/"+self.workflow +", "+self.mode+",CSV-slackData.csv")
+        slackDF.to_pickle(os.getcwd()+ "/data/"+self.workflow +", "+self.mode+", "+self.decisionMode+",slackData.pkl")
+        slackDF.to_csv(os.getcwd()+"/data/"+self.workflow +", "+self.mode+", "+self.decisionMode+",CSV-slackData.csv")
         return slackDF
 
 
@@ -230,16 +258,25 @@ class slackAnalysis:
 
 
 
-    def costCalc(self, df, sp, workflowFunctions, successors):
+    def costCalc(self, df, workflowFunctions, successors):
         # df = df[workflowFunctions]
         self.df = df
         for col in df.columns:
             # self.tasks[col] = df[col]
-            if sp == "mean":
-                self.tasks[col] = df[col].mean()
+            # if sp == "mean":
+            #     self.tasks[col] = df[col].mean()
                 
+            # else:
+            #     self.tasks[col] = df[col].quantile(sp)
+
+            if self.decisionMode == "best-case":
+                self.tasks[col] = self.getUpperBound(df[col]) 
+            elif self.decisionMode == "worst-case":
+                self.tasks[col] = self.getLowerBound(df[col]) 
+            elif self.decisionMode == "defualt" :
+                self.tasks[col] = self.getMedian(df[col])
             else:
-                self.tasks[col] = df[col].quantile(sp)
+                self.tasks[col] = self.getMedian(df[col])  
 
         functionTasks = workflowFunctions
         for func in workflowFunctions:
@@ -301,12 +338,20 @@ class slackAnalysis:
                     terminals.append(d[0])     
     
 
-    def latencyCalc(self, df, sp):
+    def latencyCalc(self, df):
         for col in df.columns:
-            if sp == "mean":
-                self.tasks[col] = df[col].mean()
+            # if sp == "mean":
+            #     self.tasks[col] = df[col].mean()
+            # else:
+            #     self.tasks[col] = df[col].quantile(sp)
+            if self.decisionMode == "best-case":
+                self.tasks[col] = self.getUpperBound(df[col]) 
+            elif self.decisionMode == "worst-case":
+                self.tasks[col] = self.getLowerBound(df[col]) 
+            elif self.decisionMode == "defualt" :
+                self.tasks[col] = self.getMedian(df[col])
             else:
-                self.tasks[col] = df[col].quantile(sp)
+                self.tasks[col] = self.getMedian(df[col])    
 
         functionTasks = list(df.columns)
         for func in functionTasks:
@@ -409,12 +454,12 @@ class slackAnalysis:
 
 if __name__ == "__main__":
     workflow = "ImageProcessingWorkflow"
-
+    decisionModes = rankerConfig.decisionMode
     # workflow = "Text2SpeechCensoringWorkflow"
-
-    slackAnalysisObj = slackAnalysis(workflow)
-    slackDF = slackAnalysisObj.getSlackDataframe()
-    print(slackDF)
+    for decisionMode in decisionModes:
+        slackAnalysisObj = slackAnalysis(workflow, decisionMode)
+        slackDF = slackAnalysisObj.getSlackDataframe()
+        print(slackDF)
 
 
 

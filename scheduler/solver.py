@@ -9,27 +9,47 @@ from pathlib import Path
 
 class OffloadingSolver:
 
-    def __init__(self, dataframePath, workflow, mode, toleranceWindow):
+    def __init__(self, dataframePath, vmDataframePath, workflow, mode, decisionMode, toleranceWindow):
+###############################
+        self.baseLatencyVM = 1
+        self.baseLatencyServerless = 1
+        self.thVM = 1
+        self.thServerless = 1
+###############################
+        self.VMdataframe = None
         self.slacks = {}
         self.terminals = []
         self.allPaths = []
         self.dataframePath = dataframePath
+        self.decisionMode = decisionMode
+        if self.decisionMode == None:
+             self.decisionMode = "default"
         self.addedLatency = 30
         self.toleranceWindow = toleranceWindow
         self.GCP_MB2GHz = {128:0.2, 256:0.4, 512:0.8, 1000:1.4, 2000:2.4, 4000:4.8, 8000:4.8}
         if dataframePath == None:
-            dataframePath = (os.getcwd()+ "/data/"+workflow +", "+mode+",slackData.pkl")
+            dataframePath = (os.getcwd()+ "/data/"+workflow +", "+mode+", "+self.decisionMode+",CSV-slackData.csv")
         self.jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + workflow+".json"
         if dataframePath.endswith(".pkl"):
             self.dataframe = pd.read_pickle(dataframePath)
         elif dataframePath.endswith(".csv"):
             self.dataframe = pd.read_csv(dataframePath)
+
+        if vmDataframePath == None:
+            vmDataframePath = (os.getcwd()+ "/data/"+"VM,"+workflow +", "+mode+", "+self.decisionMode+",CSV-slackData.csv")
+        if vmDataframePath.endswith(".pkl"):
+            self.VMdataframe = pd.read_pickle(vmDataframePath)
+        elif vmDataframePath.endswith(".csv"):
+            self.VMdataframe = pd.read_csv(vmDataframePath)
+
+
         with open(self.jsonPath, 'r') as json_file:
             self.workflow_json = json.load(json_file)
         self.optimizationMode = mode
         self.offloadingCandidates = self.workflow_json["workflowFunctions"]
         self.lastDecision = self.workflow_json["lastDecision"]
         self.successors = self.workflow_json["successors"]
+        self.predecessors = self.workflow_json["predecessors"]
         self.initial = self.workflow_json["initFunc"]
         self.paths = {}
    
@@ -90,6 +110,25 @@ class OffloadingSolver:
         """
         for func in self.offloadingCandidates:
             self.slacks[func] = (self.dataframe.loc[self.dataframe['function'] == func, 'slackTime'].item())
+
+    # Function for added execution time by offloading a function to VM
+    def addedExecLatency(self, offloadingCandidate):
+        """
+        Returns estimated added execution time which is caused by offloading a serverless function to VM
+        """
+        serverless = self.dataframe.loc[self.dataframe['function'] == offloadingCandidate, 'duration'].item()
+        vm = self.VMdataframe.loc[self.VMdataframe['function'] == offloadingCandidate, 'duration'].item()
+        diff = vm - serverless
+        return diff
+
+    # Function for added end-to-end latency by offloading a function to VM
+    def addedComLatency(self, parent, child):
+        """
+        Returns estimated added end-to-end latency by offloading a function to VM
+        """
+        msgSize = float(self.dataframe.loc[self.dataframe['function'] == (child+"-"+parent), 'PubsubMessageSize(Bytes)'].item())
+        latency = (self.baseLatencyVM - self.baseLatencyServerless) + msgSize*((1/self.thVM) - (1/self.thServerless))
+        return latency
 
 
     # Function for getting Paths with the same slack time
@@ -163,7 +202,27 @@ class OffloadingSolver:
         else:
             return -1
 
+
+    def customizedFunc(self, first, second):
+        if first == 1 :
+            if second == 0:
+                return 1
+            else:
+                return 0
+        else:
+            return 0
+            
     def getChildIndexes(self, offloadingCandidate):
+        """
+        Returns indexes for the children of a function based on sucessors
+        """
+        childrenIndexes = []
+        children = self.successors[ self.offloadingCandidates.index(offloadingCandidate) ]
+        for child in children:
+            childrenIndexes.append(self.offloadingCandidates.index(child))
+        return  childrenIndexes
+
+    def getParentIndexes(self, offloadingCandidate):
         """
         Returns indexes for the children of a function based on sucessors
         """
@@ -179,6 +238,8 @@ class OffloadingSolver:
         """
         cost = (self.dataframe.loc[self.dataframe['function'] == (offloadingCandidate+"-"+child), 'cost'].item())
         return cost
+
+
 
     def suggestBestOffloadingSingleVM(self, availResources, alpha, verbose):
         """
@@ -250,12 +311,12 @@ class OffloadingSolver:
 
             # Constraint on checking slack time for each Node
             for node in range(len(x)):
-                model.add_constr( xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*self.addedLatency \
+                model.add_constr( xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*((self.addedExecLatency(offloadingCandidates[neighbour])) )+ (self.checkNeighbour(node, neighbour)*(xsum([(x[neighbour] - x[j])*self.customizedFunc(x[neighbour], x[j])*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[neighbour])) for j in self.getParentIndexes(offloadingCandidates[neighbour])])) )\
                 for neighbour in range(len(x))] ) <= self.slacks[offloadingCandidates[node]] + self.toleranceWindow,
                 priority=1)
 
             # Constraint on checking the toleranceWindow
-            model.add_constr(xsum( [ (xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*self.addedLatency \
+            model.add_constr(xsum( [ (xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*((self.addedExecLatency(offloadingCandidates[neighbour])) )+ (self.checkNeighbour(node, neighbour)*(xsum([(x[neighbour] - x[j])*self.customizedFunc(x[neighbour], x[j])*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[neighbour])) for j in self.getParentIndexes(offloadingCandidates[neighbour])])) ) \
             for neighbour in range(len(x))] ) - self.slacks[offloadingCandidates[node]]) for node in range(len(x))] )<= self.toleranceWindow, priority=1)
 
             # solve
@@ -269,7 +330,7 @@ class OffloadingSolver:
             return [0 for i in range(len(offloadingCandidates))]
 
         offloadingDecisions = [x[i].x for i in range(len(x))]
-        self.saveNewDecision(offloadingDecisions)
+        # self.saveNewDecision(offloadingDecisions)
 
         return offloadingDecisions
 
@@ -289,9 +350,10 @@ if __name__ == "__main__":
     # path = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/test/data/Text2SpeechCensoringWorkflow, latency, highPubSubCost.csv"
     # path = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/test/data/Text2SpeechCensoringWorkflow, cost, highCost.csv"
     # solver = OffloadingSolver(None, workflow, mode)
-    solver = OffloadingSolver("/Users/ghazal/Desktop/UBC/Research/de-serverlessization/scheduler/test/data/TestWorkflow.csv", "TestWorkflow", mode)
+    toleranceWindow = 0
+    solver = OffloadingSolver(None,None, workflow, mode, None, toleranceWindow)
     availResources =  {'cores':1000, 'mem_mb':500000}
     verbose = True
     alpha = 1
-    # x = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
-    # print(x)
+    x = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
+    print(x)
