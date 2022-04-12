@@ -6,10 +6,10 @@
 4,2.9e-06,2,-,1981.0,1981.0,2400.0,2400.0,0.0,419.0,Text2SpeechCensoringWorkflow_Compression
 5,9.12e-07,0.256,-,3507.0,3507.0,4239.0,4239.0,0.0,732.0,Text2SpeechCensoringWorkflow_Censor
 6,5.92e-07,0.256,-,2401.0,2401.0,2517.0,2517.0,0.0,116.0,Text2SpeechCensoringWorkflow_MergedFunction
-7,3.725290298461914e-08,-,521.1931197452097,32.0,1845.0,33.0,1846.0,1813.0,1.0,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Profanity
-8,3.725290298461914e-08,-,521.7547131380776,32.0,32.0,1027.0,1027.0,0.0,995.0,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Text2Speech
+7,3.725290298461914e-08,-,465.1401250526931,32.0,1845.0,33.0,1846.0,1813.0,1.0,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Profanity
+8,3.725290298461914e-08,-,464.8046209208707,32.0,32.0,1027.0,1027.0,0.0,995.0,Text2SpeechCensoringWorkflow_GetInput-Text2SpeechCensoringWorkflow_Text2Speech
 9,3.725290298461914e-08,-,331.6621734166118,55.0,1868.0,588.0,2401.0,1813.0,533.0,Text2SpeechCensoringWorkflow_Profanity-Text2SpeechCensoringWorkflow_MergedFunction
-10,3.725290298461914e-08,-,269.2255863351568,1618.0,1618.0,1621.0,1621.0,0.0,3.0,Text2SpeechCensoringWorkflow_Text2Speech-Text2SpeechCensoringWorkflow_Conversion
-11,3.725290298461914e-08,-,253.1764705882353,1980.0,1980.0,1981.0,1981.0,0.0,1.0,Text2SpeechCensoringWorkflow_Conversion-Text2SpeechCensoringWorkflow_Compression
+10,3.725290298461914e-08,-,268.95660810605716,1618.0,1618.0,1621.0,1621.0,0.0,3.0,Text2SpeechCensoringWorkflow_Text2Speech-Text2SpeechCensoringWorkflow_Conversion
+11,3.725290298461914e-08,-,279.97765177299806,1980.0,1980.0,1981.0,1981.0,0.0,1.0,Text2SpeechCensoringWorkflow_Conversion-Text2SpeechCensoringWorkflow_Compression
 12,3.725290298461914e-08,-,331.6621734166118,2400.0,2400.0,2401.0,2401.0,0.0,1.0,Text2SpeechCensoringWorkflow_Compression-Text2SpeechCensoringWorkflow_MergedFunction
-13,3.725290298461914e-08,-,339.2794333086783,2517.0,2517.0,3507.0,3507.0,0.0,990.0,Text2SpeechCensoringWorkflow_MergedFunction-Text2SpeechCensoringWorkflow_Censor
+13,3.725290298461914e-08,-,328.8776399926972,2517.0,2517.0,3507.0,3507.0,0.0,990.0,Text2SpeechCensoringWorkflow_MergedFunction-Text2SpeechCensoringWorkflow_Censor

@@ -5,26 +5,29 @@ import os
 import json
 import pandas as pd
 from pathlib import Path
+from LatencyModel import LatencyModel
+import math
 
 
 class OffloadingSolver:
 
     def __init__(self, dataframePath, vmDataframePath, workflow, mode, decisionMode, toleranceWindow):
 ###############################
-        self.baseLatencyVM = 1
-        self.baseLatencyServerless = 1
-        self.thVM = 1
-        self.thServerless = 1
+        # self.baseLatencyVM = 1
+        # self.baseLatencyServerless = 1
+        # self.thVM = 1
+        # self.thServerless = 1
 ###############################
+        # print("XXX", workflow)
         self.VMdataframe = None
         self.slacks = {}
         self.terminals = []
         self.allPaths = []
+        self.allPathsSlack = {}
         self.dataframePath = dataframePath
         self.decisionMode = decisionMode
         if self.decisionMode == None:
              self.decisionMode = "default"
-        self.addedLatency = 30
         self.toleranceWindow = toleranceWindow
         self.GCP_MB2GHz = {128:0.2, 256:0.4, 512:0.8, 1000:1.4, 2000:2.4, 4000:4.8, 8000:4.8}
         if dataframePath == None:
@@ -86,7 +89,23 @@ class OffloadingSolver:
 
 
 
+    # Function for getting Paths with the same slack time
+    def getPaths(self):
+        """
+        Returns a list of dictionaries, showing slacktime as the key and a list of binary values showing if a function belongs to that path or not
+        """
+        for func in self.offloadingCandidates:
+            slack = (self.dataframe.loc[self.dataframe['function'] == func, 'slackTime'].item())
+            if slack in self.paths.keys():
+                self.paths[slack][self.offloadingCandidates.index(func)]  = 1
+            else:
+                self.paths[slack] = [0]*len(self.offloadingCandidates)
+                self.paths[slack][self.offloadingCandidates.index(func)]  = 1
+
+
+
     def checkNeighbour(self, node, neighbour):
+        
         """
         - node, neighbour: nodes to be checked
         Returns 0 if the two functions are not in the same path
@@ -95,6 +114,8 @@ class OffloadingSolver:
         if self.slacks[self.offloadingCandidates[node]] == 0:
             if node == neighbour:
                 return 1
+            # if self.slacks[self.offloadingCandidates[neighbour]] == 0:
+            #     return 1
             else:
                 return 0
         else:
@@ -111,6 +132,61 @@ class OffloadingSolver:
         for func in self.offloadingCandidates:
             self.slacks[func] = (self.dataframe.loc[self.dataframe['function'] == func, 'slackTime'].item())
 
+
+    def getDuration(self, func):
+        """
+        Returns estimated slack time for each function based on the dataframe
+        """
+        duration = (self.dataframe.loc[self.dataframe['function'] == func, 'duration'].item())
+        return duration
+
+    def getCriticalPathDuration(self):
+        cpNodes = []
+        comNodes= []
+        duration = 0
+
+        for offloadingCandidate in self.offloadingCandidates:
+            if (self.paths[0][ self.offloadingCandidates.index(offloadingCandidate) ] == 1):
+                cpNodes.append(offloadingCandidate)
+        for s in cpNodes:
+            for child in self.successors[self.offloadingCandidates.index(s)]:
+                if child in cpNodes:
+                    comNodes.append(s+"-"+child)
+                    
+        # for i in range(len(cpNodes)-2):
+        #     comNodes.append(cpNodes[i]+"-"+cpNodes[i+1])
+
+        cpNodes = cpNodes + comNodes
+        for node in cpNodes:
+             duration += self.getDuration(node)
+        return duration
+
+    def getSlackForPath(self):
+        for path in self.allPaths:
+            nodes = []
+            comNodes= []
+            duration = 0
+            for offloadingCandidate in self.offloadingCandidates:
+                if (path[ self.offloadingCandidates.index(offloadingCandidate) ] == 1):
+                    nodes.append(offloadingCandidate)
+            # for i in range(len(nodes)-2):
+            #     comNodes.append(nodes[i]+"-"+nodes[i+1])
+            for s in nodes:
+                for child in self.successors[self.offloadingCandidates.index(s)]:
+                    if child in nodes:
+                        comNodes.append(s+"-"+child)
+
+            nodes = nodes + comNodes
+            for node in nodes:
+                duration += self.getDuration(node)
+            self.allPathsSlack[duration] = path
+
+
+
+
+
+
+
     # Function for added execution time by offloading a function to VM
     def addedExecLatency(self, offloadingCandidate):
         """
@@ -119,30 +195,25 @@ class OffloadingSolver:
         serverless = self.dataframe.loc[self.dataframe['function'] == offloadingCandidate, 'duration'].item()
         vm = self.VMdataframe.loc[self.VMdataframe['function'] == offloadingCandidate, 'duration'].item()
         diff = vm - serverless
+        # print("GGHHHF:::", offloadingCandidate, ">>>>>",diff)
         return diff
+
 
     # Function for added end-to-end latency by offloading a function to VM
     def addedComLatency(self, parent, child):
         """
         Returns estimated added end-to-end latency by offloading a function to VM
         """
-        msgSize = float(self.dataframe.loc[self.dataframe['function'] == (child+"-"+parent), 'PubsubMessageSize(Bytes)'].item())
-        latency = (self.baseLatencyVM - self.baseLatencyServerless) + msgSize*((1/self.thVM) - (1/self.thServerless))
+        latencyModel = LatencyModel()
+        msgSize = float(self.dataframe.loc[self.dataframe['function'] == (parent+"-"+child), 'PubsubMessageSize(Bytes)'].item())
+        latency = latencyModel.getLinearAddedLatency(msgSize)
+        # print("LATTTT::::",latency,">>>>>",parent,">>> TO >>",child)
         return latency
+        
 
 
-    # Function for getting Paths with the same slack time
-    def getPaths(self):
-        """
-        Returns a list of dictionaries, showing slacktime as the key and a list of binary values showing if a function belongs to that path or not
-        """
-        for func in self.offloadingCandidates:
-            slack = (self.dataframe.loc[self.dataframe['function'] == func, 'slackTime'].item())
-            if slack in self.paths.keys():
-                self.paths[slack][self.offloadingCandidates.index(func)]  = 1
-            else:
-                self.paths[slack] = [0]*len(self.offloadingCandidates)
-                self.paths[slack][self.offloadingCandidates.index(func)]  = 1
+
+
 
     def getMem(self, offloadingCandidate):
         """
@@ -202,16 +273,19 @@ class OffloadingSolver:
         else:
             return -1
 
+    def customized(self, first, second):
+        if (first == 1) and (second == 1):
+            return 0
+        else:
+            return 1
 
     def customizedFunc(self, first, second):
-        if first == 1 :
-            if second == 0:
-                return 1
-            else:
-                return 0
+        if ((first == 1) and (second == 0)):
+            print("I'm here")
+            return 1
         else:
             return 0
-            
+
     def getChildIndexes(self, offloadingCandidate):
         """
         Returns indexes for the children of a function based on sucessors
@@ -224,13 +298,14 @@ class OffloadingSolver:
 
     def getParentIndexes(self, offloadingCandidate):
         """
-        Returns indexes for the children of a function based on sucessors
+        Returns indexes for the parents of a function based on sucessors
         """
-        childrenIndexes = []
-        children = self.successors[ self.offloadingCandidates.index(offloadingCandidate) ]
-        for child in children:
-            childrenIndexes.append(self.offloadingCandidates.index(child))
-        return  childrenIndexes
+        parentIndexes = []
+        parents = self.predecessors[ self.offloadingCandidates.index(offloadingCandidate) ]
+        for parent in parents:
+            parentIndexes.append(self.offloadingCandidates.index(parent))
+            # print("P->CC>>>", parent, offloadingCandidate)
+        return  parentIndexes
 
     def GetPubsubCost(self, offloadingCandidate, child):
         """
@@ -257,9 +332,9 @@ class OffloadingSolver:
             x = [model.add_var(name=s, var_type=BINARY) for s in offloadingCandidates]
 
             # optimization goal
-            model.objective = xsum( [1000*alpha*(1 - x[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
-                                    xsum([1000*alpha*(x[i] - x[j])*self.cutomizedAbs(x[j])*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])]) + \
-                                (1 - alpha)*((x[i] - (self.IsOffloaded(offloadingCandidates[i])) )*self.cutomizedAbs(self.IsOffloaded(offloadingCandidates[i]))) \
+            model.objective = xsum( [(1000*alpha*(1 - x[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) )+ \
+                                    (xsum([1000*alpha*self.customized(x[i], x[j])*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])]) )+ \
+                                ((1 - alpha)*((x[i] - (self.IsOffloaded(offloadingCandidates[i])) )*self.cutomizedAbs(self.IsOffloaded(offloadingCandidates[i])))) \
                                     for i in range(len(x))] )
 
            
@@ -288,13 +363,17 @@ class OffloadingSolver:
             self.getSlacks()
             self.getPaths()
             self.getAllPaths()
+            self.getSlackForPath()
             model = Model(sense=MINIMIZE, solver_name=CBC)
             # List of functions as the variables
             x = [model.add_var(var_type=BINARY, name = s) for s in offloadingCandidates]
+            # mult = [[model.add_var('x({},{})'.format(node, parent), var_type=BINARY)
+            # for parent in offloadingCandidates] for node in offloadingCandidates]
+
             
             # optimization goal
             model.objective = xsum( [1000*alpha*(1 - x[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
-                                    xsum([1000*alpha*(x[i] - x[j])*self.cutomizedAbs(x[j])*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])]) + \
+                                    xsum([1000*alpha*(2-(x[i]+x[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])]) + \
                                 (1 - alpha)*((x[i] - (self.IsOffloaded(offloadingCandidates[i])) )*self.cutomizedAbs(self.IsOffloaded(offloadingCandidates[i]))) \
                                     for i in range(len(x))] )
             # Constraint for showing the first Function should run as serverless
@@ -309,15 +388,29 @@ class OffloadingSolver:
                                 for i in range(len(x))] ) <= availResources['cores'],
                                 priority=1)
 
+
+            
+            # for node in range(len(x)):
+            #     for parent in range(len(x)):
+            #         model.add_constr(mult[node][parent] <= x[node], priority=1 )
+            #         model.add_constr(mult[node][parent] <= x[node] - x[parent], priority=1 )
+            #         model.add_constr(mult[node][parent] >= (x[node] + x[node] - x[parent] - 1), priority=1 )
+
+            
             # Constraint on checking slack time for each Node
-            for node in range(len(x)):
-                model.add_constr( xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*((self.addedExecLatency(offloadingCandidates[neighbour])) )+ (self.checkNeighbour(node, neighbour)*(xsum([(x[neighbour] - x[j])*self.customizedFunc(x[neighbour], x[j])*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[neighbour])) for j in self.getParentIndexes(offloadingCandidates[neighbour])])) )\
-                for neighbour in range(len(x))] ) <= self.slacks[offloadingCandidates[node]] + self.toleranceWindow,
-                priority=1)
+            for path in self.allPathsSlack:
+                model.add_constr( xsum([( (x[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((xsum([((self.allPathsSlack[path])[node])*(x[node]*(x[node] - x[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])]))) )for node in range(len(x))]) <= ((self.getCriticalPathDuration() - path) + self.toleranceWindow),priority=1)
+
 
             # Constraint on checking the toleranceWindow
-            model.add_constr(xsum( [ (xsum( [x[neighbour]*self.checkNeighbour(node, neighbour)*((self.addedExecLatency(offloadingCandidates[neighbour])) )+ (self.checkNeighbour(node, neighbour)*(xsum([(x[neighbour] - x[j])*self.customizedFunc(x[neighbour], x[j])*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[neighbour])) for j in self.getParentIndexes(offloadingCandidates[neighbour])])) ) \
-            for neighbour in range(len(x))] ) - self.slacks[offloadingCandidates[node]]) for node in range(len(x))] )<= self.toleranceWindow, priority=1)
+            model.add_constr( xsum([ (xsum([ ((x[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((xsum([((self.allPathsSlack[path])[node])*(x[node]*(x[node] - x[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(x))]) - (self.getCriticalPathDuration() - path))  for path in self.allPathsSlack])  <= self.toleranceWindow ,priority=1)
+            # int((1*(x[node]-x[j])+1)/2)
+
+
+            
+
+
+
 
             # solve
             status = model.optimize(max_seconds=30)
@@ -330,9 +423,16 @@ class OffloadingSolver:
             return [0 for i in range(len(offloadingCandidates))]
 
         offloadingDecisions = [x[i].x for i in range(len(x))]
+        # cost = model.objective_value
         # self.saveNewDecision(offloadingDecisions)
 
-        return offloadingDecisions
+        # cost for workflow
+        # cost = sum( [(1 - x[i].x)*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
+        #                             xsum([(x[i].x - x[j].x)*self.cutomizedAbs(x[j].x)*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])  \
+        #                             for i in range(len(x))] )
+        cost = "test"
+
+        return offloadingDecisions,cost 
 
     # Saving new decisions in the Json file assigned to each workflow
     def saveNewDecision(self, offloadingDecisions):

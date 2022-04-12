@@ -1,5 +1,5 @@
 import unittest
-from solver import OffloadingSolver
+from MINLPSolver import OffloadingSolver
 from tabnanny import verbose
 from mip import *
 import os
@@ -19,8 +19,8 @@ class TestSolver(unittest.TestCase):
             dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
-        alpha = 0
-        x = solver.suggestBestOffloadingSingleVM(
+        alpha = 1
+        x, _ = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
         self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -41,8 +41,8 @@ class TestSolver(unittest.TestCase):
             dataframePath=path, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(
+        alpha = 0
+        x, _ = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
         self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
@@ -63,8 +63,8 @@ class TestSolver(unittest.TestCase):
             dataframePath=path, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 1000, "mem_mb": 500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(
+        alpha = 0
+        x, _ = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
         self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
@@ -75,8 +75,8 @@ class TestSolver(unittest.TestCase):
             dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
         availResources = {"cores": 0, "mem_mb": 0}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(
+        alpha = 0
+        x, _ = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
         self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])

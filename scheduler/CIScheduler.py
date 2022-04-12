@@ -1,5 +1,5 @@
 
-from solver import OffloadingSolver
+from MINLPSolver import OffloadingSolver
 import rankerConfig
 import time
 
@@ -19,9 +19,10 @@ class CIScheduler:
         decisions = []
         for decisionMode in self.decisionModes:
             solver = OffloadingSolver(None,None, self.workflow, self.mode,decisionMode, self.toleranceWindow)
-            x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+            x, cost, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
             decisions.append(x)
             print("Mode: {}, Decision: {}".format(decisionMode, x))
+            print("Mode: {}, Cost: {}".format(decisionMode, cost))
 
     
         finalDecision = [0]*len(decisions[0])
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     # workflow = "ImageProcessingWorkflow"
     start_time = time.time()
     workflow = "TestWorkflow"
+    # workflow = "Text2SpeechCensoringWorkflow"
     mode = "latency"
     toleranceWindow = 0
     solver = CIScheduler(workflow, mode,toleranceWindow)

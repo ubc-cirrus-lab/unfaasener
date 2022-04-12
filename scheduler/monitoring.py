@@ -15,7 +15,7 @@ class monitoring:
                 client,
                 project,
                 'pubsub.googleapis.com/topic/message_sizes', 
-                days=30)
+                days=90)
         result = q.as_dataframe()
 
         topics ={}

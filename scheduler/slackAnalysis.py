@@ -84,12 +84,14 @@ class slackAnalysis:
                     elif self.decisionMode == "worst-case":
                         self.durationForCost[col.replace(", Cost", "")] = self.getLowerBound(df[col]) 
                     elif self.decisionMode == "defualt" :
+                        print("HEREEEE")
                         self.durationForCost[col.replace(", Cost", "")] = self.getMedian(df[col])
                     else:
                         self.durationForCost[col.replace(", Cost", "")] = self.getMedian(df[col])    
                     removedCols.append(col)
                 elif "Latency" in col:
                     df.rename(columns={col: col.replace(", Latency", "")}, inplace=True)
+            print("DD:{}".format(self.durationForCost))
             self.df = df.drop(columns=removedCols)
             self.latencyCalc(self.df)
             self.duration, self.crPath = self.findCriticalPath(self.tasks, self.dependencies)
@@ -453,13 +455,12 @@ class slackAnalysis:
 
 
 if __name__ == "__main__":
-    workflow = "ImageProcessingWorkflow"
+    # workflow = "ImageProcessingWorkflow"
     decisionModes = rankerConfig.decisionMode
-    # workflow = "Text2SpeechCensoringWorkflow"
+    workflow = "Text2SpeechCensoringWorkflow"
     for decisionMode in decisionModes:
         slackAnalysisObj = slackAnalysis(workflow, decisionMode)
         slackDF = slackAnalysisObj.getSlackDataframe()
         print(slackDF)
-
 
 

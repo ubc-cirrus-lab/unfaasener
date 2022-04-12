@@ -1,5 +1,5 @@
 import unittest
-from solver import OffloadingSolver
+from MINLPSolver import OffloadingSolver
 from tabnanny import verbose
 from mip import *
 import os
@@ -23,8 +23,8 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         solver = OffloadingSolver(None, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 0
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        alpha = 1
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
         self.assertEqual(x, [0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     
     # Test on the decision when there is a high cost for serverless functions
@@ -34,9 +34,9 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         solver = OffloadingSolver(path, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
-        self.assertEqual(x, [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        alpha = 0
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
     
     # Test on the decision when there is a high cost on pub/sub communication between functions
@@ -46,9 +46,9 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         solver = OffloadingSolver(path, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
-        self.assertEqual(x, [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        alpha = 0
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     
     # Test on the decision when there is not enough resources for offloading on the VM side
     def test_limitedVMresources(self):
@@ -56,9 +56,9 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         solver = OffloadingSolver(None, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':0, 'mem_mb':0}
-        alpha = 1
+        alpha = 0
 
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
         self.assertEqual(x, [0.0,0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     
     # Test on checking the paths with the same slack time
@@ -75,12 +75,13 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         solver = OffloadingSolver(path,vmPath, workflow, self.mode,  None,toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
-        self.assertEqual(x, [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+        alpha = 0
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0])
     
     # Test for checking the reduction in the nodes in the same path but with different slack time    
     def test_diffPaths(self):
+        print("test_diffPaths")
         workflow = "TestWorkflow"
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "TestWorkflow"+".json"
         path = os.getcwd()+ "/test/data/"+workflow +".csv"
@@ -93,12 +94,13 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         solver = OffloadingSolver(path,vmPath, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
-        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0])
+        alpha = 0
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
     
     # Test for checking the toleranceWindow 
     def test_toleranceWindow(self):
+        print("test_toleranceWindow")
         workflow = "TestWorkflow"
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "TestWorkflow"+".json"
         path = os.getcwd()+ "/test/data/"+workflow +".csv"
@@ -108,12 +110,12 @@ class TestSolver(unittest.TestCase):
         workflow_json["lastDecision"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         with open(jsonPath, 'w') as json_file:
             json.dump(workflow_json, json_file)
-        toleranceWindow = 30
+        toleranceWindow = 35
         solver = OffloadingSolver(path,vmPath, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
-        self.assertEqual(x, [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0])
+        alpha = 0
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0])
     
     # Test on when the tolerance window is not limited for the user
     def test_unlimitedToleranceWindow(self):
@@ -122,19 +124,20 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 1000000
         solver = OffloadingSolver(path, None, workflow, self.mode, None, toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        alpha = 0
+        x, _, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
         self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
     def test_confidenctInterval(self):
+        print("test_confidenctInterval")
         workflow = "TestWorkflow"
         mode = "latency"
         toleranceWindow = 0
         solver = CIScheduler(workflow, mode,toleranceWindow)
         availResources =  {'cores':1000, 'mem_mb':500000}
-        alpha = 1
-        x = solver.suggestBestOffloadingSingleVM(availResources, alpha)
-        self.assertEqual(x, [0.0, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333, 0.9, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 0.3333333333333333])
+        alpha = 0
+        x= solver.suggestBestOffloadingSingleVM(availResources, alpha)
+        self.assertEqual(x, [0.0, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333, 0.3333333333333333, 0.9, 0.6666666666666666, 0.3333333333333333, 0.9, 0.6666666666666666])
 
 
 
