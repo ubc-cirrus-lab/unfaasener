@@ -5,8 +5,8 @@
 3,2.4000000000000003e-06,2,-,399.0,ImageProcessing_Filter
 4,2.4000000000000003e-06,2,-,321.0,ImageProcessing_Greyscale
 5,2.4000000000000003e-06,2,-,312.0,ImageProcessing_Resize
-6,3.725290298461914e-08,-,214.0,1.0,ImageProcessing_GetInput-ImagProcessing_Flip
-7,3.725290298461914e-08,-,263.0,1.0,ImagProcessing_Flip-ImageProcessing_Rotate
-8,3.725290298461914e-08,-,272.99999999999994,1.0,ImageProcessing_Rotate-ImageProcessing_Filter
-9,3.725290298461914e-08,-,278.0,1.0,ImageProcessing_Filter-ImageProcessing_Greyscale
-10,3.725290298461914e-08,-,289.0,1.0,ImageProcessing_Greyscale-ImageProcessing_Resize
+6,3.725290298461914e-08,-,215.7803193155328,1.0,ImageProcessing_GetInput-ImagProcessing_Flip
+7,3.725290298461914e-08,-,264.7713815700723,1.0,ImagProcessing_Flip-ImageProcessing_Rotate
+8,3.725290298461914e-08,-,274.78945641641565,1.0,ImageProcessing_Rotate-ImageProcessing_Filter
+9,3.725290298461914e-08,-,279.77763462381927,1.0,ImageProcessing_Filter-ImageProcessing_Greyscale
+10,3.725290298461914e-08,-,290.79599492448546,1.0,ImageProcessing_Greyscale-ImageProcessing_Resize

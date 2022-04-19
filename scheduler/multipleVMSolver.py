@@ -1,6 +1,8 @@
 import os
 import json
+import string
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from LatencyModel import LatencyModel
 from gekko import GEKKO
@@ -29,14 +31,6 @@ class OffloadingSolver:
         elif dataframePath.endswith(".csv"):
             self.dataframe = pd.read_csv(dataframePath)
 
-        if vmDataframePath == None:
-            vmDataframePath = (os.getcwd()+ "/data/"+"VM,"+workflow +", "+mode+", "+self.decisionMode+",CSV-slackData.csv")
-        if vmDataframePath.endswith(".pkl"):
-            self.VMdataframe = pd.read_pickle(vmDataframePath)
-        elif vmDataframePath.endswith(".csv"):
-            self.VMdataframe = pd.read_csv(vmDataframePath)
-
-
         with open(self.jsonPath, 'r') as json_file:
             self.workflow_json = json.load(json_file)
         self.optimizationMode = mode
@@ -45,6 +39,36 @@ class OffloadingSolver:
         self.successors = self.workflow_json["successors"]
         self.predecessors = self.workflow_json["predecessors"]
         self.initial = self.workflow_json["initFunc"]
+        
+        if mode == "cost":
+                self.VMdataframe = None
+        elif mode == "latency":
+            if type(vmDataframePath) == str:
+                numOfVMs = 1
+                vmPath = vmDataframePath
+                vmDataframePath = [""]*numOfVMs
+                self.VMdataframe = [""]*numOfVMs
+                vmDataframePath[0] = vmPath
+                if vmDataframePath[0].endswith(".pkl"):
+                        self.VMdataframe[0] = pd.read_pickle(vmDataframePath[0])
+                elif vmDataframePath[0].endswith(".csv"):
+                        self.VMdataframe[0] = pd.read_csv(vmDataframePath[0])
+            else:
+                if vmDataframePath == None:
+                    numOfVMs = 1
+
+                else:
+                    numOfVMs = vmDataframePath
+                vmDataframePath = [""]*numOfVMs
+                self.VMdataframe = [""]*numOfVMs
+                for i in range(numOfVMs):
+                    vmDataframePath[i] = (os.getcwd()+ "/data/"+"VM"+str(i)+","+workflow +", "+mode+", "+self.decisionMode+",CSV-slackData.csv")
+                    if vmDataframePath[i].endswith(".pkl"):
+                        self.VMdataframe[i] = pd.read_pickle(vmDataframePath[i])
+                    elif vmDataframePath[i].endswith(".csv"):
+                        self.VMdataframe[i] = pd.read_csv(vmDataframePath[i])
+        else:
+            print("undefined mode!")
         self.paths = {}
    
 
@@ -139,12 +163,13 @@ class OffloadingSolver:
             self.slacks[func] = (self.dataframe.loc[self.dataframe['function'] == func, 'slackTime'].item())
 
     # Function for added execution time by offloading a function to VM
-    def addedExecLatency(self, offloadingCandidate):
+    def addedExecLatency(self, offloadingCandidate, vm):
         """
         Returns estimated added execution time which is caused by offloading a serverless function to VM
         """
+        vmDF = self.VMdataframe[vm]
         serverless = self.dataframe.loc[self.dataframe['function'] == offloadingCandidate, 'duration'].item()
-        vm = self.VMdataframe.loc[self.VMdataframe['function'] == offloadingCandidate, 'duration'].item()
+        vm = vmDF.loc[vmDF['function'] == offloadingCandidate, 'duration'].item()
         diff = vm - serverless
         return diff
 
@@ -187,11 +212,11 @@ class OffloadingSolver:
         cost = (self.dataframe.loc[self.dataframe['function'] == offloadingCandidate, 'cost'].item())
         return cost
 
-    def IsOffloaded(self,offloadingCandidate):
+    def IsOffloaded(self,offloadingCandidate, vm):
         """
         Returns previous offloadind decision for the function
         """
-        decision = self.lastDecision[ self.offloadingCandidates.index(offloadingCandidate) ]
+        decision = self.lastDecision[ self.offloadingCandidates.index(offloadingCandidate) ][vm]
         return decision
 
 
@@ -238,43 +263,51 @@ class OffloadingSolver:
         Returns a list of 0's (no offloading) and 1's (offloading)
         - optimizationMode: "cost"   or   "latency"
         - offloadingCandidates: list of function objects
-        - availResources: {'cores':C, 'mem_mb':M}
+        - availResources: [{'cores':C, 'mem_mb':M} ... {'cores':C, 'mem_mb':M}]
         - alpha: FP number in [0, 1]
         """
         offloadingCandidates = self.offloadingCandidates
         if self.optimizationMode == "cost":
             model = GEKKO(remote=False)
-            # List of functions as the variables
-            x = [model.Var(lb=0,ub=1,integer=True) for i in range(len(offloadingCandidates))]
+            offloadingDecisions = [[model.Var(lb=0,ub=1,integer=True) for i in range(len(availResources))] for j in range(len(offloadingCandidates))]
+
+
+            # Constraint on only having a single or zero one for each vm decision for a function
+            for function in offloadingDecisions:
+                model.Equation( sum( [function[i] for i in range(len(function))] ) <= 1)
+                # model.Equation( list(function).count(1) <= 1)
+            
+            # Constraint on checking available memory of each VM
+            for VMIndex in range(len(availResources)):
+                model.Equation( sum( [offloadingDecisions[function][VMIndex]*self.getMem(offloadingCandidates[function]) \
+                                for function in range(len(offloadingDecisions))] ) <= availResources[VMIndex]['mem_mb'])
+            # Constraint on checking available number of  cores for each VM
+            for VMIndex in range(len(availResources)):
+                model.Equation( sum( [offloadingDecisions[function][VMIndex]*self.getCPU(self.getMem(offloadingCandidates[function])) \
+                                for function in range(len(offloadingDecisions))] ) <= availResources[VMIndex]['cores'])
 
             # Constraint for showing the first Function should run as serverless
-            model.Equation( x[0] == 0)
-            # Memory constraint
-            model.Equation( sum( [x[i]*self.getMem(offloadingCandidates[i]) \
-                                for i in range(len(x))] ) <= availResources['mem_mb'])
-            # CPU constraint
-            model.Equation( sum( [x[i]*self.getCPU( self.getMem( offloadingCandidates[i] ) ) \
-                                for i in range(len(x))] ) <= availResources['cores'])
+            for i in  range(len(offloadingDecisions[0])):
+                model.Equation( offloadingDecisions[0][i] == 0)
 
 
             # optimization goal
-
-            model.Minimize(model.sum( [((((10**5)*2)*(1-alpha)*(1 - x[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i]))) + \
-                                    (((10**5)*2)*(1-alpha)*(model.sum([model.max2((1- (x[i]+x[j])), model.abs2(x[i] - x[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) )+ \
-                                ((alpha)*(model.abs2(x[i] - (self.IsOffloaded(offloadingCandidates[i])) )))) \
-                                    for i in range(len(x))] ))
+            model.Minimize(model.sum([model.sum( [((((10**5)*2)*(1-alpha)*(1 - offloadingDecisions[i][vm])*(self.GetServerlessCostEstimate(offloadingCandidates[i]))) + \
+                                    (((10**5)*2)*(1-alpha)*(model.sum([model.max2((1- (offloadingDecisions[i][vm]+offloadingDecisions[j][vm])), model.abs2(offloadingDecisions[i][vm] - offloadingDecisions[j][vm]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) )+ \
+                                ((alpha)*(model.abs2(offloadingDecisions[i][vm] - (self.IsOffloaded(offloadingCandidates[i], vm)) )))) \
+                                    for i in range(len(offloadingDecisions))] ) for vm in range(len(availResources))]))
 
 
             # solve
             model.options.SOLVER = 1
             try:
                 model.solve()
-                offloadingDecisions = [(x[i].value)[0]for i in range(len(x))]
-                cost = sum( [(1 - offloadingDecisions[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
-            (sum([max((1- (offloadingDecisions[i]+offloadingDecisions[j])), abs(offloadingDecisions[i] - offloadingDecisions[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])]))  \
-                                            for i in range(len(x))] )
+                offloadingDecisionsFinal = [[(offloadingDecisions[j][i].value)[0] for i in range(len(availResources))] for j in range(len(offloadingCandidates))]
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                # vmDecisionsFinal = [(vmDecisions[i].value)[0]for i in range(len(vmDecisions))]
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 # self.saveNewDecision(offloadingDecisions)  
-                return offloadingDecisions, cost
+                return offloadingDecisionsFinal
             except:
                 print("No solution could be found!") 
                 # model.open_folder()
@@ -287,46 +320,57 @@ class OffloadingSolver:
             self.getSlackForPath()
             model = GEKKO(remote=False)
             # List of functions as the variables
-            x = [model.Var(lb=0,ub=1,integer=True) for i in range(len(offloadingCandidates))]
+            offloadingDecisions = [[model.Var(lb=0,ub=1,integer=True) for i in range(len(availResources))] for j in range(len(offloadingCandidates))]
+
+
+           # Constraint on only having a single or zero one for each vm decision for a function
+            for function in offloadingDecisions:
+                model.Equation( sum( [function[i] for i in range(len(function))] ) <= 1)
+                # model.Equation( list(function).count(1) <= 1)
+            
+            # Constraint on checking available memory of each VM
+            for VMIndex in range(len(availResources)):
+                model.Equation( sum( [offloadingDecisions[function][VMIndex]*self.getMem(offloadingCandidates[function]) \
+                                for function in range(len(offloadingDecisions))] ) <= availResources[VMIndex]['mem_mb'])
+            # Constraint on checking available number of  cores for each VM
+            for VMIndex in range(len(availResources)):
+                model.Equation( sum( [offloadingDecisions[function][VMIndex]*self.getCPU(self.getMem(offloadingCandidates[function])) \
+                                for function in range(len(offloadingDecisions))] ) <= availResources[VMIndex]['cores'])
 
             # Constraint for showing the first Function should run as serverless
-            model.Equation( x[0] == 0)
-            # Memory constraint
-            model.Equation( sum( [x[i]*self.getMem(offloadingCandidates[i]) \
-                                for i in range(len(x))] ) <= availResources['mem_mb'])
-            # CPU constraint
-            model.Equation( sum( [x[i]*self.getCPU( self.getMem( offloadingCandidates[i] ) ) \
-                                for i in range(len(x))] ) <= availResources['cores'])
+            for i in  range(len(offloadingDecisions[0])):
+                model.Equation( offloadingDecisions[0][i] == 0)
 
 
             # Constraint on checking slack time for each Node
 
             for path in self.allPathsSlack:
-                model.Equation( sum([( (x[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((sum([((self.allPathsSlack[path])[node])*(model.abs2(x[node]-x[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])]))) )for node in range(len(x))]) <= ((self.getCriticalPathDuration() - path) + self.toleranceWindow))
+                model.Equation( sum([sum([( (offloadingDecisions[node][vm]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node], vm))) + ((sum([((self.allPathsSlack[path])[node])*(model.abs2(offloadingDecisions[node][vm]-offloadingDecisions[j][vm]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])]))) )for node in range(len(offloadingDecisions))])for vm in range(len(availResources))]) <= ((self.getCriticalPathDuration() - path) + self.toleranceWindow))
             
             # Constraint on checking the toleranceWindow
-            model.Equation( sum([ (sum([ ((x[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((sum([((self.allPathsSlack[path])[node])*(model.abs2(x[node]-x[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(x))]) - (self.getCriticalPathDuration() - path))  for path in self.allPathsSlack])  <= self.toleranceWindow)
+            model.Equation( sum([ (sum ([sum([ ((offloadingDecisions[node][vm]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node], vm))) + ((sum([((self.allPathsSlack[path])[node])*(model.abs2(offloadingDecisions[node][vm]-offloadingDecisions[j][vm]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(offloadingDecisions))]) for vm in range(len(availResources))]) - (self.getCriticalPathDuration() - path))  for path in self.allPathsSlack])  <= self.toleranceWindow)
             
             # optimization goal
-            model.Minimize(model.sum( [((((10**5)*2)*(1-alpha)*(1 - x[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i]))) + \
-                                    (((10**5)*2)*(1-alpha)*(model.sum([model.max2((1- (x[i]+x[j])), model.abs2(x[i] - x[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) )+ \
-                                ((alpha)*(model.abs2(x[i] - (self.IsOffloaded(offloadingCandidates[i])) )))) \
-                                    for i in range(len(x))] ))
+            model.Minimize(model.sum([model.sum( [((((10**5)*2)*(1-alpha)*(1 - offloadingDecisions[i][vm])*(self.GetServerlessCostEstimate(offloadingCandidates[i]))) + \
+                                    (((10**5)*2)*(1-alpha)*(model.sum([model.max2((1- (offloadingDecisions[i][vm]+offloadingDecisions[j][vm])), model.abs2(offloadingDecisions[i][vm] - offloadingDecisions[j][vm]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) )+ \
+                                ((alpha)*(model.abs2(offloadingDecisions[i][vm] - (self.IsOffloaded(offloadingCandidates[i], vm)) )))) \
+                                    for i in range(len(offloadingDecisions))] ) for vm in range(len(availResources))]))
+
 
 
         model.options.SOLVER = 1
 
         try:
             model.solve()
-            offloadingDecisions = [(x[i].value)[0]for i in range(len(x))] 
+            offloadingDecisionsFinal = [[(offloadingDecisions[j][i].value)[0] for i in range(len(availResources))] for j in range(len(offloadingCandidates))]
 
-            cost = sum( [(((10**5)*2)*(1-alpha)*(1 - offloadingDecisions[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
-        (((10**5)*2)*(1-alpha)*sum([max((1- (offloadingDecisions[i]+offloadingDecisions[j])), abs(offloadingDecisions[i] - offloadingDecisions[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) +  ((alpha)*(abs(offloadingDecisions[i] - (self.IsOffloaded(offloadingCandidates[i])) )))) \
-                                        for i in range(len(x))] )
+        #     cost = sum( [(((10**5)*2)*(1-alpha)*(1 - offloadingDecisions[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
+        # (((10**5)*2)*(1-alpha)*sum([max((1- (offloadingDecisions[i]+offloadingDecisions[j])), abs(offloadingDecisions[i] - offloadingDecisions[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) +  ((alpha)*(abs(offloadingDecisions[i] - (self.IsOffloaded(offloadingCandidates[i])) )))) \
+        #                                 for i in range(len(x))] )
 
-            AddedLatency = sum([ ((sum([ ((offloadingDecisions[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((sum([((self.allPathsSlack[path])[node])*(abs(offloadingDecisions[node]-offloadingDecisions[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(x))]) ))  for path in self.allPathsSlack])
+        #     AddedLatency = sum([ ((sum([ ((offloadingDecisions[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((sum([((self.allPathsSlack[path])[node])*(abs(offloadingDecisions[node]-offloadingDecisions[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(x))]) ))  for path in self.allPathsSlack])
             # self.saveNewDecision(offloadingDecisions)   
-            return offloadingDecisions, cost, AddedLatency
+            return offloadingDecisionsFinal
         except:
             print("No solution could be found!") 
             # model.open_folder()
@@ -345,17 +389,26 @@ class OffloadingSolver:
 if __name__ == "__main__":
     # workflow = "ImageProcessingWorkflow"
     workflow = "Text2SpeechCensoringWorkflow"
-    # mode = "cost"
-    mode = "latency"
+    mode = "cost"
+    # mode = "latency"
     # path = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/test/data/Text2SpeechCensoringWorkflow, latency, highPubSubCost.csv"
     # path = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/ranker/test/data/Text2SpeechCensoringWorkflow, cost, highCost.csv"
     # solver = OffloadingSolver(None, workflow, mode)
+    jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "Text2SpeechCensoringWorkflow"+".json"
+    with open(jsonPath, 'r') as json_file:
+            workflow_json = json.load(json_file)
+    # workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
+    workflow_json["lastDecision_default"] = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    with open(jsonPath, 'w') as json_file:
+            json.dump(workflow_json, json_file)
     toleranceWindow = 0
-    solver = OffloadingSolver(None,None, workflow, mode, None, toleranceWindow)
-    availResources =  {'cores':1000, 'mem_mb':500000}
+    solver = OffloadingSolver(None,3, workflow, mode, None, toleranceWindow)
+    # availResources =  [{'cores':5, 'mem_mb':3800}]
+    availResources =  [{'cores':4.4, 'mem_mb':3536}, {'cores':1, 'mem_mb':500}, {'cores':0, 'mem_mb':0}]
     verbose = True
     alpha = 0
-    x, cost, latency= solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
-    print(x)
-    print(cost)
-    print(latency)
+    # x, cost, latency = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
+    vm = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
+    # print("X:{}".format(x))
+    print("VMDECISIONS:{}".format(vm))
+

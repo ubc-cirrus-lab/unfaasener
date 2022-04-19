@@ -15,8 +15,8 @@ from generateData import generateData
 from analyzeLogs import AnalyzeLogs
 from getWorkflowLogs import GetWorkflowLogs
 
-# workflow = "ImageProcessingWorkflow"
-workflow = "Text2SpeechCensoringWorkflow"
+workflow = "ImageProcessingWorkflow"
+# workflow = "Text2SpeechCensoringWorkflow"
 
 with open(os.getcwd()+"/data/"+ workflow+ ".json", 'r') as json_file:
     workflow_json = json.load(json_file)
@@ -28,21 +28,20 @@ successors = workflow_json["successors"]
 predecessors = workflow_json["predecessors"]
 
 funcPaths = []
-# ###############################
-# workflowObj = GetWorkflowLogs(workflow, messages,workflowFunctions, initFunc)
-# dataPath, publisheExeIDsPath, messageExePath = workflowObj.saveResults()
 
+workflowObj = GetWorkflowLogs(workflow, messages,workflowFunctions, initFunc)
+dataPath, publisheExeIDsPath, messageExePath = workflowObj.saveResults()
 
-dataPath = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/log_parser/get_workflow_logs/data/Text2SpeechCensoringWorkflow/20, data.json"
-publisheExeIDsPath = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/log_parser/get_workflow_logs/data/Text2SpeechCensoringWorkflow/20, publisheExeIDs.json"
-messageExePath = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/log_parser/get_workflow_logs/data/Text2SpeechCensoringWorkflow/20, messageExe.json"
+################################Just for testing a part of the logs analysis
+# dataPath = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/log_parser/get_workflow_logs/data/ImageProcessingWorkflow/20, data.json"
+# publisheExeIDsPath = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/log_parser/get_workflow_logs/data/ImageProcessingWorkflow/20, publisheExeIDs.json"
+# messageExePath = "/Users/ghazal/Desktop/UBC/Research/de-serverlessization/log_parser/get_workflow_logs/data/ImageProcessingWorkflow/20, messageExe.json"
 
 for func in workflowFunctions:
     if (len(predecessors[workflowFunctions.index(func)]) > 1):
         mergingPointFlag = True
     else:
         mergingPointFlag = False
-
     AnalyzeLogsObj = AnalyzeLogs(dataPath, publisheExeIDsPath, messageExePath, func, initFunc, workflow, mergingPointFlag)
     funcPath = AnalyzeLogsObj.getData()
     funcPaths = funcPaths+funcPath

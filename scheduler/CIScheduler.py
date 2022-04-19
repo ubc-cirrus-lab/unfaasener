@@ -1,7 +1,8 @@
 
-from MINLPSolver import OffloadingSolver
+from multipleVMSolver import OffloadingSolver
 import rankerConfig
 import time
+import numpy as np
 
 # toleranceWindow = 0
 # mode = "latency"  
@@ -19,18 +20,25 @@ class CIScheduler:
         decisions = []
         for decisionMode in self.decisionModes:
             solver = OffloadingSolver(None,None, self.workflow, self.mode,decisionMode, self.toleranceWindow)
-            x, cost, _ = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+            x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
             decisions.append(x)
-            print("Mode: {}, Decision: {}".format(decisionMode, x))
-            print("Mode: {}, Cost: {}".format(decisionMode, cost))
+            print("ModeGHazal: {}, Decision: {}".format(decisionMode, x))
+
 
     
-        finalDecision = [0]*len(decisions[0])
-        for func in range(len(decisions[0])):
-            finalDecision[func] = sum((decision[func]) for decision in decisions )/len(decisions)
-            if finalDecision[func] == 1:
-                finalDecision[func] = 0.9
-        return finalDecision
+        finalDecision = [[0]*len(decisions[0][0])]*len(decisions[0])
+        # for func in range(len(decisions[0])):
+        #     for vm in range(len(decisions[0][0])):
+        #         finalDecision[func][vm] = sum([(decision[func][vm]) for decision in decisions ])/len(decisions)
+        #         if finalDecision[func][vm] == 1:
+        #             finalDecision[func][vm] = 0.9
+        #         print("jkesfhkjbas", finalDecision)
+        # finalDecision = sum([(decision) for decision in decisions ])/len(decisions)
+        for decision in decisions:
+            finalDecision = np.add(finalDecision,decision)
+        finalDecision = finalDecision / len(decisions)
+        finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
+        return list(finalDecision)
 
 
 if __name__ == "__main__":

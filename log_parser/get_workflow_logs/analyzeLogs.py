@@ -96,7 +96,7 @@ class AnalyzeLogs:
         #                     dateStart = datetime.datetime.strptime(entry['time_utc'], "%Y-%m-%d %H:%M:%S.%f")
                             dateStart = entry['time_utc']
                             data[reqExeMap[id]]["start"]  = dateStart
-                        elif (entry['execution_id'] == id and ("finished with status" in entry['log']) ):
+                        elif (entry['execution_id'] == id and ("Finished with status" in entry['log']) ):
                             if entry['time_utc'].endswith('Z'):
                                 entry['time_utc'] = entry['time_utc'][:-1]+".000"
         #                     dateFinish = datetime.datetime.strptime(entry['time_utc'], "%Y-%m-%d %H:%M:%S.%f")
@@ -120,7 +120,7 @@ class AnalyzeLogs:
     #                     dateStart = datetime.datetime.strptime(entry['time_utc'], "%Y-%m-%d %H:%M:%S.%f")
                         dateStart = entry['time_utc']
                         data[reqExeMap[id]]["start"]  = dateStart
-                    elif (entry['execution_id'] == id and ("finished with status" in entry['log']) ):
+                    elif (entry['execution_id'] == id and ("Finished with status" in entry['log']) ):
                         if entry['time_utc'].endswith('Z'):
                             entry['time_utc'] = entry['time_utc'][:-1]+".000"
     #                     dateFinish = datetime.datetime.strptime(entry['time_utc'], "%Y-%m-%d %H:%M:%S.%f")

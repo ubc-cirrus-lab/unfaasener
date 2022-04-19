@@ -20,7 +20,7 @@ class generateData:
 
         self.workflow  = workflow
 
-        jsonPath = str(Path(os.getcwd()).resolve().parents[1]) + "/ranker/data/"+ self.workflow+"-prevCost.json"
+        jsonPath = str(Path(os.getcwd()).resolve().parents[1]) + "/scheduler/data/"+ self.workflow+"-prevCost.json"
         with open(jsonPath, 'r') as json_file:
             prevCost_json = json.load(json_file)
         with open(os.getcwd()+"/data/" + self.workflow+".json", 'r') as json_file:
@@ -131,7 +131,7 @@ class generateData:
         print(generatedData)
         df = pd.DataFrame(generatedData)
         print(df)
-        jsonPath = str(Path(os.getcwd()).resolve().parents[1]) + "/ranker/data/"+ self.workflow+"-prevCost.json"
+        jsonPath = str(Path(os.getcwd()).resolve().parents[1]) + "/scheduler/data/"+ self.workflow+"-prevCost.json"
         with open(jsonPath, 'w') as json_file:
             json.dump(prevCost_json ,json_file)
         json_file.close()

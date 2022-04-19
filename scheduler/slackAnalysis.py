@@ -455,9 +455,9 @@ class slackAnalysis:
 
 
 if __name__ == "__main__":
-    # workflow = "ImageProcessingWorkflow"
+    workflow = "ImageProcessingWorkflow"
     decisionModes = rankerConfig.decisionMode
-    workflow = "Text2SpeechCensoringWorkflow"
+    # workflow = "Text2SpeechCensoringWorkflow"
     for decisionMode in decisionModes:
         slackAnalysisObj = slackAnalysis(workflow, decisionMode)
         slackDF = slackAnalysisObj.getSlackDataframe()

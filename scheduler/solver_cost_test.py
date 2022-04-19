@@ -1,5 +1,5 @@
 import unittest
-from MINLPSolver import OffloadingSolver
+from multipleVMSolver import OffloadingSolver
 from tabnanny import verbose
 from mip import *
 import os
@@ -18,12 +18,12 @@ class TestSolver(unittest.TestCase):
         solver = OffloadingSolver(
             dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
-        availResources = {"cores": 1000, "mem_mb": 500000}
+        availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
-        x, _ = solver.suggestBestOffloadingSingleVM(
+        x = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
 
     def test_highPubsubCost(self):
         path = (
@@ -40,12 +40,12 @@ class TestSolver(unittest.TestCase):
         solver = OffloadingSolver(
             dataframePath=path, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
-        availResources = {"cores": 1000, "mem_mb": 500000}
+        availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
-        x, _ = solver.suggestBestOffloadingSingleVM(
+        x = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0], [1.0], [1.0], [1.0]])
 
     def test_highCost(self):
         path = (
@@ -62,25 +62,54 @@ class TestSolver(unittest.TestCase):
         solver = OffloadingSolver(
             dataframePath=path, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
-        availResources = {"cores": 1000, "mem_mb": 500000}
+        availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
-        x, _ = solver.suggestBestOffloadingSingleVM(
+        x = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0], [1.0], [1.0], [1.0]])
 
     def test_limitedVMresources(self):
         toleranceWindow = 0
         solver = OffloadingSolver(
             dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
         )
-        availResources = {"cores": 0, "mem_mb": 0}
+        availResources = [{"cores": 0, "mem_mb": 0}]
         alpha = 0
-        x, _ = solver.suggestBestOffloadingSingleVM(
+        x = solver.suggestBestOffloadingSingleVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
 
+    def test_multipleVMs_chooseTwoMostCostlyFuncs(self):
+        jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "Text2SpeechCensoringWorkflow"+".json"
+        with open(jsonPath, 'r') as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        with open(jsonPath, 'w') as json_file:
+            json.dump(workflow_json, json_file)
+        workflow = "Text2SpeechCensoringWorkflow"
+        toleranceWindow = 0
+        solver = OffloadingSolver(None, None, workflow, self.mode, None, toleranceWindow)
+        availResources =  [{'cores':0.4, 'mem_mb':256}, {'cores':0.4, 'mem_mb':256}, {'cores':0, 'mem_mb':0}]
+        alpha = 0
+        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    
+    def test_multipleVMs_preferLocality(self):
+        jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + "Text2SpeechCensoringWorkflow"+".json"
+        with open(jsonPath, 'r') as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        with open(jsonPath, 'w') as json_file:
+            json.dump(workflow_json, json_file)
+        workflow = "Text2SpeechCensoringWorkflow"
+        toleranceWindow = 0
+        solver = OffloadingSolver(None, None, workflow, self.mode, None, toleranceWindow)
+        availResources =  [{'cores':4.4, 'mem_mb':3536}, {'cores':1, 'mem_mb':500}, {'cores':0, 'mem_mb':0}]
+        alpha = 0
+        x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+        self.assertEqual(x, [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
 
 if __name__ == "__main__":
     jsonPath = (
@@ -91,7 +120,7 @@ if __name__ == "__main__":
     )
     with open(jsonPath, "r") as json_file:
         workflow_json = json.load(json_file)
-    workflow_json["lastDecision"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
     with open(jsonPath, "w") as json_file:
         json.dump(workflow_json, json_file)
     unittest.main()

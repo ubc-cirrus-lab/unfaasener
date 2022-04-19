@@ -33,6 +33,7 @@ class GetWorkflowLogs:
             self.writeLogs[func] = []
         self.subscriberExe = {}
         self.publisherFinishedTime = {}
+        self.getLogPeriod = math.floor(1000 / (self.count*4))
         self.finalWord = False
         self.execute()
 
