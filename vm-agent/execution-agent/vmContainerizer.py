@@ -4,7 +4,7 @@ import wget
 import string
 from zipfile import ZipFile
 import subprocess
-
+import sys
 
 
 def containerize(functionname):
@@ -39,11 +39,9 @@ def containerize(functionname):
        subprocess.call("cp Dockerfile "+functionname, shell=True, stdout=output, stderr=output)
        subprocess.call("cp init.sh "+functionname, shell=True, stdout=output, stderr=output)
        file_object = open(functionname+'/main.py', 'a')
-       file_object.write('
-       def main(event,context):
-           if __name__ == '__main__':
-               detect(event,context)
-')
+       file_object.write('def main(event,context):\n')
+       file_object.write("    if __name__ == '__main__':\n")
+       file_object.write('       print(str(detect(event,context)))\n')
        file_object.close()
        subprocess.call("cp requirements/"+functionname + ".txt "+ functionname+"/requirements.txt" , shell=True, stdout=output, stderr=output)
        # Create the image from the Dockerfile also copy the function's code
@@ -52,12 +50,12 @@ def containerize(functionname):
 def run_container(functionname):
     with open("/tmp/output.log", "a") as output:
        print ("\nRunning the Docker container \n")
-       subprocess.call("docker run name:"+functionname, shell=True, stdout=output, stderr=output)
+       subprocess.call("docker run name:"+functionname  , shell=True, stdout=output, stderr=output)
 
 
 def main():
-    containerize("Text2SpeechCensoringWorkflow_Profanity")
-    run_container("Text2SpeechCensoringWorkflow_Profanity")
+    containerize(sys.argv[1])
+    run_container(sys.argv[1])
 
 if __name__ == '__main__':
     main()
