@@ -137,7 +137,6 @@ class TestSolver(unittest.TestCase):
         availResources =  [{'cores':1000, 'mem_mb':500000}]
         alpha = 0
         x = solver.suggestBestOffloadingSingleVM(availResources, alpha)
-        print("HHHH", x)
         self.assertEqual(x, [[0.0], [0.3333333333333333], [0.3333333333333333], [0.3333333333333333], [0.3333333333333333], [0.9], [0.6666666666666666], [0.3333333333333333], [0.9], [0.6666666666666666]])
 
 

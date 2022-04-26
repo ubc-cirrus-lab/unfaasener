@@ -19,17 +19,9 @@ PROJECT_ID = 'ubc-serverless-ghazal'
 DSclient = datastore.Client()
 
 def convert(event, context):
-    """Triggered from a message on a Cloud Pub/Sub topic.
-    Args:
-         event (dict): Event payload.
-         context (google.cloud.functions.Context): Metadata for the event.
-    """
-    # print("messageSize:{}".format((event['attributes'])['msgSize']))
-    # print("publishedTime:{},identifier:{},messageSize:{}".format((event['attributes'])['publishTime'], (event['attributes'])['identifier'], (event['attributes'])['msgSize']))
-    # print(base64.b64decode(event['data']).decode('utf-8'))
     routingData = (event['attributes'])['routing']
     reqID = (event['attributes'])['reqID']
-    routing = int(routingData[2])
+    routing = routingData[4]
     fileName = (json.loads(base64.b64decode(event['data']).decode('utf-8')))['data']['message']
     storage_client = storage.Client()
     bucket = storage_client.bucket("text2speecstorage")
@@ -42,8 +34,6 @@ def convert(event, context):
     output = BytesIO()
     speech.export(output, format="wav")
 
-    # print("Inputfilesize: " + str(inputSize))
-    # print("Outputfilesize: " + str(len(output.getvalue())))
 
     result =  output.getvalue()
     newFileName = str(uuid.uuid4())+"-"+(event['attributes'])['reqID']
@@ -54,22 +44,27 @@ def convert(event, context):
     bucket = storage_client.bucket("text2speecstorage")
     blob = bucket.blob(newFileName)
     blob.upload_from_filename("/tmp/"+newFileName)
-    # print(
-    #     "File {} uploaded to {}.".format(
-    #         "/tmp/"+newFileName, newFileName
-    #     ))
     os.remove("/tmp/"+newFileName)
 
     message2send = newFileName
-    topic_path = publisher.topic_path(PROJECT_ID, 'Merging')
+
     message_json = json.dumps({
       'data': {'message': message2send},
     })
 
     message_bytes = message_json.encode('utf-8')
     msgID = uuid.uuid4().hex
+    if routing == "0":
+      topic_path = publisher.topic_path(PROJECT_ID, 'Text2SpeechCensoringWorkflow_Compression')
+      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), routing = routingData.encode('utf-8'))
+      publish_future.result()
+    else:
+      vmNumber = ord(routing) - 64
+      vmTopic = "vmTopic"+ str(vmNumber)
+      invokedFunction = "Text2SpeechCensoringWorkflow_Compression"
+      topic_path = publisher.topic_path(PROJECT_ID, vmTopic)
+      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), invokedFunction = invokedFunction, routing = routingData.encode('utf-8'))
+      publish_future.result()
 
-    publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = (event['attributes'])['reqID'], msgSize = str(getsizeof(message2send)), routing = routingData.encode("utf-8"), messageContent = "convertedFileName", branchName = "Text2SpeechCensoringWorkflow_Compression", routingIndex = str(3))
-    publish_future.result()
     logging.warning((event['attributes'])['reqID'])
 

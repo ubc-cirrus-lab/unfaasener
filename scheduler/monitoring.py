@@ -8,7 +8,6 @@ import pandas as pd
 class monitoring:
     def __init__(self):
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "key/monitoringKey.json"
-
         project = 'ubc-serverless-ghazal'
         client = monitoring_v3.MetricServiceClient()
         q = query.Query(

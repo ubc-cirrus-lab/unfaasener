@@ -18,20 +18,36 @@ PROJECT_ID = 'ubc-serverless-ghazal'
 DSclient = datastore.Client()
 
 def compress(event, context):
-    """Triggered from a message on a Cloud Pub/Sub topic.
-    Args:
-         event (dict): Event payload.
-         context (google.cloud.functions.Context): Metadata for the event.
-    """
-    # print("messageSize:{}".format((event['attributes'])['msgSize']))
-    # print("publishedTime:{},identifier:{},messageSize:{}".format((event['attributes'])['publishTime'], (event['attributes'])['identifier'], (event['attributes'])['msgSize']))
-    # print(base64.b64decode(event['data']).decode('utf-8'))
     routingData = (event['attributes'])['routing']
     reqID = (event['attributes'])['reqID']
-    routing = int(routingData[4])
-    fileName = (json.loads(base64.b64decode(event['data']).decode('utf-8')))['data']['convertedFileName']
-    indexes = (json.loads(base64.b64decode(event['data']).decode('utf-8')))['data']['indexes']
-    # print("filename:{}".format(fileName))
+    routing = routingData[5]
+    fileName = (json.loads(base64.b64decode(event['data']).decode('utf-8')))['data']['message']
+
+    message2send = Text2SpeechCensoringWorkflow_Compression(fileName,reqID)
+    # 0 for serverless, 1 for VM
+    message_json = json.dumps({
+      'data': {'message': message2send},
+    })
+
+    message_bytes = message_json.encode('utf-8')
+    msgID = uuid.uuid4().hex
+
+    if routing == "0":
+      topic_path = publisher.topic_path(PROJECT_ID, 'dag-MergingPoint')
+      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = (event['attributes'])['reqID'], routing = routingData.encode("utf-8"), messageContent = "convertedFileName", branchName = "Text2SpeechCensoringWorkflow_Censor", branch = "Text2SpeechCensoringWorkflow_Compression")
+      publish_future.result()
+    else:
+      vmNumber = ord(routing) - 64
+      vmTopic = "vmTopic"+ str(vmNumber) 
+      invokedFunction = "Text2SpeechCensoringWorkflow_MergingPoint"
+      topic_path = publisher.topic_path(PROJECT_ID, vmTopic)
+      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = (event['attributes'])['reqID'],invokedFunction = invokedFunction, routing = routingData.encode("utf-8"), messageContent = "convertedFileName", branchName = "Text2SpeechCensoringWorkflow_Censor", branch = "Text2SpeechCensoringWorkflow_Compression")
+      publish_future.result()
+
+    logging.warning(str(reqID))
+
+
+def Text2SpeechCensoringWorkflow_Compression(fileName,reqID):
     storage_client = storage.Client()
     bucket = storage_client.bucket("text2speecstorage")
     blob = bucket.blob(fileName)
@@ -43,19 +59,14 @@ def compress(event, context):
     file_length = dlFile.tell()
     #reset file
     dlFile.seek(0)
-    # print("Inputfilesize: "+str(file_length))
     outputfile=BytesIO()
     speech = AudioSegment.from_wav(dlFile)
     speech = speech.set_frame_rate(5000)
     speech = speech.set_sample_width(1)
     speech.export(outputfile, format="wav")
     
-    # print file lengths
-    #print("Inputfilesize: "+str(file_length))
-    # print("Outputfilesize: "+str(len(outputfile.getvalue())))
-    
     result =  outputfile.getvalue()
-    newFileName = str(uuid.uuid4())+"-"+(event['attributes'])['reqID']
+    newFileName = str(uuid.uuid4())+"-"+reqID
     with open("/tmp/"+newFileName, "wb") as outfile:
         outfile.write(result)
 
@@ -63,34 +74,10 @@ def compress(event, context):
     bucket = storage_client.bucket("text2speecstorage")
     blob = bucket.blob(newFileName)
     blob.upload_from_filename("/tmp/"+newFileName)
-    # print(
-    #     "File {} uploaded to {}.".format(
-    #         "/tmp/"+newFileName, newFileName
-    #     ))
     os.remove("/tmp/"+newFileName)
 
     message2send = newFileName
-    # 0 for serverless, 1 for VM
-    if routing == 1:
-      invokedFunction = "Text2SpeechCensoringWorkflow_Censor"
-      topic_path = publisher.topic_path(PROJECT_ID, 'dag-test-vm')
-    else:
-      topic_path = publisher.topic_path(PROJECT_ID, 'dag-Censor')
-
-    message_json = json.dumps({
-      'data': {'newFile': message2send, 'indexes' : indexes},
-    })
-
-    message_bytes = message_json.encode('utf-8')
-    msgID = uuid.uuid4().hex
-
-    if routing == 1:
-      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message2send)), invokedFunction = invokedFunction, routing = routingData.encode('utf-8'))
-      publish_future.result()
-    else:
-        publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message2send)), routing = routingData.encode('utf-8'))
-        publish_future.result()
-    logging.warning(str(reqID))
+    return message2send
     
 
 

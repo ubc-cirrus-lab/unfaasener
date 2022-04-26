@@ -2,3 +2,4 @@
 | ------------- | ----- |:-------------:| --- | --- |
 | ImageProcessing | Python | <img src="ImageProcessing.png" alt="Alt text" title="Image Processing Graph"> | [Workflow that performs image processing on the input image.] | [FunctionBench](https://github.com/kmu-bigdata/serverless-faas-workbench) |
 | Text2SpeechCensoring | Python | <img src="Text2SpeechCensoring.png" alt="Alt text" title="Text2Speech Censoring Graph"> | [Workflow that turns short text segments into speech and censors any profanities within the text segment.] | [Eismann et al.](https://github.com/SimonEismann/FunctionsAndWorkflows) |
+| RegressionTuning | Python | <img src="RegressionTuning.png" alt="Alt text" title="Regression Tuning Graph"> |  | [no-ops-machine-learning(Jacopo Tagliabue)](https://github.com/jacopotagliabue/no-ops-machine-learning) |

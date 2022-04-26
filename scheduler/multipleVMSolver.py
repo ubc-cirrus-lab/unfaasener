@@ -303,10 +303,7 @@ class OffloadingSolver:
             try:
                 model.solve()
                 offloadingDecisionsFinal = [[(offloadingDecisions[j][i].value)[0] for i in range(len(availResources))] for j in range(len(offloadingCandidates))]
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                # vmDecisionsFinal = [(vmDecisions[i].value)[0]for i in range(len(vmDecisions))]
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                # self.saveNewDecision(offloadingDecisions)  
+                self.saveNewDecision(offloadingDecisionsFinal)  
                 return offloadingDecisionsFinal
             except:
                 print("No solution could be found!") 
@@ -369,7 +366,7 @@ class OffloadingSolver:
         #                                 for i in range(len(x))] )
 
         #     AddedLatency = sum([ ((sum([ ((offloadingDecisions[node]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node]))) + ((sum([((self.allPathsSlack[path])[node])*(abs(offloadingDecisions[node]-offloadingDecisions[j]))*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(x))]) ))  for path in self.allPathsSlack])
-            # self.saveNewDecision(offloadingDecisions)   
+            self.saveNewDecision(offloadingDecisionsFinal)   
             return offloadingDecisionsFinal
         except:
             print("No solution could be found!") 

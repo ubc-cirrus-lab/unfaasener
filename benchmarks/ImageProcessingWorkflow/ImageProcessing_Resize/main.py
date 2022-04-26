@@ -21,18 +21,8 @@ DSclient = datastore.Client()
 
 
 def resize(event, context):
-    """Triggered from a message on a Cloud Pub/Sub topic.
-    Args:
-         event (dict): Event payload.
-         context (google.cloud.functions.Context): Metadata for the event.
-    """
 
-
-    # print("messageSize:{}".format((event['attributes'])['msgSize']))
-    # print("publishedTime:{},identifier:{},messageSize:{}".format((event['attributes'])['publishTime'], (event['attributes'])['identifier'], (event['attributes'])['msgSize']))
-    # print(base64.b64decode(event['data']).decode('utf-8'))
     routingData = (event['attributes'])['routing']
-    routing = int(routingData[1])
     fileName = (json.loads(base64.b64decode(event['data']).decode('utf-8')))['data']['imageName']
     storage_client = storage.Client()
     bucket = storage_client.bucket("imageprocessingworkflowstorage")
@@ -45,10 +35,6 @@ def resize(event, context):
     upPath = "resized-" + fileName
     resblob = bucket.blob(upPath)
     resblob.upload_from_filename(path)
-    # print(
-    #     "File {} uploaded to {}.".format(
-    #         path, upPath
-    #     ))
     os.remove(path)
     os.remove("/tmp/"+fileName)
     message2send = "delete"
@@ -60,10 +46,7 @@ def resize(event, context):
     publish_future = publisher.publish(topic_path, data=message_bytes, reqID = (event['attributes'])['reqID'],  publishTime = str(datetime.datetime.utcnow()), msgSize = str(getsizeof(message2send)))
     publish_future.result()
     logging.warning((event['attributes'])['reqID'])
-    # blobs = storage_client.list_blobs("imageprocessingworkflowstorage")
 
-    # for blob in blobs:
-    #     if not ((blob.name).startswith("Final")):
-    #         blob = bucket.blob(blob.name)
-    #         blob.delete()
+
+
 

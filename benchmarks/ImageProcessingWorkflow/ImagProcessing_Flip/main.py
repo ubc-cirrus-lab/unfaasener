@@ -32,9 +32,36 @@ def flip(event, context):
     # print("publishedTime:{},identifier:{},messageSize:{}".format((event['attributes'])['publishTime'], (event['attributes'])['identifier'], (event['attributes'])['msgSize']))
     # print(base64.b64decode(event['data']).decode('utf-8'))
     routingData = (event['attributes'])['routing']
-    routing = int(routingData[1])
+    routing = routingData[2]
     reqID = (event['attributes'])['reqID']
     fileName = (json.loads(base64.b64decode(event['data']).decode('utf-8')))['data']['imageName']
+    message2send = ImageProcessing_Flip(fileName, reqID)
+    # 0 for serverless, 1 for VM
+
+    message_json = json.dumps({
+      'data': {'imageName': message2send},
+    })
+
+    message_bytes = message_json.encode('utf-8')
+    msgID = uuid.uuid4().hex
+
+
+    if routing == "0":
+        topic_path = publisher.topic_path(PROJECT_ID, 'ImageProcessing_Rotate')
+        publish_future = publisher.publish(topic_path, data=message_bytes,reqID = (event['attributes'])['reqID'], publishTime = str(datetime.datetime.utcnow()), identifier = msgID, msgSize = str(getsizeof(message2send)), routing = routingData.encode('utf-8'))
+        publish_future.result()
+    else:
+      vmNumber = ord(routing) - 64
+      vmTopic = "vmTopic"+ str(vmNumber) 
+      invokedFunction = "ImageProcessing_Rotate"
+      topic_path = publisher.topic_path(PROJECT_ID, vmTopic)
+      publish_future = publisher.publish(topic_path, data=message_bytes,reqID = (event['attributes'])['reqID'], publishTime = str(datetime.datetime.utcnow()), identifier = msgID, msgSize = str(getsizeof(message2send)), invokedFunction = invokedFunction, routing = routingData.encode('utf-8'))
+      publish_future.result()
+
+    logging.warning((event['attributes'])['reqID'])
+
+
+def ImageProcessing_Flip(fileName, reqID):
     storage_client = storage.Client()
     bucket = storage_client.bucket("imageprocessingworkflowstorage")
     blob = bucket.blob(fileName)
@@ -47,31 +74,7 @@ def flip(event, context):
     upPath = str(reqID)+"flip-left-right-" + fileName
     resblob = bucket.blob(upPath)
     resblob.upload_from_filename(path)
-    # print(
-    #     "File {} uploaded to {}.".format(
-    #         path, upPath
-    #     ))
     os.remove(path)
     os.remove("/tmp/"+fileName)
     message2send = upPath
-    # 0 for serverless, 1 for VM
-    if routing == 1:
-      invokedFunction = "ImageProcessing_Rotate"
-      topic_path = publisher.topic_path(PROJECT_ID, 'dag-test-vm')
-    else:
-      topic_path = publisher.topic_path(PROJECT_ID, 'ImageProcessing_Rotate')
-
-    message_json = json.dumps({
-      'data': {'imageName': message2send},
-    })
-
-    message_bytes = message_json.encode('utf-8')
-    msgID = uuid.uuid4().hex
-
-    if routing == 1:
-      publish_future = publisher.publish(topic_path, data=message_bytes,reqID = (event['attributes'])['reqID'], publishTime = str(datetime.datetime.utcnow()), identifier = msgID, msgSize = str(getsizeof(message2send)), invokedFunction = invokedFunction, routing = routingData.encode('utf-8'))
-      publish_future.result()
-    else:
-        publish_future = publisher.publish(topic_path, data=message_bytes,reqID = (event['attributes'])['reqID'], publishTime = str(datetime.datetime.utcnow()), identifier = msgID, msgSize = str(getsizeof(message2send)), routing = routingData.encode('utf-8'))
-        publish_future.result()
-    logging.warning((event['attributes'])['reqID'])
+    return message2send

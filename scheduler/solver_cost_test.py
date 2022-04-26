@@ -14,6 +14,17 @@ class TestSolver(unittest.TestCase):
     mode = "cost"
 
     def test_similar2prevdecision(self):
+        jsonPath = (
+        str(Path(os.getcwd()).resolve().parents[0])
+        + "/log_parser/get_workflow_logs/data/"
+        + "Text2SpeechCensoringWorkflow"
+        + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
         toleranceWindow = 0
         solver = OffloadingSolver(
             dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
@@ -26,6 +37,17 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
 
     def test_highPubsubCost(self):
+        jsonPath = (
+        str(Path(os.getcwd()).resolve().parents[0])
+        + "/log_parser/get_workflow_logs/data/"
+        + "Text2SpeechCensoringWorkflow"
+        + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
         path = (
             os.getcwd()
             + "/test/data/"
@@ -48,6 +70,17 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0], [1.0], [1.0], [1.0]])
 
     def test_highCost(self):
+        jsonPath = (
+        str(Path(os.getcwd()).resolve().parents[0])
+        + "/log_parser/get_workflow_logs/data/"
+        + "Text2SpeechCensoringWorkflow"
+        + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
         path = (
             os.getcwd()
             + "/test/data/"
@@ -70,6 +103,17 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0], [1.0], [1.0], [1.0]])
 
     def test_limitedVMresources(self):
+        jsonPath = (
+        str(Path(os.getcwd()).resolve().parents[0])
+        + "/log_parser/get_workflow_logs/data/"
+        + "Text2SpeechCensoringWorkflow"
+        + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
         toleranceWindow = 0
         solver = OffloadingSolver(
             dataframePath=None, vmDataframePath= None, workflow=self.workflow, mode=self.mode, decisionMode=None, toleranceWindow=toleranceWindow
@@ -112,15 +156,4 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(x, [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
 
 if __name__ == "__main__":
-    jsonPath = (
-        str(Path(os.getcwd()).resolve().parents[0])
-        + "/log_parser/get_workflow_logs/data/"
-        + "Text2SpeechCensoringWorkflow"
-        + ".json"
-    )
-    with open(jsonPath, "r") as json_file:
-        workflow_json = json.load(json_file)
-    workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
-    with open(jsonPath, "w") as json_file:
-        json.dump(workflow_json, json_file)
     unittest.main()

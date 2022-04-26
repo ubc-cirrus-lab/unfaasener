@@ -6,6 +6,8 @@ import uuid
 from sys import getsizeof
 from google.cloud import datastore
 from google.cloud import pubsub_v1
+import numpy as np
+import random
 
 # Instantiates a Pub/Sub client
 batch_settings = pubsub_v1.types.BatchSettings(
@@ -25,7 +27,7 @@ def get(request):
         `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
     """
     reqID = uuid.uuid4().hex
-    # merging_key = DSclient.key("Merging", "Text2SpeechCensoringWorkflow_Compression")
+    # merging_key = DSclient.key("Merging", "Text2SpeechCensoringWorkflow_Censor")
     # mergingEntity = DSclient.get(key=merging_key)
     # mergingEntity["reqs"].append(str(reqID))
     # mergingEntity["Dates"].append(str(datetime.datetime.utcnow()))
@@ -34,13 +36,39 @@ def get(request):
     # with DSclient.transaction():
     #   DSclient.put(mergingEntity)
 
-    merging_key = DSclient.key("Merging", ("Text2SpeechCensoringWorkflow_Compression" + reqID))
+    merging_key = DSclient.key("Merging", ("Text2SpeechCensoringWorkflow_Censor" + reqID))
+    routingKey = DSclient.key("routingDecision", "Text2SpeechCensoringWorkflow")
+    routingEntity = DSclient.get(key=routingKey)
+    routing = eval(routingEntity["routing"])
+    finalRouting = ""
+    for function in routing:
+      functionArray = np.array(function)
+      if (np.all(functionArray==0)):
+        finalRouting = finalRouting + "0"
+      else:
+        allpossibleVMs = [0]
+        possibleVMs = list(np.where(functionArray != 0))[0]
+        possibleVMs = np.array(possibleVMs)
+        possibleVMs = possibleVMs + 1
+        possibleVMs = list(possibleVMs)
+        possiblePercentages = [function[i - 1] for i in possibleVMs]
+        allpossibleVMs = allpossibleVMs + possibleVMs
+        allpossiblePercentages = [1 - (np.sum(possiblePercentages))]
+        allpossiblePercentages = allpossiblePercentages + possiblePercentages
+        randomChoices = random.choices(allpossibleVMs, weights=allpossiblePercentages, k=1)
+        finalChoice = randomChoices[0]
+        if finalChoice == 0:
+          finalRouting = finalRouting + "0"
+        else:
+          finalRouting = finalRouting + chr(64+int(finalChoice))
+    print("Routing:::::", finalRouting)
+
     mergingEntity = datastore.Entity(key=merging_key)
     mergingEntity.update(
     {
         "Counter": 0,
         "Date" : datetime.datetime.utcnow(),
-        "nextFunc" : "Text2SpeechCensoringWorkflow_Compression",
+        "nextFunc" : "Text2SpeechCensoringWorkflow_Censor",
         "numBranches" : 2,
         "results": "{}"
 
@@ -58,19 +86,12 @@ def get(request):
         message =  request_json['message']
 
     
-    routingData = request_json.get("routing")
+    # routingData = request_json.get("routing")
+    routingData = finalRouting
 
     # First Branch
-    routing = int(routingData[0])
+    routing = routingData[2]
     # 0 for serverless, 1 for VM
-
-
-    if routing == 1:
-      invokedFunction = "Text2SpeechCensoringWorkflow_Text2Speech"
-      topic_path = publisher.topic_path(PROJECT_ID, 'dag-test-vm')
-    else:
-      topic_path = publisher.topic_path(PROJECT_ID, 'dag-Text2Speech')
-
 
     message_json = json.dumps({
       'data': {'message': message},
@@ -78,26 +99,22 @@ def get(request):
 
     message_bytes = message_json.encode('utf-8')
     msgID = uuid.uuid4().hex
-
-    if routing == 1:
-      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), invokedFunction = invokedFunction, routing = routingData.encode('utf-8'))
+    if routing == "0":
+      topic_path = publisher.topic_path(PROJECT_ID, 'dag-Text2Speech')
+      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), routing = routingData.encode('utf-8'))
       publish_future.result()
     else:
-        publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), routing = routingData.encode('utf-8'))
-        publish_future.result()
+      vmNumber = ord(routing) - 64
+      vmTopic = "vmTopic"+ str(vmNumber) 
+      invokedFunction = "Text2SpeechCensoringWorkflow_Text2Speech"
+      topic_path = publisher.topic_path(PROJECT_ID, vmTopic)
+      publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), invokedFunction = invokedFunction, routing = routingData.encode('utf-8'))
+      publish_future.result()
 
 
     # Second Branch
-    routing2 = int(routingData[1])
+    routing2 = routingData[1]
     # 0 for serverless, 1 for VM
-
-
-    if routing2 == 1:
-      invokedFunction2 = "Text2SpeechCensoringWorkflow_Profanity"
-      topic_path2 = publisher.topic_path(PROJECT_ID, 'dag-test-vm')
-    else:
-      topic_path2 = publisher.topic_path(PROJECT_ID, 'dag-Profanity')
-
 
     message_json2 = json.dumps({
       'data': {'message': message},
@@ -105,13 +122,18 @@ def get(request):
 
     message_bytes2 = message_json.encode('utf-8')
     # msgID = uuid.uuid4().hex
-
-    if routing2 == 1:
-      publish_future = publisher.publish(topic_path2, data=message_bytes2, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), invokedFunction = invokedFunction2, routing = routingData.encode('utf-8'))
+    if routing2 == "0":
+      topic_path2 = publisher.topic_path(PROJECT_ID, 'dag-Profanity')
+      publish_future = publisher.publish(topic_path2, data=message_bytes2, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), routing = routingData.encode('utf-8'))
       publish_future.result()
     else:
-        publish_future = publisher.publish(topic_path2, data=message_bytes2, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), routing = routingData.encode('utf-8'))
-        publish_future.result()
+      vmNumber = ord(routing2) - 64
+      vmTopic = "vmTopic"+ str(vmNumber) 
+      invokedFunction2 = "Text2SpeechCensoringWorkflow_Profanity"
+      topic_path2 = publisher.topic_path(PROJECT_ID, vmTopic)
+      publish_future = publisher.publish(topic_path2, data=message_bytes2, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = str(reqID), msgSize = str(getsizeof(message)), invokedFunction = invokedFunction2, routing = routingData.encode('utf-8'))
+      publish_future.result()
+
     logging.warning(str(reqID))
     executionID = request.headers["Function-Execution-Id"]
     return executionID
