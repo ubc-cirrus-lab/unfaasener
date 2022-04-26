@@ -128,16 +128,16 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
         self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0], [1.0], [1.0], [1.0]])
 
-    def test_confidenctInterval(self):
-        print("test_confidenctInterval")
-        workflow = "TestWorkflow"
-        mode = "latency"
-        toleranceWindow = 0
-        solver = CIScheduler(workflow, mode,toleranceWindow)
-        availResources =  [{'cores':1000, 'mem_mb':500000}]
-        alpha = 0
-        x = solver.suggestBestOffloadingSingleVM(availResources, alpha)
-        self.assertEqual(x, [[0.0], [0.3333333333333333], [0.3333333333333333], [0.3333333333333333], [0.3333333333333333], [0.9], [0.6666666666666666], [0.3333333333333333], [0.9], [0.6666666666666666]])
+    # def test_confidenctInterval(self):
+    #     print("test_confidenctInterval")
+    #     workflow = "TestWorkflow"
+    #     mode = "latency"
+    #     toleranceWindow = 0
+    #     solver = CIScheduler(workflow, mode,toleranceWindow)
+    #     availResources =  [{'cores':1000, 'mem_mb':500000}]
+    #     alpha = 0
+    #     x = solver.suggestBestOffloadingSingleVM(availResources, alpha)
+    #     self.assertEqual(x, [[0.0], [0.3333333333333333], [0.3333333333333333], [0.3333333333333333], [0.3333333333333333], [0.9], [0.6666666666666666], [0.3333333333333333], [0.9], [0.6666666666666666]])
 
 
 
