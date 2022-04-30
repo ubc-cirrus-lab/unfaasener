@@ -39,18 +39,16 @@ def containerize(functionname):
        subprocess.call("cp Dockerfile "+functionname, shell=True, stdout=output, stderr=output)
        subprocess.call("cp init.sh "+functionname, shell=True, stdout=output, stderr=output)
        file_object = open(functionname+'/main.py', 'a')
+       file_object.write('import sys\n')
        file_object.write('def main():\n')
-       file_object.write('    '+functionname+'(sys.argv[1],sys.argv[2])\n')
+       file_object.write('    '+entrypoint+'(json.loads(sys.argv[1]),sys.argv[2])\n')
        file_object.write("if __name__ == '__main__':\n")
        file_object.write('    main()\n')
-       lines = file_object.readlines()
-       file_object.seek(0)
-       file_object.write("import sys")
-       for line in lines: # write old content after new
-           file_object.write(line)
        file_object.close()
-       subprocess.call("sed 's/json.loads\(base64.b64decode\(event\[\'data\'\]\).decode\(\'utf-8\'\)\)/event\[\'data\'\]' , shell=True, stdout=output, stderr=output)
        subprocess.call("cp requirements/"+functionname + ".txt "+ functionname+"/requirements.txt" , shell=True, stdout=output, stderr=output)
+       subprocess.call("cp ubc-serverless-ghazal-9bede7ba1a47.json "+functionname + "/ "  , shell=True, stdout=output, stderr=output)
+       subprocess.call("sed -i 's/json.loads(base64.b64decode//g' "+functionname + "/main.py " , shell=True, stdout=output, stderr=output)
+       subprocess.call('sed -i "s/.decode(\'utf-8\'))//g" ' + functionname + "/main.py " , shell=True, stdout=output, stderr=output)
        # Create the image from the Dockerfile also copy the function's code
        subprocess.call("cd "+functionname+"; docker build . < Dockerfile --tag name:"+functionname, shell=True, stdout=output, stderr=output)
 
@@ -62,7 +60,7 @@ def run_container(functionname):
 
 def main():
     containerize(sys.argv[1])
-    run_container(sys.argv[1])
+#    run_container(sys.argv[1])
 
 if __name__ == '__main__':
     main()

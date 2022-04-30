@@ -65,45 +65,9 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Profanity '"+ str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
 
     if invokedFun == "Text2SpeechCensoringWorkflow_MergingPoint":
-        datastore_client = datastore.Client()
-        kind = "Merging"
-        name = (message.attributes.get('branchName') ) + ( message.attributes.get('reqID') )
-        reqID = (message.attributes.get('reqID'))
-        merge_key = datastore_client.key(kind, name)
-        merge = datastore_client.get(key=merge_key)
-        nextFunction = (merge["nextFunc"])
-        newTotal = merge['numBranches']
-        prevCounter = merge["Counter"]
-        newCounter = prevCounter+1
-        merge["Counter"] = newCounter
-        resJson = (json.loads(merge["results"]))
-        content = message.attributes.get('messageContent')
-        valueContent = decodedMessage.get("message")
-        newJson = {content : valueContent}
-        resJson.update(newJson)
-        merge["results"]= json.dumps(resJson)
-        message = (json.loads(merge["results"]))
-        if (newCounter == newTotal):
-            routing = int(routingData[5])
-            message_json = json.dumps({
-                'data': message,
-            })
-            message_bytes = message_json.encode('utf-8')
-            msgID = uuid.uuid4().hex
-
-            if routing == 1:
-                invokedFunction = nextFunction
-                topic_path = publisher.topic_path(project_id, 'dag-test-vm')
-                publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), reqID = str(reqID), msgSize = str(getsizeof(message)), invokedFunction = invokedFunction, routing = routingData.encode("utf-8"))
-                publish_future.result()
-            else:
-                topic_path = publisher.topic_path(project_id, "dag-Censor")
-                publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), reqID = str(reqID),msgSize = str(getsizeof(message)), routing = routingData.encode("utf-8"))
-                publish_future.result() 
-            datastore_client.delete(merge_key)
-            logging.warning(str(reqID))
-        else:
-            datastore_client.put(merge)
+        print (str(jsonfile).replace('\'','"'))
+        with open("/tmp/output.log", "a") as output:
+            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_MergedFunction '"+ str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
 
     if invokedFun == "Text2SpeechCensoringWorkflow_Compression":
         with open("/tmp/output.log", "a") as output:
