@@ -12,8 +12,9 @@ from sys import getsizeof
 import Text2SpeechWorkflow
 import ImageProcessing
 import subprocess
+from google.protobuf.json_format import MessageToJson
 project_id = "ubc-serverless-ghazal"
-subscription_id = "vm-sub"
+subscription_id = "vmSubscriber1"
 #publish_topic_id = "vm-subscribe"
 #timeout = 22.0
 
@@ -43,17 +44,25 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             print(f"{key}: {value}")
             (writtenData[msgID])[key] = value
     message.ack()
+    ## We want something like '{"data": {"message": "testing"}}'
+    jsonfile = {
+        "data": json.loads(message.data.decode("utf-8")),
+        "attributes": message.attributes,
+            }
+
     if invokedFun == "Text2SpeechCensoringWorkflow_Text2Speech":
+        print (str(jsonfile).replace('\'','"'))
         #filename = Text2SpeechWorkflow.Text2SpeechCensoringWorkflow_Text2Speech(decodedMessage.get("message"), reqID)
         with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Text2Speech "+ decodedMessage.get("message") + " " + reqID , shell=True, stdout=output, stderr=output)
+            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Text2Speech "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
     if invokedFun == "Text2SpeechCensoringWorkflow_Conversion":
+        print (str(jsonfile).replace('\'','"'))
         with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Conversion "+ decodedMessage.get("message") + " " + reqID , shell=True, stdout=output, stderr=output)
-
+            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Conversion "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
     if invokedFun == "Text2SpeechCensoringWorkflow_Profanity":
+        print (str(jsonfile).replace('\'','"'))
         with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Profanity "+ decodedMessage.get("message") + " " + reqID , shell=True, stdout=output, stderr=output)
+            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Profanity '"+ str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
 
     if invokedFun == "Text2SpeechCensoringWorkflow_MergingPoint":
         datastore_client = datastore.Client()
@@ -98,8 +107,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
     if invokedFun == "Text2SpeechCensoringWorkflow_Compression":
         with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Compression "+ decodedMessage.get("message") + " " + reqID , shell=True, stdout=output, stderr=output)
-
+            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Compression "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
 def func1(msg):
     decodedMessage = json.loads(msg.decode("utf-8"))
     msg = decodedMessage["data"]["message"]

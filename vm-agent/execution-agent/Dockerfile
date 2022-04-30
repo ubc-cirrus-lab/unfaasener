@@ -7,4 +7,5 @@ ENV APP_HOME /app
 WORKDIR $APP_HOME
 COPY . ./
 RUN pip install -r requirements.txt
-ENTRYPOINT ["sh","/app/init.sh"]
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/ubc-serverless-ghazal-9bede7ba1a47.json
+ENTRYPOINT ["python3","main.py"]
