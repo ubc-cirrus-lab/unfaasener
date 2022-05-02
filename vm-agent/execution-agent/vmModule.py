@@ -49,29 +49,9 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         "data": json.loads(message.data.decode("utf-8")),
         "attributes": message.attributes,
             }
-
-    if invokedFun == "Text2SpeechCensoringWorkflow_Text2Speech":
-        print (str(jsonfile).replace('\'','"'))
-        #filename = Text2SpeechWorkflow.Text2SpeechCensoringWorkflow_Text2Speech(decodedMessage.get("message"), reqID)
-        with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Text2Speech "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
-    if invokedFun == "Text2SpeechCensoringWorkflow_Conversion":
-        print (str(jsonfile).replace('\'','"'))
-        with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Conversion "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
-    if invokedFun == "Text2SpeechCensoringWorkflow_Profanity":
-        print (str(jsonfile).replace('\'','"'))
-        with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Profanity '"+ str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
-
-    if invokedFun == "Text2SpeechCensoringWorkflow_MergingPoint":
-        print (str(jsonfile).replace('\'','"'))
-        with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_MergedFunction '"+ str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
-
-    if invokedFun == "Text2SpeechCensoringWorkflow_Compression":
-        with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker run name:Text2SpeechCensoringWorkflow_Compression "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
+    print (str(jsonfile).replace('\'','"'))
+    with open("/tmp/output.log", "a") as output:
+        subprocess.call("docker run name:"+ invokedFun+" '"+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
 def func1(msg):
     decodedMessage = json.loads(msg.decode("utf-8"))
     msg = decodedMessage["data"]["message"]

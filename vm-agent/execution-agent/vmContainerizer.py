@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 
-def containerize(functionname):
+def containerize(functionname,workflowname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
 
@@ -45,7 +45,7 @@ def containerize(functionname):
        file_object.write("if __name__ == '__main__':\n")
        file_object.write('    main()\n')
        file_object.close()
-       subprocess.call("cp requirements/"+functionname + ".txt "+ functionname+"/requirements.txt" , shell=True, stdout=output, stderr=output)
+       subprocess.call("cp "+workflowname+"/"+functionname + "/requirements.txt "+ functionname+"/requirements.txt" , shell=True, stdout=output, stderr=output)
        subprocess.call("cp ubc-serverless-ghazal-9bede7ba1a47.json "+functionname + "/ "  , shell=True, stdout=output, stderr=output)
        subprocess.call("sed -i 's/json.loads(base64.b64decode//g' "+functionname + "/main.py " , shell=True, stdout=output, stderr=output)
        subprocess.call('sed -i "s/.decode(\'utf-8\'))//g" ' + functionname + "/main.py " , shell=True, stdout=output, stderr=output)
@@ -59,7 +59,7 @@ def run_container(functionname):
 
 
 def main():
-    containerize(sys.argv[1])
+    containerize(sys.argv[1],sys.argv[2])
 #    run_container(sys.argv[1])
 
 if __name__ == '__main__':
