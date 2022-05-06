@@ -1,2 +1,2 @@
-- python3 vmContainerizer.py {FunctionName}  ==> To containerize the function and create the image
+- python3 vmContainerizer.py {FunctionName} {WorkflowName}  ==> To containerize the function and create the image
 - python3 vmModule.py ==> to listen on the pub-sub topic for the VM
