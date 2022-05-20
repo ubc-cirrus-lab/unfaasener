@@ -39,7 +39,7 @@ def detect(event, context):
     else:
       vmNumber = ord(routing) - 64
       vmTopic = "vmTopic"+ str(vmNumber) 
-      invokedFunction = "Text2SpeechCensoringWorkflow_MergingPoint"
+      invokedFunction = "Text2SpeechCensoringWorkflow_MergedFunction"
       topic_path = publisher.topic_path(PROJECT_ID, vmTopic)
       publish_future = publisher.publish(topic_path, data=message_bytes, publishTime = str(datetime.datetime.utcnow()), identifier = msgID, reqID = (event['attributes'])['reqID'], msgSize = str(getsizeof(message)),invokedFunction = invokedFunction, routing = routingData.encode("utf-8"), messageContent = "indexes", branchName = "Text2SpeechCensoringWorkflow_Censor", branch = "Text2SpeechCensoringWorkflow_Profanity")
       publish_future.result()
