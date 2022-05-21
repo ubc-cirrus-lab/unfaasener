@@ -9,8 +9,6 @@ import logging
 import uuid
 import base64
 from sys import getsizeof
-import Text2SpeechWorkflow
-import ImageProcessing
 import subprocess
 from google.protobuf.json_format import MessageToJson
 import docker
@@ -36,7 +34,8 @@ subscription_path = subscriber.subscription_path(project_id, subscription_id)
 DSclient = datastore.Client()
 publisher = pubsub_v1.PublisherClient()
 client = docker.from_env()
-
+global executionDurations 
+executionDurations = []
 def containerize(functionname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
@@ -118,10 +117,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         before  = datetime.datetime.now()
         #subprocess.call("docker run name:"+ invokedFun+" '"+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
         #subprocess.call("docker run name:"+ invokedFun+" "+  str(jsonfile).replace('\'','"') + "' " + reqID , shell=True, stdout=output, stderr=output)
-        client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID )
+        client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = "256MB" )
         after  = datetime.datetime.now()
         delta =  after - before
-        print ("Docker Execution Durations for "+invokedFun + " is " +str(delta.microseconds)+" microseconds")
+        executionDurations.append(delta.microseconds)
+        output.write ("Docker Execution Durations for "+invokedFun + " is " +str(delta.microseconds/1000)+" milliseconds\n")
 def func1(msg):
     decodedMessage = json.loads(msg.decode("utf-8"))
     msg = decodedMessage["data"]["message"]
@@ -163,6 +163,7 @@ with open('data.json', mode='w') as f:
     json.dump(writtenData, f)
 streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
 print(f"Listening for messages on {subscription_path}..\n")
+print (*executionDurations)
 
 with subscriber:
     try:
