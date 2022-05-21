@@ -6,6 +6,7 @@ class predictor
 
     ring* utilization_records;
     double sum,standardDeviation = 0.0,mean = 0.0;
+    double max,alpha,margin = 0.0;
     int size;
 public:
     predictor(ring* buffer)
@@ -13,7 +14,7 @@ public:
         utilization_records = buffer;
 	sum=0;
     }
-    double compute_predicton() 
+    double compute_predicton_ServerMore() 
     {
      mean = 0;
      sum = 0;
@@ -39,6 +40,29 @@ public:
     }
     std::cout << "Time window's Mean is  "<< mean <<" and StdDev is "<< standardDeviation << std::endl;
     return  standardDeviation + mean;
+    }
+    double compute_predicton_ExponentialMovingAverage()
+    {
+     alpha = 0.2;
+     margin = 0.4;
+     max = 0;
+     size=utilization_records->size();
+     int i = 0;
+     double records[size];
+     while (utilization_records->size() > 0)
+        {
+        records[i] = utilization_records->pop();
+        i++;
+        }
+    //Compute Max for the records array
+    for(i = 0; i < size; ++i) {
+        if (records[i] > max)
+	{
+		max = records[i];
+	}
+
+    }
+    return  (alpha *  max  + (1-alpha)*max ) * (1 + margin);
     }
 
     

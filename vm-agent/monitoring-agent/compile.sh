@@ -1,1 +1,1 @@
-g++ -std=c++11 -lcurl  -I /root/de-serverlessization/vm-agent agent.cpp
+g++ -std=c++11 -lcurl  -I /home/centos/de-serverlessization/vm-agent/monitoring-agent agent.cpp

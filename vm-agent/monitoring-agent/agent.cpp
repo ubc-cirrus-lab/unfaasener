@@ -53,8 +53,8 @@ int main(int, char *[]) {
                 typedef std::chrono::microseconds us;
                 typedef std::chrono::duration<float> fsec;
                 auto t0 = Time::now();
-                std::cout << "Total Prediction "<< cpu_predictor.compute_predicton() + prediction_buffer <<"% of CPU consumption in the next window "<<std::endl;
-                std::cout << "Total Prediction "<< mem_predictor.compute_predicton() + prediction_buffer <<"% of Memory consumption in the next window "<<std::endl;
+                std::cout << "Total Prediction "<< cpu_predictor.compute_predicton_ExponentialMovingAverage() + prediction_buffer <<"% of CPU consumption in the next window "<<std::endl;
+                std::cout << "Total Prediction "<< mem_predictor.compute_predicton_ExponentialMovingAverage() + prediction_buffer <<"% of Memory consumption in the next window "<<std::endl;
                 auto t1 = Time::now();
                 fsec fs = t1 - t0;
                 us d = std::chrono::duration_cast<us>(fs);
