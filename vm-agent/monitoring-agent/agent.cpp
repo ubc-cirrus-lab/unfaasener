@@ -19,6 +19,8 @@ int main(int, char *[]) {
     size_t current_mem_readings[2]= { 0 };
     size_t previous_readings[2] = { 0 };
     int monitor_intervals=100000; // 100ms in microseconds
+    double cpu_pred_old =0;
+    double mem_pred_old =0;
     double prediction_buffer   = 6; //extra buffer for CPU prediction
     communicator com;
     ring cpu_utilization_buffer(ring_size);
@@ -53,8 +55,10 @@ int main(int, char *[]) {
                 typedef std::chrono::microseconds us;
                 typedef std::chrono::duration<float> fsec;
                 auto t0 = Time::now();
-                std::cout << "Total Prediction "<< cpu_predictor.compute_predicton_ExponentialMovingAverage() + prediction_buffer <<"% of CPU consumption in the next window "<<std::endl;
-                std::cout << "Total Prediction "<< mem_predictor.compute_predicton_ExponentialMovingAverage() + prediction_buffer <<"% of Memory consumption in the next window "<<std::endl;
+		cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old));
+		mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old));
+                std::cout << "Total Prediction "<< cpu_pred_old <<"% of CPU consumption in the next window "<<std::endl;
+                std::cout << "Total Prediction "<< mem_pred_old <<"% of Memory consumption in the next window "<<std::endl;
                 auto t1 = Time::now();
                 fsec fs = t1 - t0;
                 us d = std::chrono::duration_cast<us>(fs);

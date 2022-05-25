@@ -41,7 +41,7 @@ public:
     std::cout << "Time window's Mean is  "<< mean <<" and StdDev is "<< standardDeviation << std::endl;
     return  standardDeviation + mean;
     }
-    double compute_predicton_ExponentialMovingAverage()
+    double compute_predicton_ExponentialMovingAverage(double x)
     {
      alpha = 0.2;
      margin = 0.4;
@@ -62,7 +62,12 @@ public:
 	}
 
     }
-    return  (alpha *  max  + (1-alpha)*max ) * (1 + margin);
+    double prediction = (alpha *  max  + (1-alpha)*x ) * (1 + margin);
+    if ( prediction > 100)
+    {
+	   prediction = 100 ;
+    }
+    return  prediction;
     }
 
     
