@@ -6,7 +6,7 @@ class predictor
 
     ring* utilization_records;
     double sum,standardDeviation = 0.0,mean = 0.0;
-    double max,alpha,margin = 0.0;
+    double max,alpha,margin,prediction = 0.0;
     int size;
 public:
     predictor(ring* buffer)
@@ -62,8 +62,8 @@ public:
 	}
 
     }
-    double prediction = (alpha *  max  + (1-alpha)*x ) * (1 + margin);
-    if ( prediction > 100)
+    prediction = (alpha *  max  + (1-alpha)*x );
+    if ( prediction * (1+margin) > 100)
     {
 	   prediction = 100 ;
     }

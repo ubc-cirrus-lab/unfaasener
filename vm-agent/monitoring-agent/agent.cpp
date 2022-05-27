@@ -41,8 +41,8 @@ int main(int, char *[]) {
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
 	 float mem_utilization = 100 * ( (float)current_mem_readings[1] / current_mem_readings[0]);
-         std::cout << cpu_utilization << std::endl;
-         std::cout << mem_utilization << std::endl;
+         //std::cout << cpu_utilization << std::endl;
+         //std::cout << mem_utilization << std::endl;
 //fill the utilziation buffers for the ring_size (i.e. 10 predictions in 1 second)
          if (cpu_utilization_buffer.size() < ring_size) {
                 cpu_utilization_buffer.push(double(cpu_utilization));
@@ -62,8 +62,8 @@ int main(int, char *[]) {
                 auto t1 = Time::now();
                 fsec fs = t1 - t0;
                 us d = std::chrono::duration_cast<us>(fs);
-                std::cout <<"Time taken to generate a prediction "<< d.count() << "us\n";
-                std::cout <<"#####################################################\n";
+                //std::cout <<"Time taken to generate a prediction "<< d.count() << "us\n";
+               // std::cout <<"#####################################################\n";
 
          }
  
@@ -79,8 +79,8 @@ int main(int, char *[]) {
         auto t1 = Time::now();
         fsec fs = t1 - t0;
         us d = std::chrono::duration_cast<us>(fs);
-        std::cout <<"Time taken to transmit the prediction "<< d.count() << "us\n";
-        std::cout <<"#####################################################\n";
+       // std::cout <<"Time taken to transmit the prediction "<< d.count() << "us\n";
+        //std::cout <<"#####################################################\n";
 
 	
 
