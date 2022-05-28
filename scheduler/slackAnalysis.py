@@ -28,10 +28,10 @@ class slackAnalysis:
             workflow_json = json.load(json_file)
         dataframe = pd.read_pickle(dataframePath)
         # df = dataframe.loc[dataframe["inputs"] == inputName]
-        input_set = set(dataframe["inputs"])
-        number_of_unique_values = len(input_set)
+        # input_set = set(dataframe["inputs"])
+        # number_of_unique_values = len(input_set)
         df = dataframe.drop(columns=["reqID", "inputs"])
-        NI = len(df)/number_of_unique_values
+        # NI = len(df)/number_of_unique_values
         initial = workflow_json["initFunc"]
         self.initial = initial
         workflowFunctions = workflow_json["workflowFunctions"]
@@ -49,7 +49,7 @@ class slackAnalysis:
         self.slackAnalysisData = {}
         self.pricing_resolution = 100
         self.workflowFunctions = workflowFunctions
-        self.NI = NI
+        # self.NI = NI
         self.es = {}
         self.ef = {}
         self.ls = {}
