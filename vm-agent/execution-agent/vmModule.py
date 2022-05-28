@@ -138,7 +138,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = str(memoryLimits[invokedFun]) )
         after  = datetime.datetime.now()
         delta =  after - before
-        executionDurations[reqID][invokedFun] = str(delta.microseconds/1000)
+#        executionDurations[reqID][invokedFun] = str(delta.microseconds/1000)
+        if invokedFun not in executionDurations[reqID]:
+            executionDurations[reqID][invokedFun] =  str(before)+";"+str(after)
+        else:
+            executionDurations[reqID][invokedFun] = executionDurations[reqID][invokedFun] + "_" + str(before)+";"+str(after)
     print (executionDurations)
 
 
