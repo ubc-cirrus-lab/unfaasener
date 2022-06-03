@@ -80,7 +80,14 @@ class getNewLogs:
         if self.lastTimestamp != None:
             endFlag = False
             while endFlag != True:
-                    project_list_logs = "gcloud functions logs read "+ function +  " --region northamerica-northeast1 --format json --limit 1000 "+"--start-time "+ self.lastTimestamp
+                    lastLog = "gcloud functions logs read "+ function +  " --region northamerica-northeast1 --format json --limit 1 "
+                    lastLog_logs = subprocess.check_output(shlex.split(lastLog))
+                    lastLog_logs_json = json.loads(lastLog_logs)
+                    lastLog_date = [element["time_utc"] for idx, element in enumerate(lastLog_logs_json)]
+                    lastLogEndDate = lastLog_date[0]
+                    arrayLLET = lastLogEndDate.split()
+                    lastLogEndDate = arrayLLET[0]+"T"+arrayLLET[1]
+                    project_list_logs = "gcloud functions logs read "+ function +  " --region northamerica-northeast1 --format json "+"--start-time "+ self.lastTimestamp+ " --end-time " + lastLogEndDate + " --limit 1000"
                     project_logs = subprocess.check_output(shlex.split(project_list_logs))
                     project_logs_json = json.loads(project_logs)
                     prevData = self.writeLogs[function]
