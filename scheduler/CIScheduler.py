@@ -1,5 +1,5 @@
 
-from multipleVMSolver import OffloadingSolver
+from MultiVMSolver import OffloadingSolver
 import rankerConfig
 import time
 import numpy as np
@@ -26,8 +26,8 @@ class CIScheduler:
     def suggestBestOffloadingSingleVM(self,  availResources, alpha):
         decisions = []
         for decisionMode in self.decisionModes:
-            solver = OffloadingSolver(None,None, self.workflow, self.mode,decisionMode, self.toleranceWindow)
-            x = solver.suggestBestOffloadingSingleVM(availResources=availResources, alpha=alpha, verbose=True)
+            solver = OffloadingSolver(self.workflow, self.mode,decisionMode, self.toleranceWindow)
+            x = solver.suggestBestOffloadingMultiVM(availResources=availResources, alpha=alpha, verbose=True)
             decisions.append(x)
         finalDecision = [[0]*len(decisions[0][0])]*len(decisions[0])
         for decision in decisions:

@@ -20,6 +20,7 @@ class getNewLogs:
     def __init__(self, workflow):
         self.exeData = {}
         self.dictData = {}
+        self.windowSize = 50
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -135,6 +136,7 @@ class getNewLogs:
         with open(os.getcwd()+"/data/" + str(self.workflow)+ "/"+'data.json', "r") as outfile:
             workflow_json = json.load(outfile)
         for func in self.workflowFunctions:
+            # matchingDict = {}
             funcData = workflow_json[func]
             startLogs = [element["execution_id"] for idx, element in enumerate(funcData) if ("Function execution started" in element["log"])]
             startTimes = [element["time_utc"] for idx, element in enumerate(funcData) if ("Function execution started" in element["log"])]
@@ -143,6 +145,16 @@ class getNewLogs:
             reqLogs = [element["execution_id"] for idx, element in enumerate(funcData) if ("WARNING:root:" in element["log"])]
             finishLogs = [element["execution_id"] for idx, element in enumerate(funcData) if (("finished with status" in element["log"]) or ("Finished with status" in element["log"]))]
             finishTimes = [element["time_utc"] for idx, element in enumerate(funcData) if (("finished with status" in element["log"]) or ("Finished with status" in element["log"]))]
+            # sortingArray = startTimes
+            # for e in range(len(startLogs)):
+            #     matchingDict[startTimes[startLogs.index(startLogs[e])]] = startLogs[e]
+                
+            # sortingArray.sort(key=lambda date: datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S.%f"))
+            # # matchingDict = sorted(matchingDict.items(), key = lambda x:datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S.%f"), reverse=True)
+            # sortingArray = sortingArray[(-self.windowSize):]
+            # sortedIDs = []
+            # for date in sortingArray:
+            #     sortedIDs.append(matchingDict[date])
             for exe in startLogs:
                 if (exe in finishLogs) and (exe in reqLogs):
                     self.dictData["host"].append("s")

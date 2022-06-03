@@ -24,7 +24,17 @@ class baselineSlackAnalysis:
         # jsonPath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
         # dataframePath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow + "/NEWWgeneratedData.pkl"
         jsonPath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
-        dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
+        # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
+        if (os.path.isfile(str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl")):
+            dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
+            self.dataframe = pd.read_pickle(dataframePath)
+        elif (os.path.isfile(str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.csv")):
+            dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.csv"
+            self.dataframe = pd.read_csv(dataframePath)
+        else:
+            print("Dataframe not found!")
+            self.dataframe = None
+        
         with open(jsonPath, 'r') as json_file:
             workflow_json = json.load(json_file)
         self.initFunc = workflow_json["initFunc"]
@@ -44,15 +54,14 @@ class baselineSlackAnalysis:
                 self.dependencies.append(((func+"-"+i), i ))
             if (len(self.predecessors[self.workflowFunctions.index(func)]) > 1):
                 self.recordNum += (len(self.predecessors[self.workflowFunctions.index(func)])) -1
-
         self.memories = workflow_json["memory"]
-        self.dataframe = pd.read_pickle(dataframePath)
+        # self.dataframe = pd.read_pickle(dataframePath)
         self.selectedIDs = self.selectRecords()
         self.observations = self.getObservations()
         self.slackCalculations()
 
     def selectRecords(self):
-        selectedInits = self.dataframe.loc[self.dataframe['function'] == "Text2SpeechCensoringWorkflow_GetInput"]
+        selectedInits = self.dataframe.loc[self.dataframe['function'] == self.initFunc]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending = False, inplace=True)
         selectedRecords = []
@@ -60,7 +69,9 @@ class baselineSlackAnalysis:
             selectedReq = self.dataframe.loc[(self.dataframe["reqID"] == record["reqID"]) & (self.dataframe["host"] == "s")]
             if selectedReq.shape[0] == self.recordNum:
                 selectedRecords.append(record["reqID"])
-        selectedRecords = selectedRecords[:self.windowSize]
+        if  len(selectedRecords) >= self.windowSize:
+            selectedRecords = selectedRecords[:self.windowSize]
+        print("SELECTEDRECORDS::::", selectedRecords)
         return selectedRecords
 
     def getObservations(self):
@@ -98,24 +109,31 @@ class baselineSlackAnalysis:
     
     def getUpperBound(self, array):
         n = len(array)
-        sortedArray = np.sort(array)
-        z = 1.96
-        index = int(np.ceil(1 + ((n + (z * (np.sqrt(n)) ) )/2)) )
-        upperBound = sortedArray[index]
+        if n <= 30:
+            upperBound =  np.percentile(array, 75)
+        else:
+            sortedArray = np.sort(array)
+            z = 1.96
+            index = int(np.ceil(1 + ((n + (z * (np.sqrt(n)) ) )/2)) )
+            upperBound = sortedArray[index]
         return upperBound
 
     def getMedian(self, array):
         # median = array.quantile(0.5)
         
         median = statistics.median(array)
+        statistics.quantiles
         return median
 
     def getLowerBound(self, array):
         n = len(array)
-        sortedArray = np.sort(array)
-        z = 1.96
-        index = int(np.floor((n - (z * (np.sqrt(n)) ) )/2) )
-        lowerBound = sortedArray[index]
+        if n <= 30:
+            lowerBound =  np.percentile(array, 25)
+        else:
+            sortedArray = np.sort(array)
+            z = 1.96
+            index = int(np.floor((n - (z * (np.sqrt(n)) ) )/2) )
+            lowerBound = sortedArray[index]
         return lowerBound
 
     def findCriticalPath(self, tasks, dependencies):
@@ -187,8 +205,10 @@ class baselineSlackAnalysis:
     
     def slackCalculations(self):
         slackResults = {}
+        slackDurations = {}
         for col in self.slackData.keys():
             slackResults[col] = {}
+            slackDurations[col] = {}
         decisionModes = rankerConfig.decisionMode
         for decisionMode in decisionModes:
             self.tasks = {}
@@ -205,6 +225,7 @@ class baselineSlackAnalysis:
                     self.tasks[col] = self.getMedian(self.slackData[col])
                 else:
                     self.tasks[col] = self.getMedian(self.slackData[col])  
+                slackDurations[col][decisionMode] = self.tasks[col]
             self.duration, self.crPath = self.findCriticalPath(self.tasks, self.dependencies)
             self.completeESEF(self.initFunc)
             self.completeLSLF(self.duration, self.crPath)
@@ -214,6 +235,8 @@ class baselineSlackAnalysis:
         # print(slackResults)
         with open((os.getcwd()+"/data/" + str(self.workflow)+ "/"+ 'slackData.json'), 'w') as outfile:
             json.dump(slackResults, outfile) 
+        with open((os.getcwd()+"/data/" + str(self.workflow)+ "/"+ 'slackDurations.json'), 'w') as outfile:
+            json.dump(slackDurations, outfile) 
 
 
 
@@ -227,5 +250,7 @@ class baselineSlackAnalysis:
 
 if __name__ == "__main__":
     workflow = "Text2SpeechCensoringWorkflow"
+    # workflow = "TestCaseWorkflow"
+
     x = baselineSlackAnalysis(workflow)
     

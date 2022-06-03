@@ -36,3 +36,5 @@ jobs:
         cd scheduler
         python solver_cost_test.py
         python solver_latency_test.py
+        python multiVM_cost_test.py
+        python multiVM_latency_test.py
