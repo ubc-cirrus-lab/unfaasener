@@ -9,3 +9,7 @@ To set up the tool simply run the following script:
 ```
 ./setup.sh
 ```
+
+## Acknowledgments
+
+This work was supported in part by the Natural Sciences and Engineering Research Council of Canada and the Google Cloud Research Credits program.
