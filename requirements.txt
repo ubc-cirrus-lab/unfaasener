@@ -2,3 +2,4 @@ mip
 pandas
 gekko
 google-cloud-datastore
+google-cloud-monitoring
