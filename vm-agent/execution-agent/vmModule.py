@@ -30,12 +30,23 @@ subscription_id = "vmSubscriber1"
 
 subscriber = pubsub_v1.SubscriberClient()
 subscription_path = subscriber.subscription_path(project_id, subscription_id)
-DSclient = datastore.Client()
+datastore_client = datastore.Client()
 publisher = pubsub_v1.PublisherClient()
 client = docker.from_env()
 writtenData = {}
 executionDurations = {}
 memoryLimits = {}
+
+def flushExecutionDurations(executionDurations):
+    kind="vmLogs"
+    name = "sampletask1"
+    task_key = datastore_client.key(kind, name)
+    task = datastore.Entity(key=task_key)
+    task["duration"] = "110"
+    datastore_client.put(task)
+
+
+
 
 def getFunctionParameters(functionname):
     client = functions_v1.CloudFunctionsServiceClient()
@@ -144,6 +155,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         else:
             executionDurations[reqID][invokedFun] = executionDurations[reqID][invokedFun] + "_" + str(before)+";"+str(after)
     print (executionDurations)
+    flushExecutionDurations (executionDurations)
 
 
 
