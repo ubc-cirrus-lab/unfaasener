@@ -38,12 +38,21 @@ executionDurations = {}
 memoryLimits = {}
 
 def flushExecutionDurations(executionDurations):
+    seed=0
     kind="vmLogs"
-    name = "sampletask1"
-    task_key = datastore_client.key(kind, name)
-    task = datastore.Entity(key=task_key)
-    task["duration"] = "110"
-    datastore_client.put(task)
+    for key in executionDurations:
+        for key2 in executionDurations[key]:
+            if executionDurations[key][key2] != {}:
+                 task_key = datastore_client.key(kind, str(key)+str(seed))
+                 task = datastore.Entity(key=task_key)
+                 seed = seed + 1
+                 task["reqID"] = key 
+                 task["function"]=key2
+                 task["duration"]=executionDurations[key][key2]["duration"]
+                 task["start"]=executionDurations[key][key2]["start"]
+                 task["finish"]=executionDurations[key][key2]["finish"]
+                 task["host"]=executionDurations[key][key2]["host"]
+        datastore_client.put(task)
 
 
 
@@ -140,20 +149,23 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     print (str(jsonfile).replace('\'','"'))
     if reqID not in executionDurations:
         executionDurations[reqID] = {}
+    if invokedFun not in executionDurations[reqID]:
+        executionDurations[reqID][invokedFun] = {}
+
 
     if invokedFun not in memoryLimits:
         getFunctionParameters(invokedFun)
     
     with open("/tmp/output.log", "a") as output:
         before  = datetime.datetime.now()
-        client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = str(memoryLimits[invokedFun]) )
+        container = client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = str(memoryLimits[invokedFun]),detach=False )
         after  = datetime.datetime.now()
         delta =  after - before
-#        executionDurations[reqID][invokedFun] = str(delta.microseconds/1000)
-        if invokedFun not in executionDurations[reqID]:
-            executionDurations[reqID][invokedFun] =  str(before)+";"+str(after)
-        else:
-            executionDurations[reqID][invokedFun] = executionDurations[reqID][invokedFun] + "_" + str(before)+";"+str(after)
+        executionDurations[reqID][invokedFun]["duration"] = str(delta.microseconds/1000)
+        executionDurations[reqID][invokedFun]["start"] = str(before)
+        executionDurations[reqID][invokedFun]["finish"] = str(after)
+        executionDurations[reqID][invokedFun]["host"] = "vm1"
+        executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
     print (executionDurations)
     flushExecutionDurations (executionDurations)
 
