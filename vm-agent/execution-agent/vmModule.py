@@ -52,6 +52,7 @@ def flushExecutionDurations(executionDurations):
                  task["start"]=executionDurations[key][key2]["start"]
                  task["finish"]=executionDurations[key][key2]["finish"]
                  task["host"]=executionDurations[key][key2]["host"]
+                 task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
         datastore_client.put(task)
 
 
@@ -166,6 +167,10 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun]["finish"] = str(after)
         executionDurations[reqID][invokedFun]["host"] = "vm1"
         executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
+        executionDurations[reqID][invokedFun]["mergingPoint"] = ""
+        if "Merg" in invokedFun:
+            executionDurations[reqID][invokedFun]["mergingPoint"]=str(message.attributes.get("branch"))
+
     print (executionDurations)
     flushExecutionDurations (executionDurations)
 
