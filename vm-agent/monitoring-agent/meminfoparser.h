@@ -27,7 +27,7 @@ public:
 		meminfo >> results[0];
 //		std::cout << "MemFotal: " << results[0] << ")\n";	
 	}
-	if ( token == "MemFree:" )
+	if ( token == "MemAvailable:" )
 	{
 		meminfo >> results[1];
 //               std::cout << "MemFree: " << results[1] << ")\n";
