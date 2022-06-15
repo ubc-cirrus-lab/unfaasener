@@ -53,7 +53,8 @@ def flushExecutionDurations(executionDurations):
                  task["finish"]=executionDurations[key][key2]["finish"]
                  task["host"]=executionDurations[key][key2]["host"]
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
-        datastore_client.put(task)
+                 datastore_client.put(task)
+        executionDurations = {}
 
 
 
@@ -148,15 +149,17 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         "attributes": message.attributes,
             }
     print (str(jsonfile).replace('\'','"'))
+    if invokedFun not in memoryLimits:
+        getFunctionParameters(invokedFun)
     if reqID not in executionDurations:
         executionDurations[reqID] = {}
     if invokedFun not in executionDurations[reqID]:
         executionDurations[reqID][invokedFun] = {}
+    else:
+        #Cover the two executions of the merging point
+        invokedFun = str(invokedFun)+"2"
 
 
-    if invokedFun not in memoryLimits:
-        getFunctionParameters(invokedFun)
-    
     with open("/tmp/output.log", "a") as output:
         before  = datetime.datetime.now()
         container = client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = str(memoryLimits[invokedFun]),detach=False )
@@ -171,8 +174,12 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         if "Merg" in invokedFun:
             executionDurations[reqID][invokedFun]["mergingPoint"]=str(message.attributes.get("branch"))
 
-    print (executionDurations)
-    flushExecutionDurations (executionDurations)
+    if "Text2SpeechCensoringWorkflow_Censor" in invokedFun:
+        flushExecutionDurations (executionDurations)
+        print (executionDurations)
+
+
+
 
 
 
