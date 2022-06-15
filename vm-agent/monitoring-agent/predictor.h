@@ -43,7 +43,7 @@ public:
     }
     double compute_predicton_ExponentialMovingAverage(double x)
     {
-     alpha = 0.2;
+     alpha = 0.8;
      margin = 0.4;
      max = 0;
      size=utilization_records->size();
@@ -62,13 +62,27 @@ public:
 	}
 
     }
+
     prediction = (alpha *  max  + (1-alpha)*x );
     if ( prediction * (1+margin) > 100)
     {
 	   prediction = 100 ;
     }
+    if ( (int(max) > int(x) ) || (prediction > x + 100*margin))
+    {
+            std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
+            handle_prediction_violation();
+    }
+
     return  prediction;
     }
+
+    int handle_prediction_violation()
+    {
+	    //execute the local scheduler
+	    return 1;
+    }
+
 
     
 

@@ -40,7 +40,7 @@ int main(int, char *[]) {
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-	 float mem_utilization = 100 * ( (float)current_mem_readings[1] / current_mem_readings[0]);
+	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1])/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
          //std::cout << mem_utilization << std::endl;
 //fill the utilziation buffers for the ring_size (i.e. 10 predictions in 1 second)
@@ -56,7 +56,7 @@ int main(int, char *[]) {
                 typedef std::chrono::duration<float> fsec;
                 auto t0 = Time::now();
 		cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old));
-		mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old));
+		mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old));
                 std::cout << "Total Prediction "<< cpu_pred_old <<"% of CPU consumption in the next window "<<std::endl;
                 std::cout << "Total Prediction "<< mem_pred_old <<"% of Memory consumption in the next window "<<std::endl;
                 auto t1 = Time::now();
