@@ -47,7 +47,7 @@ def flushExecutionDurations(executionDurations):
                  task = datastore.Entity(key=task_key)
                  seed = seed + 1
                  task["reqID"] = key 
-                 task["function"]=key2
+                 task["function"]=str(key2).replace('2','')
                  task["duration"]=executionDurations[key][key2]["duration"]
                  task["start"]=executionDurations[key][key2]["start"]
                  task["finish"]=executionDurations[key][key2]["finish"]
@@ -155,9 +155,6 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID] = {}
     if invokedFun not in executionDurations[reqID]:
         executionDurations[reqID][invokedFun] = {}
-    else:
-        #Cover the two executions of the merging point
-        invokedFun = str(invokedFun)+"2"
 
 
     with open("/tmp/output.log", "a") as output:
@@ -165,6 +162,12 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         container = client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = str(memoryLimits[invokedFun]),detach=False )
         after  = datetime.datetime.now()
         delta =  after - before
+        if executionDurations[reqID][invokedFun] != {}:
+            #Cover the second Merging function
+            invokedFun = str(invokedFun) +"2"
+            executionDurations[reqID][invokedFun] = {}
+
+
         executionDurations[reqID][invokedFun]["duration"] = str(delta.microseconds/1000)
         executionDurations[reqID][invokedFun]["start"] = str(before)
         executionDurations[reqID][invokedFun]["finish"] = str(after)
@@ -173,6 +176,8 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun]["mergingPoint"] = ""
         if "Merg" in invokedFun:
             executionDurations[reqID][invokedFun]["mergingPoint"]=str(message.attributes.get("branch"))
+
+
 
     if "Text2SpeechCensoringWorkflow_Censor" in invokedFun:
         flushExecutionDurations (executionDurations)
