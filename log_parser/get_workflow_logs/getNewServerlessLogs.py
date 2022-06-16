@@ -32,7 +32,7 @@ class getNewLogs(GetLog):
         self.GBSec = 0
         self.GHzSec = 0
         self.writeLogs = {}
-        with open(os.getcwd() + "/data/" + workflow + ".json", "r") as json_file:
+        with open((os.path.dirname(os.path.abspath(__file__))) + "/data/" + workflow + ".json", "r") as json_file:
             workflow_json = json.load(json_file)
         self.initFunc = workflow_json["initFunc"]
         self.workflowFunctions = workflow_json["workflowFunctions"]
@@ -46,7 +46,7 @@ class getNewLogs(GetLog):
             self.checkLatestTimeStamp(func)
             self.pullLogs(func)
         with open(
-            (os.getcwd() + "/data/" + str(self.workflow) + "/" + "data.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"), "w"
         ) as outfile:
             json.dump(self.writeLogs, outfile)
         self.getDict()
@@ -54,7 +54,7 @@ class getNewLogs(GetLog):
 
     def saveCost(self):
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[1])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
             + "/scheduler/data/"
             + self.workflow
             + "-prevCost.json"
@@ -69,10 +69,10 @@ class getNewLogs(GetLog):
 
     def checkLatestTimeStamp(self, func):
         if os.path.isfile(
-            os.getcwd() + "/data/" + str(self.workflow) + "/" + "data.json"
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"
         ):
             with open(
-                os.getcwd() + "/data/" + str(self.workflow) + "/" + "data.json", "r"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
             ) as outfile:
                 workflow_json = json.load(outfile)
                 lastRecordedTimestamp = str(workflow_json[func][0]["time_utc"])
@@ -92,6 +92,9 @@ class getNewLogs(GetLog):
                 )
                 lastLog_logs = subprocess.check_output(shlex.split(lastLog))
                 lastLog_logs_json = json.loads(lastLog_logs)
+                if len(lastLog_logs_json) == 0:
+                    endFlag = True
+                    break
                 lastLog_date = [
                     element["time_utc"] for idx, element in enumerate(lastLog_logs_json)
                 ]
@@ -139,7 +142,7 @@ class getNewLogs(GetLog):
                 if (self.writeLogs[function]) == prevData:
                     endFlag = True
                 with open(
-                    (os.getcwd() + "/data/" + str(self.workflow) + "/" + "data.json"),
+                    ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"),
                     "w",
                 ) as outfile:
                     json.dump(self.writeLogs, outfile)
@@ -167,11 +170,11 @@ class getNewLogs(GetLog):
             self.NI += numNewInvocations
 
     def addCost(self, mem, dur):
-        if mem == 0.128:
+        if mem == 0.125:
             Ghz = 0.2
-        elif mem == 0.256:
+        elif mem == 0.25:
             Ghz = 0.4
-        elif mem == 0.512:
+        elif mem == 0.5:
             Ghz = 0.8
         elif mem == 1:
             Ghz = 1.4
@@ -187,7 +190,7 @@ class getNewLogs(GetLog):
     def getDict(self):
         self.dictData
         with open(
-            os.getcwd() + "/data/" + str(self.workflow) + "/" + "data.json", "r"
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
         ) as outfile:
             workflow_json = json.load(outfile)
         for func in self.workflowFunctions:
@@ -282,28 +285,28 @@ class getNewLogs(GetLog):
                         self.dictData["mergingPoint"].append(mergingBranch)
         df = pd.DataFrame(self.dictData)
         if os.path.isfile(
-            os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
         ):
             prevDataframe = pd.read_pickle(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
             )
             newDataFrame.to_pickle(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )
             newDataFrame.to_csv(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
             )
 
         else:
             print(df.shape[0])
             df.to_pickle(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )
             df.to_csv(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
             )
 
 

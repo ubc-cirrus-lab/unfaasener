@@ -51,7 +51,7 @@ class GetWorkflowLogs:
 
     def saveResults(self):
         publisheExeIDsPath = (
-            os.getcwd()
+            (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + str(self.workflow)
             + "/"
@@ -59,7 +59,7 @@ class GetWorkflowLogs:
             + ", publisheExeIDs.json"
         )
         messageExePath = (
-            os.getcwd()
+            (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + str(self.workflow)
             + "/"
@@ -67,7 +67,7 @@ class GetWorkflowLogs:
             + ", messageExe.json"
         )
         dataPath = (
-            os.getcwd()
+            (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + str(self.workflow)
             + "/"
@@ -75,7 +75,7 @@ class GetWorkflowLogs:
             + ", data.json"
         )
         with open(
-            os.getcwd()
+            (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + str(self.workflow)
             + "/"
@@ -85,7 +85,7 @@ class GetWorkflowLogs:
         ) as publisherExeID:
             json.dump(self.execodes, publisherExeID)
         with open(
-            os.getcwd()
+            (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + str(self.workflow)
             + "/"
@@ -159,7 +159,7 @@ class GetWorkflowLogs:
             for func in self.functions:
                 self.writeLogs[func] = self.allLogs[func]
             if os.path.isfile(
-                os.getcwd()
+                (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + str(self.workflow)
                 + "/"
@@ -167,7 +167,7 @@ class GetWorkflowLogs:
                 + ", data.json"
             ):
                 with open(
-                    os.getcwd()
+                    (os.path.dirname(os.path.abspath(__file__)))
                     + "/data/"
                     + str(self.workflow)
                     + "/"
@@ -178,7 +178,7 @@ class GetWorkflowLogs:
                     json.dump(self.writeLogs, outfile)
             else:
                 with open(
-                    os.getcwd()
+                    (os.path.dirname(os.path.abspath(__file__)))
                     + "/data/"
                     + str(self.workflow)
                     + "/"
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     workflow = "ImageProcessingWorkflow"
     # workflow = "Text2SpeechCensoringWorkflow"
 
-    with open(os.getcwd() + "/data/" + workflow + ".json", "r") as json_file:
+    with open((os.path.dirname(os.path.abspath(__file__))) + "/data/" + workflow + ".json", "r") as json_file:
         workflow_json = json.load(json_file)
 
     initFunc = workflow_json["initFunc"]

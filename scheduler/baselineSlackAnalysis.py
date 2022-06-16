@@ -23,33 +23,33 @@ class baselineSlackAnalysis:
         # jsonPath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
         # dataframePath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow + "/NEWWgeneratedData.pkl"
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + ".json"
         )
         # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
         if os.path.isfile(
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.pkl"
         ):
             dataframePath = (
-                str(Path(os.getcwd()).resolve().parents[0])
+                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
         ):
             dataframePath = (
-                str(Path(os.getcwd()).resolve().parents[0])
+                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
@@ -281,11 +281,11 @@ class baselineSlackAnalysis:
                 slackResults[col][decisionMode] = slack
         # print(slackResults)
         with open(
-            (os.getcwd() + "/data/" + str(self.workflow) + "/" + "slackData.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackData.json"), "w"
         ) as outfile:
             json.dump(slackResults, outfile)
         with open(
-            (os.getcwd() + "/data/" + str(self.workflow) + "/" + "slackDurations.json"),
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackDurations.json"),
             "w",
         ) as outfile:
             json.dump(slackDurations, outfile)

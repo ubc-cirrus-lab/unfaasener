@@ -42,7 +42,7 @@ class monitoring:
         dataframe = {"Topic": topic, "PubsubMsgSize": size}
         df = pd.DataFrame(dataframe)
 
-        df.to_csv(os.getcwd() + "/data/" + "topicMsgSize.csv")
-        df.to_pickle(os.getcwd() + "/data/" + "topicMsgSize.pkl")
+        df.to_csv((os.path.dirname(os.path.abspath(__file__))) + "/data/" + "topicMsgSize.csv")
+        df.to_pickle((os.path.dirname(os.path.abspath(__file__))) + "/data/" + "topicMsgSize.pkl")
 
-        result.to_csv(os.getcwd() + "/data/" + "pubsubsize.csv")
+        result.to_csv((os.path.dirname(os.path.abspath(__file__))) + "/data/" + "pubsubsize.csv")

@@ -19,32 +19,32 @@ class Estimator:
     def __init__(self, workflow):
         self.workflow = workflow
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + ".json"
         )
         if os.path.isfile(
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.pkl"
         ):
             dataframePath = (
-                str(Path(os.getcwd()).resolve().parents[0])
+                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
         ):
             dataframePath = (
-                str(Path(os.getcwd()).resolve().parents[0])
+                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
@@ -66,7 +66,7 @@ class Estimator:
     def prev_cost(self):
 
         with open(
-            os.getcwd() + "/data/" + self.workflow + "-prevCost.json", "r"
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "-prevCost.json", "r"
         ) as json_file:
             workflow_json = json.load(json_file)
         return workflow_json
@@ -91,11 +91,11 @@ class Estimator:
         unit_price_invocation = 0.0000004
         unit_price_GB = 0.0000025
         unit_price_GHz = 0.0000100
-        if GB == 0.128:
+        if GB == 0.125:
             Ghz = 0.2
-        elif GB == 0.256:
+        elif GB == 0.25:
             Ghz = 0.4
-        elif GB == 0.512:
+        elif GB == 0.5:
             Ghz = 0.8
         elif GB == 1:
             Ghz = 1.4
@@ -181,7 +181,7 @@ class Estimator:
                     exeTimes[func][mode] = self.getMedian(durations)
         with open(
             (
-                os.getcwd()
+                (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + str(self.workflow)
                 + "/"
@@ -209,7 +209,7 @@ class Estimator:
 
     def getPubsubDF(self):
         monitoringObj = monitoring()
-        topicMsgSize = pd.read_pickle(os.getcwd() + "/data/" + "topicMsgSize.pkl")
+        topicMsgSize = pd.read_pickle((os.path.dirname(os.path.abspath(__file__))) + "/data/" + "topicMsgSize.pkl")
         return topicMsgSize
 
     # func: function a message is published to (subscriber)
@@ -238,7 +238,7 @@ class Estimator:
                 ].item()
                 pubSubSize[func] = psSize
         with open(
-            (os.getcwd() + "/data/" + str(self.workflow) + "/" + "pubSubSize.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "pubSubSize.json"), "w"
         ) as outfile:
             json.dump(pubSubSize, outfile)
 
@@ -303,7 +303,7 @@ class Estimator:
                     et = self.getMedian(durations)
                     costs[func][mode] = self.cost_estimator(1, et, GB)
         with open(
-            (os.getcwd() + "/data/" + str(self.workflow) + "/" + "Costs.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "Costs.json"), "w"
         ) as outfile:
             json.dump(costs, outfile)
 

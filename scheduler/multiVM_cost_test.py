@@ -15,7 +15,7 @@ class TestSolver(unittest.TestCase):
 
     def test_similar2prevdecision(self):
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + "Text2SpeechCensoringWorkflow"
             + ".json"
@@ -49,7 +49,7 @@ class TestSolver(unittest.TestCase):
 
     def test_highPubsubCost(self):
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + "TestCaseWorkflow"
             + ".json"
@@ -62,11 +62,11 @@ class TestSolver(unittest.TestCase):
             json.dump(workflow_json, json_file)
         highPubsubSize = {"A": 10e10, "B": 10e10, "C": 10e10, "D": 10e10}
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "r"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "r"
         ) as json_file:
             prevPubSubSize = json.load(json_file)
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "w"
         ) as outfile:
             json.dump(highPubsubSize, outfile)
         toleranceWindow = 0
@@ -82,14 +82,14 @@ class TestSolver(unittest.TestCase):
             availResources=availResources, alpha=alpha, verbose=True
         )
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "w"
         ) as outfile:
             json.dump(prevPubSubSize, outfile)
         self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0]])
 
     def test_highCost(self):
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + "TestCaseWorkflow"
             + ".json"
@@ -101,14 +101,14 @@ class TestSolver(unittest.TestCase):
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "Costs.json"), "r"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "Costs.json"), "r"
         ) as json_file:
             prevCosts = json.load(json_file)
         highCost = prevCosts
         for func in highCost.keys():
             highCost[func]["default"] = 10e10
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "Costs.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "Costs.json"), "w"
         ) as outfile:
             json.dump(highCost, outfile)
         toleranceWindow = 0
@@ -124,7 +124,7 @@ class TestSolver(unittest.TestCase):
             availResources=availResources, alpha=alpha, verbose=True
         )
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "Costs.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "Costs.json"), "w"
         ) as outfile:
             json.dump(prevCosts, outfile)
         self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0]])
@@ -146,7 +146,7 @@ class TestSolver(unittest.TestCase):
 
     def test_multipleVMs_chooseTwoMostCostlyFuncs(self):
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + "Text2SpeechCensoringWorkflow"
             + ".json"

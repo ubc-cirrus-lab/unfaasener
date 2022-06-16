@@ -16,7 +16,7 @@ class TestSolver(unittest.TestCase):
         workflow = "TestCase3Workflow"
         toleranceWindow = 0
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + "TestCase3Workflow"
             + ".json"
@@ -57,15 +57,15 @@ class TestSolver(unittest.TestCase):
 
     # Test on when the tolerance window is not limited for the user
     def test_unlimitedToleranceWindow(self):
-        workflow = "TestCaseWorkflow"
-        toleranceWindow = 1000000
+        workflow = "TestCase2Workflow"
+        toleranceWindow = 100000000
         solver = OffloadingSolver(workflow, self.mode, None, toleranceWindow)
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0]])
+        self.assertEqual(x, [[0.0], [1.0], [1.0], [1.0], [1.0], [1.0]])
 
     # Test for checking the reduction in the nodes in the same path but with different slack time
     def test_diffPaths(self):
@@ -121,7 +121,7 @@ class TestSolver(unittest.TestCase):
     #     solver = CIScheduler(workflow, self.mode, toleranceWindow)
     #     availResources =  [{'cores':1000, 'mem_mb':500000}]
     #     alpha = 0
-    #     x = solver.suggestBestOffloadingSingleVM(availResources, alpha)
+    #     x = solver.suggestBestOffloadingMultiVM(availResources, alpha)
     #     self.assertEqual(x, [[0.0], [0.0], [0.9], [0.0], [0.9], [0.9]])
 
 

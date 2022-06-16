@@ -1,5 +1,8 @@
 mode = "latency"
-statisticalParameter = 0.5
+statisticalParameter = 0
 decisionMode = ["best-case", "worst-case", "default"]
-# mode = "latency"
-# statisticalParameter = 0.95
+toleranceWindow = 0
+# availResources = [
+#         {"cores": 1, "mem_mb": 400}
+#     ]
+workflow = "Text2SpeechCensoringWorkflow"

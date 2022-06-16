@@ -22,13 +22,13 @@ class Estimator:
     def __init__(self, workflow):
         self.workflow = workflow
         jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + ".json"
         )
         dataframePath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.pkl"

@@ -13,7 +13,7 @@ class dataStoreLogParser(GetLog):
     def __init__(self, workflow):
         super().__init__(workflow)
         jsonPath = (
-            os.getcwd() +
+            (os.path.dirname(os.path.abspath(__file__))) +
             "/data/"
             + self.workflow
             + ".json"
@@ -31,7 +31,7 @@ class dataStoreLogParser(GetLog):
         self.dictData["host"] = []
         self.dictData["duration"] = []
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-            str(Path(os.getcwd()).resolve().parents[1])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
             + "/scheduler/key/schedulerKey.json"
         )
         project = "ubc-serverless-ghazal"
@@ -40,49 +40,64 @@ class dataStoreLogParser(GetLog):
         self.saveNewLogs()
 
     def getNewLogs(self):
-
-        query = self.datastore_client.query(kind="vmLogs")
+        results = []
         for func in self.workflowFunctions:
+            query = self.datastore_client.query(kind="vmLogs")
             query.add_filter("function", "=", func)
-        results = list(query.fetch())
+            results = results + list(query.fetch())
+        print("num of new res:::", len(results))
         for res in results:
             self.dictData["function"].append(res["function"])
             self.dictData["reqID"].append(res["reqID"])
-            self.dictData["start"].append(res["start"])
-            self.dictData["finish"].append(res["finish"])
+            if (res["finish"]).endswith("Z"):
+                        (res["finish"]) = (
+                            res["finish"]
+                        )[:-1] + ".000"
+            finish = datetime.datetime.strptime(
+                        (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
+                    )
+            if (res["start"]).endswith("Z"):
+                        (res["start"]) = (
+                            res["start"]
+                        )[:-1] + ".000"
+            start = datetime.datetime.strptime(
+                        (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
+                    )
+            self.dictData["start"].append(start)
+            self.dictData["finish"].append(finish)
             self.dictData["mergingPoint"].append(res["mergingPoint"])
             self.dictData["host"].append(res["host"])
-            self.dictData["duration"].append(res["duration"])
+            self.dictData["duration"].append(float(res["duration"]))
             log_key = self.datastore_client.key("vmLogs", res.key.id_or_name)
-            self.datastore_client.delete(log_key)
+            # self.datastore_client.delete(log_key)
 
     def saveNewLogs(self):
         df = pd.DataFrame(self.dictData)
         if os.path.isfile(
-            os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
         ):
 
             prevDataframe = pd.read_pickle(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
             )
             newDF = self.keepWindowSize(newDataFrame)
             newDF.to_pickle(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )
             newDF.to_csv(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
             )
 
         else:
             newDF = self.keepWindowSize(df)
             newDF.to_pickle(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )
             newDF.to_csv(
-                os.getcwd() + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
             )
 
     def keepWindowSize(self, df):

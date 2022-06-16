@@ -15,19 +15,19 @@ from Estimator import Estimator
 class OffloadingSolver:
     def __init__(self, workflow, mode, decisionMode, toleranceWindow):
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "slackData.json"), "r"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "slackData.json"), "r"
         ) as outfile:
             self.slacksDF = json.load(outfile)
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "slackDurations.json"), "r"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "slackDurations.json"), "r"
         ) as outfile:
             self.slackDurationsDF = json.load(outfile)
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "pubSubSize.json"), "r"
+            ((os.path.dirname(os.path.abspath(__file__)))+ "/data/" + str(workflow) + "/" + "pubSubSize.json"), "r"
         ) as outfile:
             self.pubSubSize = json.load(outfile)
         with open(
-            (os.getcwd() + "/data/" + str(workflow) + "/" + "Costs.json"), "r"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "Costs.json"), "r"
         ) as outfile:
             self.serverlessCosts = json.load(outfile)
         self.estimator = Estimator(workflow)
@@ -39,16 +39,16 @@ class OffloadingSolver:
             self.decisionMode = "default"
         self.toleranceWindow = toleranceWindow
         self.GCP_MB2GHz = {
-            128: 0.2,
-            256: 0.4,
-            512: 0.8,
+            125: 0.2,
+            250: 0.4,
+            500: 0.8,
             1000: 1.4,
             2000: 2.4,
             4000: 4.8,
             8000: 4.8,
         }
         self.jsonPath = (
-            str(Path(os.getcwd()).resolve().parents[0])
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + workflow
             + ".json"
@@ -444,11 +444,11 @@ class OffloadingSolver:
                                 [
                                     (
                                         (
-                                            offloadingDecisions[node][vm]
-                                            * self.allPathsSlack[path][node]
+                                            offloadingDecisions[node + 1][vm]
+                                            * self.allPathsSlack[path][node + 1]
                                             * (
                                                 self.addedExecLatency(
-                                                    offloadingCandidates[node], vm
+                                                    offloadingCandidates[node + 1], vm
                                                 )
                                             )
                                         )
@@ -458,13 +458,13 @@ class OffloadingSolver:
                                                     [
                                                         (
                                                             (self.allPathsSlack[path])[
-                                                                node
+                                                                node + 1
                                                             ]
                                                         )
                                                         * (
                                                             model.abs2(
                                                                 offloadingDecisions[
-                                                                    node
+                                                                    node + 1
                                                                 ][vm]
                                                                 - offloadingDecisions[
                                                                     j
@@ -480,19 +480,19 @@ class OffloadingSolver:
                                                             (offloadingCandidates[j]),
                                                             (
                                                                 offloadingCandidates[
-                                                                    node
+                                                                    node + 1
                                                                 ]
                                                             ),
                                                         )
                                                         for j in self.getParentIndexes(
-                                                            offloadingCandidates[node]
+                                                            offloadingCandidates[node + 1]
                                                         )
                                                     ]
                                                 )
                                             )
                                         )
                                     )
-                                    for node in range(len(offloadingDecisions))
+                                    for node in range(len(offloadingDecisions) - 1)
                                 ]
                             )
                             for vm in range(len(availResources))
