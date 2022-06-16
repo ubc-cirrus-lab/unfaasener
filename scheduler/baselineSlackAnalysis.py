@@ -9,7 +9,6 @@ import os
 import pandas as pd
 import numpy as np
 import math
-import networkx as nx
 from criticalpath import Node
 from pathlib import Path
 import rankerConfig
