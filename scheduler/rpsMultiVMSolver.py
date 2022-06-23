@@ -12,22 +12,51 @@ from Estimator import Estimator
 # Non-linear optimzation models for cost and latency
 
 
-class OffloadingSolver:
-    def __init__(self, workflow, mode, decisionMode, toleranceWindow):
+class rpsOffloadingSolver:
+    def __init__(self, workflow, mode, decisionMode, toleranceWindow, rps):
+        self.rps = rps
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "slackData.json"), "r"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(workflow)
+                + "/"
+                + "slackData.json"
+            ),
+            "r",
         ) as outfile:
             self.slacksDF = json.load(outfile)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "slackDurations.json"), "r"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(workflow)
+                + "/"
+                + "slackDurations.json"
+            ),
+            "r",
         ) as outfile:
             self.slackDurationsDF = json.load(outfile)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__)))+ "/data/" + str(workflow) + "/" + "pubSubSize.json"), "r"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(workflow)
+                + "/"
+                + "pubSubSize.json"
+            ),
+            "r",
         ) as outfile:
             self.pubSubSize = json.load(outfile)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(workflow) + "/" + "Costs.json"), "r"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(workflow)
+                + "/"
+                + "Costs.json"
+            ),
+            "r",
         ) as outfile:
             self.serverlessCosts = json.load(outfile)
         self.estimator = Estimator(workflow)
@@ -132,6 +161,12 @@ class OffloadingSolver:
                 duration += self.getDuration(node)
             self.allPathsSlack[duration] = path
 
+    def getVMexecution(self, offloadingCandidate, vm):
+        vm = self.estimator.getFuncExecutionTime(
+            offloadingCandidate, ("vm" + str(vm)), self.decisionMode
+        )
+        return vm
+
     def addedExecLatency(self, offloadingCandidate, vm):
         """
         Returns estimated added execution time which is caused by offloading a serverless function to VM
@@ -193,7 +228,11 @@ class OffloadingSolver:
         decision = self.lastDecision[
             self.offloadingCandidates.index(offloadingCandidate)
         ][vm]
-        return decision
+        if decision == 0:
+            return 0
+        else:
+            return 1
+        # return decision
 
     def onCriticalPath(self, offloadingCandidate):
         """
@@ -249,12 +288,22 @@ class OffloadingSolver:
         offloadingCandidates = self.offloadingCandidates
         if self.optimizationMode == "cost":
             model = GEKKO(remote=False)
+            zero = model.Const(0)
+            one = model.Const(1)
+            alphaConst = model.Const(alpha)
+
+            tempGoalVar = [   [  0
+                 for i in range(len(availResources))]
+                for j in range(len(offloadingCandidates))
+            ]
+
+
             offloadingDecisions = [
                 [
                     model.Var(
                         lb=0,
-                        ub=1,
-                        integer=True,
+                        ub=100,
+                        integer = True,
                         name=("function:" + str(j) + " resource:" + str(i)),
                     )
                     for i in range(len(availResources))
@@ -264,7 +313,7 @@ class OffloadingSolver:
 
             # Constraint on only having a single or zero one for each vm decision for a function
             for function in offloadingDecisions:
-                model.Equation(sum([function[i] for i in range(len(function))]) <= 1)
+                model.Equation(sum([function[i] for i in range(len(function))]) <= 100)
                 # model.Equation( list(function).count(1) <= 1)
 
             # Constraint on checking available memory of each VM
@@ -272,9 +321,17 @@ class OffloadingSolver:
                 model.Equation(
                     sum(
                         [
-                            offloadingDecisions[function][VMIndex]
-                            * self.getMem(offloadingCandidates[function])
-                            for function in range(len(offloadingDecisions))
+                            (
+                                self.rps
+                                * (
+                                    self.getVMexecution(
+                                        offloadingCandidates[function + 1], VMIndex
+                                    ) * 0.001
+                                )
+                                * (offloadingDecisions[function + 1][VMIndex] /100)
+                                * (self.getMem(offloadingCandidates[function + 1]))
+                            )
+                            for function in range(len(offloadingDecisions) - 1)
                         ]
                     )
                     <= availResources[VMIndex]["mem_mb"]
@@ -284,9 +341,21 @@ class OffloadingSolver:
                 model.Equation(
                     sum(
                         [
-                            offloadingDecisions[function][VMIndex]
-                            * self.getCPU(self.getMem(offloadingCandidates[function]))
-                            for function in range(len(offloadingDecisions))
+                            (
+                                self.rps
+                                * (
+                                    self.getVMexecution(
+                                        offloadingCandidates[function + 1], VMIndex
+                                    )* 0.001
+                                )
+                                * (offloadingDecisions[function + 1][VMIndex]/100)
+                                * (
+                                    self.getCPU(
+                                        self.getMem(offloadingCandidates[function + 1])
+                                    )
+                                )
+                            )
+                            for function in range(len(offloadingDecisions) - 1)
                         ]
                     )
                     <= availResources[VMIndex]["cores"]
@@ -296,44 +365,46 @@ class OffloadingSolver:
             for i in range(len(offloadingDecisions[0])):
                 model.Equation(offloadingDecisions[0][i] == 0)
 
+            for vm in range(len(availResources)):
+                for i in range(len(offloadingDecisions)):
+                    tempGoalVar[i][vm] = model.min2(offloadingDecisions[i][vm], 1)
+
+
+
             model.Minimize(
                 model.sum(
                     [
-                        model.sum(
+
+                        (
+                            ((10**5) * 2)
+                            * (1 - alphaConst)
+                            * self.rps
+                            * self.GetServerlessCostEstimate(offloadingCandidates[i])
+                            * (
+                                100
+                                - (
+                                    model.sum(
+                                        [
+                                            (offloadingDecisions[i][vm])
+                                            for vm in range(len(availResources))
+                                        ]
+                                    )
+                                )
+                            ) /100
+                        )
+                        + model.sum(
                             [
                                 (
                                     (
                                         ((10**5) * 2)
-                                        * (1 - alpha)
-                                        * (1 - offloadingDecisions[i][vm])
-                                        * (
-                                            self.GetServerlessCostEstimate(
-                                                offloadingCandidates[i]
-                                            )
-                                        )
-                                    )
-                                    + (
-                                        ((10**5) * 2)
-                                        * (1 - alpha)
+                                        * (1 - alphaConst)
                                         * (
                                             model.sum(
                                                 [
-                                                    model.max2(
-                                                        (
-                                                            1
-                                                            - (
-                                                                offloadingDecisions[i][
-                                                                    vm
-                                                                ]
-                                                                + offloadingDecisions[
-                                                                    j
-                                                                ][vm]
-                                                            )
-                                                        ),
-                                                        model.abs2(
-                                                            offloadingDecisions[i][vm]
-                                                            - offloadingDecisions[j][vm]
-                                                        ),
+                                                    model.if3((-1*(tempGoalVar[i][vm] + tempGoalVar[j][vm])) + 1, zero, one)
+                                                    * (
+                                                        (offloadingDecisions[i][vm]/100)
+                                                        * (offloadingDecisions[j][vm]/100)
                                                     )
                                                     * self.GetPubsubCost(
                                                         (offloadingCandidates[i]),
@@ -346,11 +417,13 @@ class OffloadingSolver:
                                             )
                                         )
                                     )
-                                    + (
-                                        (alpha)
+                                    + 
+                                    (
+                                        (10**3)
+                                        *(alphaConst)
                                         * (
                                             model.abs2(
-                                                offloadingDecisions[i][vm]
+                                                tempGoalVar[i][vm]
                                                 - (
                                                     self.IsOffloaded(
                                                         offloadingCandidates[i], vm
@@ -360,10 +433,10 @@ class OffloadingSolver:
                                         )
                                     )
                                 )
-                                for i in range(len(offloadingDecisions))
+                                for vm in range(len(availResources))
                             ]
                         )
-                        for vm in range(len(availResources))
+                        for i in range(len(offloadingDecisions))
                     ]
                 )
             )
@@ -379,6 +452,7 @@ class OffloadingSolver:
                     ]
                     for j in range(len(offloadingCandidates))
                 ]
+
                 self.saveNewDecision(offloadingDecisionsFinal)
                 return offloadingDecisionsFinal
             except:
@@ -391,10 +465,22 @@ class OffloadingSolver:
             self.getAllPaths()
             self.getSlackForPath()
             model = GEKKO(remote=False)
+            zero = model.Const(0)
+            one = model.Const(1)
+            alphaConst = model.Const(alpha)
+            tempGoalVar = [   [  0
+                 for i in range(len(availResources))]
+                for j in range(len(offloadingCandidates))
+            ]
+            # tempLatVar = [   [  0
+            #      for i in range(len(availResources))]
+            #     for j in range(len(offloadingCandidates))
+            # ]
+
             # List of functions as the variables
             offloadingDecisions = [
                 [
-                    model.Var(lb=0, ub=1, integer=True)
+                    model.Var(lb=0, ub=100, integer=True)
                     for i in range(len(availResources))
                 ]
                 for j in range(len(offloadingCandidates))
@@ -402,7 +488,7 @@ class OffloadingSolver:
 
             # Constraint on only having a single or zero one for each vm decision for a function
             for function in offloadingDecisions:
-                model.Equation(sum([function[i] for i in range(len(function))]) <= 1)
+                model.Equation(sum([function[i] for i in range(len(function))]) <= 100)
                 # model.Equation( list(function).count(1) <= 1)
 
             # Constraint on checking available memory of each VM
@@ -410,9 +496,17 @@ class OffloadingSolver:
                 model.Equation(
                     sum(
                         [
-                            offloadingDecisions[function][VMIndex]
-                            * self.getMem(offloadingCandidates[function])
-                            for function in range(len(offloadingDecisions))
+                            (
+                                self.rps
+                                * (
+                                    self.getVMexecution(
+                                        offloadingCandidates[function + 1], VMIndex
+                                    ) * 0.001
+                                )
+                                * (offloadingDecisions[function + 1][VMIndex] /100)
+                                * (self.getMem(offloadingCandidates[function + 1]))
+                            )
+                            for function in range(len(offloadingDecisions) - 1)
                         ]
                     )
                     <= availResources[VMIndex]["mem_mb"]
@@ -422,9 +516,21 @@ class OffloadingSolver:
                 model.Equation(
                     sum(
                         [
-                            offloadingDecisions[function][VMIndex]
-                            * self.getCPU(self.getMem(offloadingCandidates[function]))
-                            for function in range(len(offloadingDecisions))
+                            (
+                                self.rps
+                                * (
+                                    self.getVMexecution(
+                                        offloadingCandidates[function + 1], VMIndex
+                                    )* 0.001
+                                )
+                                * (offloadingDecisions[function + 1][VMIndex]/100)
+                                * (
+                                    self.getCPU(
+                                        self.getMem(offloadingCandidates[function + 1])
+                                    )
+                                )
+                            )
+                            for function in range(len(offloadingDecisions) - 1)
                         ]
                     )
                     <= availResources[VMIndex]["cores"]
@@ -434,16 +540,24 @@ class OffloadingSolver:
             for i in range(len(offloadingDecisions[0])):
                 model.Equation(offloadingDecisions[0][i] == 0)
 
+            for vm in range(len(availResources)):
+                for i in range(len(offloadingDecisions)):
+                    tempGoalVar[i][vm] = model.min2(offloadingDecisions[i][vm], 1)
+            # for vm in range(len(availResources)):
+            #     for i in range(len(offloadingDecisions)):
+            #         tempLatVar[i][vm] = model.abs2(offloadingDecisions[i][vm]+ offloadingDecisions[i][vm] + 1)
+            
+
             # Constraint on checking slack time for each Node
             for vm in range(len(availResources)):
                 for path in self.allPathsSlack:
                     model.Equation(
-                        
+
                                 sum(
                                     [
                                         (
                                             (
-                                                offloadingDecisions[node + 1][vm]
+                                                tempGoalVar[node + 1][vm]
                                                 * self.allPathsSlack[path][node + 1]
                                                 * (
                                                     self.addedExecLatency(
@@ -461,14 +575,13 @@ class OffloadingSolver:
                                                                 ]
                                                             )
                                                             * (
-                                                                model.abs2(
-                                                                    offloadingDecisions[
-                                                                        node + 1
-                                                                    ][vm]
-                                                                    - offloadingDecisions[
-                                                                        j
-                                                                    ][vm]
-                                                                )
+                                                                (
+                                                                    tempGoalVar[node + 1][
+                                                                        vm
+                                                                    ]
+                                                                    - tempGoalVar[j][vm]
+                                                                ) 
+                                                                * (-1)* (tempGoalVar[j][vm])
                                                             )
                                                             * (
                                                                 (self.allPathsSlack[path])[
@@ -484,7 +597,9 @@ class OffloadingSolver:
                                                                 ),
                                                             )
                                                             for j in self.getParentIndexes(
-                                                                offloadingCandidates[node + 1]
+                                                                offloadingCandidates[
+                                                                    node + 1
+                                                                ]
                                                             )
                                                         ]
                                                     )
@@ -493,10 +608,10 @@ class OffloadingSolver:
                                         )
                                         for node in range(len(offloadingDecisions) - 1)
                                     ]
-
+                                
                         )
                         <= ((self.getCriticalPathDuration() - path) + self.toleranceWindow)
-                    )
+                    )       
 
             # # Constraint on checking the toleranceWindow
             # model.Equation( sum([ (sum ([sum([ ((offloadingDecisions[node][vm]*self.allPathsSlack[path][node]*(self.addedExecLatency(offloadingCandidates[node], vm))) + ((sum([((self.allPathsSlack[path])[node])*(model.abs2(offloadingDecisions[node][vm]-offloadingDecisions[j][vm]))*((self.allPathsSlack[path])[j])*self.addedComLatency((offloadingCandidates[j]), (offloadingCandidates[node])) for j in self.getParentIndexes(offloadingCandidates[node])])))) for node in range(len(offloadingDecisions))]) for vm in range(len(availResources))]) - (self.getCriticalPathDuration() - path))  for path in self.allPathsSlack])  <= self.toleranceWindow)
@@ -506,41 +621,37 @@ class OffloadingSolver:
             model.Minimize(
                 model.sum(
                     [
-                        model.sum(
+
+                        (
+                            ((10**5) * 2)
+                            * (1 - alphaConst)
+                            * self.rps
+                            * self.GetServerlessCostEstimate(offloadingCandidates[i])
+                            * (
+                                100
+                                - (
+                                    model.sum(
+                                        [
+                                            (offloadingDecisions[i][vm])
+                                            for vm in range(len(availResources))
+                                        ]
+                                    )
+                                )
+                            ) /100
+                        )
+                        + model.sum(
                             [
                                 (
                                     (
                                         ((10**5) * 2)
-                                        * (1 - alpha)
-                                        * (1 - offloadingDecisions[i][vm])
-                                        * (
-                                            self.GetServerlessCostEstimate(
-                                                offloadingCandidates[i]
-                                            )
-                                        )
-                                    )
-                                    + (
-                                        ((10**5) * 2)
-                                        * (1 - alpha)
+                                        * (1 - alphaConst)
                                         * (
                                             model.sum(
                                                 [
-                                                    model.max2(
-                                                        (
-                                                            1
-                                                            - (
-                                                                offloadingDecisions[i][
-                                                                    vm
-                                                                ]
-                                                                + offloadingDecisions[
-                                                                    j
-                                                                ][vm]
-                                                            )
-                                                        ),
-                                                        model.abs2(
-                                                            offloadingDecisions[i][vm]
-                                                            - offloadingDecisions[j][vm]
-                                                        ),
+                                                    model.if3((-1*(tempGoalVar[i][vm] + tempGoalVar[j][vm])) + 1, zero, one)
+                                                    * (
+                                                        (offloadingDecisions[i][vm]/100)
+                                                        * (offloadingDecisions[j][vm]/100)
                                                     )
                                                     * self.GetPubsubCost(
                                                         (offloadingCandidates[i]),
@@ -553,11 +664,12 @@ class OffloadingSolver:
                                             )
                                         )
                                     )
-                                    + (
-                                        (alpha)
+                                    + 
+                                    (
+                                        (10**3)*(alphaConst)
                                         * (
                                             model.abs2(
-                                                offloadingDecisions[i][vm]
+                                                tempGoalVar[i][vm]
                                                 - (
                                                     self.IsOffloaded(
                                                         offloadingCandidates[i], vm
@@ -567,10 +679,10 @@ class OffloadingSolver:
                                         )
                                     )
                                 )
-                                for i in range(len(offloadingDecisions))
+                                for vm in range(len(availResources))
                             ]
                         )
-                        for vm in range(len(availResources))
+                        for i in range(len(offloadingDecisions))
                     ]
                 )
             )
@@ -586,6 +698,7 @@ class OffloadingSolver:
                     ]
                     for j in range(len(offloadingCandidates))
                 ]
+
 
                 #     cost = sum( [(((10**5)*2)*(1-alpha)*(1 - offloadingDecisions[i])*(self.GetServerlessCostEstimate(offloadingCandidates[i])) + \
                 # (((10**5)*2)*(1-alpha)*sum([max((1- (offloadingDecisions[i]+offloadingDecisions[j])), abs(offloadingDecisions[i] - offloadingDecisions[j]))*self.GetPubsubCost((offloadingCandidates[i]), (offloadingCandidates[j])) for j in self.getChildIndexes(offloadingCandidates[i])])) +  ((alpha)*(abs(offloadingDecisions[i] - (self.IsOffloaded(offloadingCandidates[i])) )))) \
