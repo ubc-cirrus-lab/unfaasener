@@ -17,7 +17,7 @@ import rankerConfig
 import statistics
 
 
-class Estimator:
+class garbageCollector:
     def __init__(self, workflow):
         self.workflow = workflow
         jsonPath = (
@@ -105,6 +105,6 @@ class Estimator:
 if __name__ == "__main__":
     workflow = "Text2SpeechCensoringWorkflow"
     # workflow = "TestCaseWorkflow"
-    x = Estimator(workflow)
+    x = garbageCollector(workflow)
     # x.getExecutionTime("vm0")
     # print(x.getFuncExecutionTime("D", "vm0", "worst-case"))

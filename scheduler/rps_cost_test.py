@@ -41,7 +41,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
@@ -92,7 +92,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -156,7 +156,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -183,7 +183,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [{"cores": 0, "mem_mb": 0}]
         alpha = 0
@@ -273,7 +273,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [
             {"cores": 1, "mem_mb": 300},
@@ -283,7 +283,15 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertIn(x, [[[0.0, 0.0], [6.0, 6.0], [50.0, 50.0], [7.0, 6.0]], [[0.0, 0.0], [7.0, 6.0], [50.0, 50.0], [6.0, 6.0]]])
+        self.assertIn(
+            x,
+            [
+                [[0.0, 0.0], [6.0, 6.0], [50.0, 50.0], [7.0, 6.0]],
+                [[0.0, 0.0], [7.0, 6.0], [50.0, 50.0], [6.0, 6.0]],
+                [[0.0, 0.0], [12.0, 12.0], [50.0, 50.0], [1.0, 1.0]],
+                [[0.0, 0.0], [1.0, 12.0], [50.0, 50.0], [12.0, 1.0]],
+            ],
+        )
         # self.assertEqual(x, [[0.0, 0.0], [6.0, 6.0], [50.0, 50.0], [7.0, 6.0]])
 
     def test_rps2(self):
@@ -310,11 +318,9 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
-        availResources = [
-            {"cores": 100, "mem_mb": 10000}
-        ]
+        availResources = [{"cores": 100, "mem_mb": 10000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
@@ -345,7 +351,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [
             {"cores": 10000, "mem_mb": 300000},
@@ -357,7 +363,6 @@ class TestSolver(unittest.TestCase):
         )
         print("checkss here!!")
         self.assertEqual(x, [[0.0, 0.0], [50.0, 50.0], [50.0, 50.0], [50.0, 50.0]])
-
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ from pathlib import Path
 from google.cloud import datastore
 from baselineSlackAnalysis import baselineSlackAnalysis
 from rpsMultiVMSolver import rpsOffloadingSolver
-from Estimator import Estimator 
+from Estimator import Estimator
 
 
 class CIScheduler:
@@ -29,12 +29,14 @@ class CIScheduler:
         self.mode = rankerConfig.mode
         self.alpha = rankerConfig.statisticalParameter
         self.rps = rankerConfig.rps
-        resources = open('resources.txt', 'r')
+        resources = open("resources.txt", "r")
         Lines = resources.readlines()
         cpus = Lines[0].split()
         memories = Lines[1].split()
         self.availableResources = []
-        assert len(cpus) == len(memories), "Both number of cores and memory should be provided for each VM"
+        assert len(cpus) == len(
+            memories
+        ), "Both number of cores and memory should be provided for each VM"
         for i in range(len(cpus)):
             dict = {}
             dict["cores"] = float(cpus[i])
@@ -45,7 +47,6 @@ class CIScheduler:
         self.toleranceWindow = rankerConfig.toleranceWindow
         self.suggestBestOffloadingMultiVM()
 
-
     def suggestBestOffloadingMultiVM(self):
         decisions = []
         for decisionMode in self.decisionModes:
@@ -55,12 +56,13 @@ class CIScheduler:
             x = solver.suggestBestOffloadingMultiVM(
                 availResources=self.availableResources, alpha=self.alpha, verbose=True
             )
+            print("Decision for case: {}:{}".format(decisionMode, x))
             decisions.append(x)
         # finalDecision = [[0] * len(decisions[0][0])] * len(decisions[0])
         # for decision in decisions:
         #     finalDecision = np.add(finalDecision, decision)
         finalDecision = np.mean(decisions, axis=0)
-        finalDecision = finalDecision/100
+        finalDecision = finalDecision / 100
         # finalDecision = finalDecision / len(decisions)
         finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
         finalDecision = list(finalDecision)

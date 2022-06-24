@@ -33,7 +33,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
@@ -50,9 +50,9 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
-        availResources = [ {"cores": 1, "mem_mb": 500}]
+        availResources = [{"cores": 1, "mem_mb": 500}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
@@ -63,7 +63,9 @@ class TestSolver(unittest.TestCase):
     def test_unlimitedToleranceWindow(self):
         workflow = "TestCase2Workflow"
         toleranceWindow = 100000000
-        solver = rpsOffloadingSolver(workflow, self.mode, None, toleranceWindow, rps = self.rps)
+        solver = rpsOffloadingSolver(
+            workflow, self.mode, None, toleranceWindow, rps=self.rps
+        )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
@@ -75,7 +77,9 @@ class TestSolver(unittest.TestCase):
     def test_diffPaths(self):
         workflow = "TestCase2Workflow"
         toleranceWindow = 0
-        solver = rpsOffloadingSolver(workflow, self.mode, None, toleranceWindow,rps = self.rps)
+        solver = rpsOffloadingSolver(
+            workflow, self.mode, None, toleranceWindow, rps=self.rps
+        )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
@@ -87,7 +91,9 @@ class TestSolver(unittest.TestCase):
     def test_giveReuiredtoleranceWindow1(self):
         workflow = "TestCase2Workflow"
         toleranceWindow = 130
-        solver = rpsOffloadingSolver(workflow, self.mode, None, toleranceWindow,rps = self.rps)
+        solver = rpsOffloadingSolver(
+            workflow, self.mode, None, toleranceWindow, rps=self.rps
+        )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
@@ -98,8 +104,10 @@ class TestSolver(unittest.TestCase):
 
     def test_lessThanrequiredtoleranceWindow(self):
         workflow = "TestCase2Workflow"
-        toleranceWindow = 90
-        solver = rpsOffloadingSolver(workflow, self.mode, None, toleranceWindow,rps = self.rps)
+        toleranceWindow = 50
+        solver = rpsOffloadingSolver(
+            workflow, self.mode, None, toleranceWindow, rps=self.rps
+        )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
@@ -110,7 +118,9 @@ class TestSolver(unittest.TestCase):
     def test_lessThanrequiredtoleranceWindow2(self):
         workflow = "TestCase4Workflow"
         toleranceWindow = 0
-        solver = rpsOffloadingSolver(workflow, self.mode, None, toleranceWindow,rps = self.rps)
+        solver = rpsOffloadingSolver(
+            workflow, self.mode, None, toleranceWindow, rps=self.rps
+        )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
         x = solver.suggestBestOffloadingMultiVM(
@@ -120,7 +130,7 @@ class TestSolver(unittest.TestCase):
 
     def test_rps(self):
         workflow = "TestCase3Workflow"
-        toleranceWindow = 160
+        toleranceWindow = 240
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
@@ -142,7 +152,7 @@ class TestSolver(unittest.TestCase):
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
-            rps = self.rps
+            rps=self.rps,
         )
         availResources = [
             {"cores": 10, "mem_mb": 9000},
@@ -152,7 +162,42 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
+        self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [99.0, 1.0], [17.0, 83.0]])
+
+    def test_rps2(self):
+        workflow = "TestCase3Workflow"
+        toleranceWindow = 160
+        jsonPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + "TestCase3Workflow"
+            + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [
+            [0.0],
+            [0.0],
+            [0.0],
+            [0.0],
+        ]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
+        solver = rpsOffloadingSolver(
+            workflow=workflow,
+            mode=self.mode,
+            decisionMode=None,
+            toleranceWindow=toleranceWindow,
+            rps=self.rps,
+        )
+        availResources = [
+            {"cores": 2, "mem_mb": 100},
+        ]
+        alpha = 0
+        x = solver.suggestBestOffloadingMultiVM(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        self.assertEqual(x, [[0.0], [0.0], [21.0], [0.0]])
 
     # def test_confidenctInterval(self):
     #     print("test_confidenctInterval")
