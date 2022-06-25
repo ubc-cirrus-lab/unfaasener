@@ -159,7 +159,19 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
     with open("/tmp/output.log", "a") as output:
         before  = datetime.datetime.now()
-        container = client.containers.run("name:"+ invokedFun,command="python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,mem_limit = str(memoryLimits[invokedFun]),detach=False )
+        conts = client.containers.list(all=True, filters={"ancestor":"name:"+invokedFun})
+        print (len(conts))
+        if (len(conts) != 0):
+            cont = next(iter(conts))
+            cont.start()
+            cont.exec_run("python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,detach=False )
+        else:
+            container = client.containers.create("name:"+ invokedFun,mem_limit = str(memoryLimits[invokedFun]),command = "tail -f /etc/hosts",detach=False )
+            container.start()
+            cmd = "python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID
+            print (cmd)
+            container.exec_run(cmd,detach=False )
+
         after  = datetime.datetime.now()
         delta =  after - before
         if executionDurations[reqID][invokedFun] != {}:
