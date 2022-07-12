@@ -47,14 +47,16 @@ def flushExecutionDurations(executionDurations):
                  task = datastore.Entity(key=task_key)
                  seed = seed + 1
                  task["reqID"] = key 
-                 task["function"]=str(key2).replace('2','')
+                 task["function"]=str(key2).replace('Number2','')
                  task["duration"]=executionDurations[key][key2]["duration"]
                  task["start"]=executionDurations[key][key2]["start"]
                  task["finish"]=executionDurations[key][key2]["finish"]
                  task["host"]=executionDurations[key][key2]["host"]
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
                  datastore_client.put(task)
-        executionDurations = {}
+        executionDurations[key].pop(key2,None)
+    executionDurations.pop(key,None)
+    executionDurations = {}
 
 
 
@@ -176,14 +178,14 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         delta =  after - before
         if executionDurations[reqID][invokedFun] != {}:
             #Cover the second Merging function
-            invokedFun = str(invokedFun) +"2"
+            invokedFun = str(invokedFun) +"Number2"
             executionDurations[reqID][invokedFun] = {}
 
 
         executionDurations[reqID][invokedFun]["duration"] = str(delta.microseconds/1000)
         executionDurations[reqID][invokedFun]["start"] = str(before)
         executionDurations[reqID][invokedFun]["finish"] = str(after)
-        executionDurations[reqID][invokedFun]["host"] = "vm1"
+        executionDurations[reqID][invokedFun]["host"] = "vm0"
         executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
         executionDurations[reqID][invokedFun]["mergingPoint"] = ""
         if "Merg" in invokedFun:
