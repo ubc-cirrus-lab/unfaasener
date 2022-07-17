@@ -1,0 +1,75 @@
+main:
+  params: [message]
+  steps:
+  - init:
+      assign:
+      - project: ${sys.get_env("ubc-serverless-ghazal")}
+      - location: "us-central1"
+      - get_input_url: "https://us-central1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_getInput"
+      - create_dataset_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_createDataset"
+      - first_model_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_firstModel"
+      - second_model_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_secondModel"
+      - join_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_joinRuns"
+      - first_model_result: {}
+      - second_model_result: {}
+  - get_input:
+      call: http.post
+      args:
+        url: ${get_input_url}
+        body:
+            message: ${message.samplesNum}
+        auth:
+            type: OIDC    
+      result: input_json
+  - create_dataset:
+      call: http.post
+      args:
+        url: ${create_dataset_url}
+        body:
+            message: ${input_json.body}
+        auth:
+            type: OIDC    
+      result: dataset_resp
+  - training_models:
+        parallel:
+          shared: [first_model_result, second_model_result]
+          branches:
+            - first_model:
+                steps:
+                  - first_model_call:
+                      call: http.post
+                      args:
+                        url: ${first_model_url}
+                        body:
+                            message: ${dataset_resp.body}
+                        auth:
+                            type: OIDC    
+                      result: first_model_result
+            - second_model:
+                steps:
+                  - second_model_call:
+                      call: http.post
+                      args:
+                        url: ${second_model_url}
+                        body:
+                            message: ${dataset_resp.body}
+                        auth:
+                            type: OIDC    
+                      result: second_model_result
+  - join_runs:
+      call: http.post
+      args:
+        url: ${join_url}
+        body:
+            first: ${first_model_result.body}
+            second: ${second_model_result.body}
+        auth:
+            type: OIDC    
+      result: joined_result
+  - end_process:
+      return: 
+        - ${input_json}
+        - ${dataset_resp}
+        - ${first_model_result}
+        - ${second_model_result}
+        - ${joined_result}
