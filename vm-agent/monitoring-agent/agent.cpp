@@ -7,6 +7,7 @@
 #include <ring.h>
 #include <predictor.h>
 #include <procstatparser.h>
+#include <dockerprocstatparser.h>
 #include <meminfoparser.h>
 #include <communicator.h>
 #include <chrono>
@@ -17,6 +18,8 @@ int main(int, char *[]) {
     size_t ring_size=10; // keep last 10 records, i.e. 1 second  
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
+    float current_docker_reading =  0 ;
+    float previous_docker_reading =  0 ;
     size_t previous_readings[2] = { 0 };
     int monitor_intervals=100000; // 100ms in microseconds
     double cpu_pred_old =0;
@@ -27,15 +30,19 @@ int main(int, char *[]) {
     ring mem_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
     predictor mem_predictor(&mem_utilization_buffer);
+    dockerprocstatparser dockerprocstat; 
     procstatparser procstat(current_cpu_readings);
     meminfoparser memstat(current_mem_readings);
     while (true) 
 	{
 //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
 	 procstat.get_proc_stat_times(current_cpu_readings);
+ 	 current_docker_reading = dockerprocstat.get_proc_stat_times();
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
-	 float cpu_utilization = 100.0 * (1.0 - idle_diff/total_diff);
+	 float docker_utilization  = (current_docker_reading - previous_docker_reading);
+	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_utilization)/total_diff);
+	 previous_docker_reading = current_docker_reading;
 	 previous_readings[0] = current_cpu_readings[0];
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage

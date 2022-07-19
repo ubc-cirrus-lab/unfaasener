@@ -82,7 +82,7 @@ public:
     int handle_prediction_violation()
     {
 	    //execute the local scheduler
-	    system("python3 /home/mohamed/de-serverlessization/scheduler/CIScheduler.py")
+	    system("python3 /home/mohamed/de-serverlessization/scheduler/CIScheduler.py");
 	    return 1;
     }
 
