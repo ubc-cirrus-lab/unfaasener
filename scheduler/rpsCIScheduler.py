@@ -63,8 +63,11 @@ class CIScheduler:
         #     finalDecision = np.add(finalDecision, decision)
         finalDecision = np.mean(decisions, axis=0)
         finalDecision = finalDecision / 100
-        # finalDecision = finalDecision / len(decisions)
-        finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
+        capArray = np.zeros(len(finalDecision))
+        for i in range(len(capArray)):
+            capArray[i] = np.full(len(finalDecision[i]), 0.9)
+            finalDecision[i] = np.minimum(finalDecision[i], capArray[i])
+        # finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
         finalDecision = list(finalDecision)
         for function in range(len(finalDecision)):
             finalDecision[function] = list(finalDecision[function])

@@ -224,16 +224,18 @@ class getNewLogs(GetLog):
                 element["execution_id"]
                 for idx, element in enumerate(funcData)
                 if (
-                    ("finished with status" in element["log"])
-                    or ("Finished with status" in element["log"])
+                    (("finished with status" in element["log"])
+                    or ("Finished with status" in element["log"]))
+                    and ("crash" not in element["log"])
                 )
             ]
             finishTimes = [
                 element["time_utc"]
                 for idx, element in enumerate(funcData)
                 if (
-                    ("finished with status" in element["log"])
-                    or ("Finished with status" in element["log"])
+                    (("finished with status" in element["log"])
+                    or ("Finished with status" in element["log"]))
+                    and ("crash" not in element["log"])
                 )
             ]
             # sortingArray = startTimes

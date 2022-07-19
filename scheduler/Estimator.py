@@ -14,6 +14,8 @@ from pathlib import Path
 import rankerConfig
 import statistics
 
+pd.options.mode.chained_assignment = None
+
 
 class Estimator:
     def __init__(self, workflow):
@@ -31,7 +33,11 @@ class Estimator:
             + "/generatedDataFrame.pkl"
         ):
             dataframePath = (
-                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.pkl"
@@ -44,7 +50,11 @@ class Estimator:
             + "/generatedDataFrame.csv"
         ):
             dataframePath = (
-                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
@@ -62,11 +72,26 @@ class Estimator:
         self.topics = workflow_json["topics"]
         self.windowSize = 50
         self.memories = workflow_json["memory"]
+        with open(
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(workflow)
+                + "/"
+                + "slackDurations.json"
+            ),
+            "r",
+        ) as outfile:
+            self.slackDurationsDF = json.load(outfile)
 
     def prev_cost(self):
 
         with open(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "-prevCost.json", "r"
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + self.workflow
+            + "-prevCost.json",
+            "r",
         ) as json_file:
             workflow_json = json.load(json_file)
         return workflow_json
@@ -123,8 +148,8 @@ class Estimator:
     def getUpperBound(self, array):
         n = len(array)
         if n <= 30:
-            upperBound = 90
-            # upperBound =  np.percentile(array, 75)
+            # upperBound = 90
+            upperBound = np.percentile(array, 75)
         else:
             sortedArray = np.sort(array)
             z = 1.96
@@ -139,8 +164,8 @@ class Estimator:
     def getLowerBound(self, array):
         n = len(array)
         if n <= 30:
-            lowerBound = 90
-            # lowerBound =  np.percentile(array, 25)
+            # lowerBound = 90
+            lowerBound = np.percentile(array, 25)
         else:
             sortedArray = np.sort(array)
             z = 1.96
@@ -209,7 +234,9 @@ class Estimator:
 
     def getPubsubDF(self):
         monitoringObj = monitoring()
-        topicMsgSize = pd.read_pickle((os.path.dirname(os.path.abspath(__file__))) + "/data/" + "topicMsgSize.pkl")
+        topicMsgSize = pd.read_pickle(
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + "topicMsgSize.pkl"
+        )
         return topicMsgSize
 
     # func: function a message is published to (subscriber)
@@ -238,7 +265,14 @@ class Estimator:
                 ].item()
                 pubSubSize[func] = psSize
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "pubSubSize.json"), "w"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "pubSubSize.json"
+            ),
+            "w",
         ) as outfile:
             json.dump(pubSubSize, outfile)
 
@@ -273,6 +307,122 @@ class Estimator:
             exeTime = self.getMedian(durations)
         return exeTime
 
+    def getComLatency(self, child, parent, childHost, parentHost, mode):
+        if childHost != "s":
+            childHost = "vm" + str(childHost)
+        if parentHost != "s":
+            parentHost = "vm" + str(parentHost)
+        selectedInitsParent = self.dataframe.loc[
+            (self.dataframe["function"] == parent)
+            & (self.dataframe["host"] == parentHost)
+        ]
+        if len(self.predecessors[self.workflowFunctions.index(child)]) > 1:
+            selectedInitsChild = self.dataframe.loc[
+                (self.dataframe["function"] == child)
+                & (self.dataframe["host"] == childHost)
+                & (self.dataframe["mergingPoint"] == parent)
+            ]
+        else:
+            selectedInitsChild = self.dataframe.loc[
+                (self.dataframe["function"] == child)
+                & (self.dataframe["host"] == childHost)
+            ]
+        gatheredDF = pd.concat([selectedInitsParent, selectedInitsChild])
+        dfByReq = gatheredDF.groupby(["reqID"])
+        dSet = (((dfByReq["function"].agg(lambda x: len(set(x)))))).to_frame()
+        dSet = ((dSet.loc[(dSet["function"] == 2)])).to_dict()
+        reqs = list(dSet["function"].keys())
+        if len(reqs) >= self.windowSize:
+            reqs = reqs[: self.windowSize]
+        if len(reqs) == 0:
+            print(
+                "NOTFOUND:::", parent, "::", parentHost, "-->", child, ":::", childHost
+            )
+            return "NotFound"
+        if len(self.predecessors[self.workflowFunctions.index(parent)]) > 1:
+            selectedInitsParentFinish = (
+                selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))]
+            )[["reqID", "finish"]]
+            selectedInitsParentFinish["finish"] = pd.to_datetime(
+                selectedInitsParentFinish["finish"]
+            )
+            selectedInitsParentFinish = (
+                (
+                    selectedInitsParentFinish[
+                        selectedInitsParentFinish.groupby("reqID").finish.transform(
+                            "max"
+                        )
+                        == selectedInitsParentFinish["finish"]
+                    ]
+                )
+                .set_index("reqID")
+                .to_dict()["finish"]
+            )
+        else:
+            selectedInitsParentFinish = (
+                (selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))])[
+                    ["reqID", "finish"]
+                ]
+                .set_index("reqID")
+                .to_dict()["finish"]
+            )
+        if len(self.predecessors[self.workflowFunctions.index(child)]) > 1:
+            selectedInitsChildStart = (
+                (
+                    selectedInitsChild[
+                        (selectedInitsChild.reqID.isin(reqs))
+                        & (selectedInitsChild.mergingPoint == parent)
+                    ]
+                )[["reqID", "start"]]
+                .set_index("reqID")
+                .to_dict()["start"]
+            )
+        else:
+            selectedInitsChildStart = (
+                (selectedInitsChild[selectedInitsChild.reqID.isin(reqs)])[
+                    ["reqID", "start"]
+                ]
+                .set_index("reqID")
+                .to_dict()["start"]
+            )
+        newDF = pd.DataFrame(
+            {
+                "start": pd.Series(selectedInitsChildStart),
+                "end": pd.Series(selectedInitsParentFinish),
+            }
+        )
+        newDF["start"] = newDF["start"].apply(
+            lambda x: (datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f")).replace(
+                tzinfo=None
+            )
+            if type(x) == str
+            else x.replace(tzinfo=None)
+        )
+        newDF["end"] = newDF["end"].apply(
+            lambda x: (datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f")).replace(
+                tzinfo=None
+            )
+            if type(x) == str
+            else x.replace(tzinfo=None)
+        )
+        # newDF['duration'] =  (newDF['start'] - newDF['end']).dt.microseconds* 0.001
+        newDF["duration"] = (
+            (newDF["start"] - newDF["end"]).dt.total_seconds().mul(1000).astype(int)
+        )
+        print(newDF)
+        durations = newDF["duration"].tolist()
+        if mode == "best-case":
+            exeTime = self.getLowerBound(durations)
+        elif mode == "worst-case":
+            exeTime = self.getUpperBound(durations)
+        elif mode == "default":
+            exeTime = self.getMedian(durations)
+        serverlessDuration = self.slackDurationsDF[parent + "-" + child][mode]
+        # print("\\\\////\\\\\DIFF:::", (exeTime - serverlessDuration),":::", parent,"-",parentHost
+        # , "----", child,"-",childHost
+        # )
+        return exeTime - serverlessDuration
+
     def getCost(self):
         costs = {}
         decisionModes = rankerConfig.decisionMode
@@ -303,7 +453,14 @@ class Estimator:
                     et = self.getMedian(durations)
                     costs[func][mode] = self.cost_estimator(1, et, GB)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "Costs.json"), "w"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "Costs.json"
+            ),
+            "w",
         ) as outfile:
             json.dump(costs, outfile)
 

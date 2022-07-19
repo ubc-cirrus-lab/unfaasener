@@ -32,7 +32,7 @@ class monitoring:
         for topic in topics:
             nptopic = np.array(topics[topic])
             pubsubMeanMsgSize[topic] = np.mean(nptopic)
-        print(pubsubMeanMsgSize)
+        # print(pubsubMeanMsgSize)
         topic = []
         size = []
 
