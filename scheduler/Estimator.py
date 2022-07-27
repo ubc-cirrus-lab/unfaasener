@@ -409,7 +409,7 @@ class Estimator:
         newDF["duration"] = (
             (newDF["start"] - newDF["end"]).dt.total_seconds().mul(1000).astype(int)
         )
-        print(newDF)
+        # print(newDF)
         durations = newDF["duration"].tolist()
         if mode == "best-case":
             exeTime = self.getLowerBound(durations)

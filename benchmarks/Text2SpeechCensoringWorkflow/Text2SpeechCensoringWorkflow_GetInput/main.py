@@ -39,7 +39,10 @@ def get(request):
     merging_key = DSclient.key("Merging", ("Text2SpeechCensoringWorkflow_Censor" + reqID))
     routingKey = DSclient.key("routingDecision", "Text2SpeechCensoringWorkflow")
     routingEntity = DSclient.get(key=routingKey)
-    routing = eval(routingEntity["routing"])
+    active = routingEntity["active"]
+    activeRouting = "routing" + "_" + str(active)
+    routing = eval(routingEntity[activeRouting])
+    # routing = eval(routingEntity["routing"])
     finalRouting = ""
     for function in routing:
       functionArray = np.array(function)
@@ -61,7 +64,7 @@ def get(request):
           finalRouting = finalRouting + "0"
         else:
           finalRouting = finalRouting + chr(64+int(finalChoice))
-    print("Routing:::::", finalRouting)
+    # print("Routing:::::", finalRouting)
 
     mergingEntity = datastore.Entity(key=merging_key)
     mergingEntity.update(

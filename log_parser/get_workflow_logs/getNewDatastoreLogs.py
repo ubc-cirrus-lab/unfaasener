@@ -21,6 +21,7 @@ class dataStoreLogParser(GetLog):
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
         self.workflowFunctions = workflow_json["workflowFunctions"]
+        self.initFunc = workflow_json["initFunc"]
         self.dictData = {}
         self.windowSize = 50
         self.dictData["function"] = []
@@ -98,6 +99,42 @@ class dataStoreLogParser(GetLog):
             )
             newDF.to_csv(
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
+            )
+        if os.path.isfile(
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+        ):
+            print("HEREEE")
+            prevInvocations = pd.read_pickle(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            )
+            initRecords = df.loc[
+                    (df["function"] == self.initFunc)
+                ]
+            initRecords = initRecords["start"]
+            
+            newInvocations = (
+                pd.concat([prevInvocations, initRecords]).drop_duplicates().reset_index(drop=True)
+            )
+            print(newInvocations)
+            newInvocations.to_pickle(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            )
+            newInvocations.to_csv(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
+            )
+
+        else:
+            print("HEREEE NOO")
+            initRecords = df.loc[
+                    (df["function"] == self.initFunc)
+                ]
+            initRecords = initRecords["start"]
+            print(initRecords)
+            initRecords.to_pickle(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            )
+            initRecords.to_csv(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
             )
 
     def keepWindowSize(self, df):

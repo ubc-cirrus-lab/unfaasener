@@ -28,7 +28,10 @@ def get(request):
     """
     routingKey = DSclient.key("routingDecision", "ImageProcessingWorkflow")
     routingEntity = DSclient.get(key=routingKey)
-    routing = eval(routingEntity["routing"])
+    active = routingEntity["active"]
+    activeRouting = "routing" + "_" + str(active)
+    routing = eval(routingEntity[activeRouting])
+    # routing = eval(routingEntity["routing"])
     finalRouting = ""
     for function in routing:
       functionArray = np.array(function)

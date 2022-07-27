@@ -172,7 +172,7 @@ class rpsOffloadingSolver:
             offloadingCandidate, ("vm" + str(vm)), self.decisionMode
         )
         diff = vm - serverless
-        print("DIFF:::", diff)
+        # print("DIFF:::", diff)
         return diff
 
     # Function for added end-to-end latency by offloading a function to VM
@@ -578,9 +578,9 @@ class rpsOffloadingSolver:
                 combinations = list(
                     map(list, itertools.product(vms, repeat=(len(path) - 1)))
                 )
-                print("path:  ", path, "  ,combinations:  ", combinations)
+                # print("path:  ", path, "  ,combinations:  ", combinations)
                 for c in combinations:
-                    print("new combination//////", c)
+                    # print("new combination: ", c)
                     model.Equation(
                         (
                             sum(

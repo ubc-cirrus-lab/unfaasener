@@ -187,7 +187,7 @@ class getNewLogs(GetLog):
         self.GHzSec += Ghz * dur
 
     def getDict(self):
-        self.dictData
+        # self.dictData
         with open(
             (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
         ) as outfile:
@@ -308,6 +308,42 @@ class getNewLogs(GetLog):
             )
             df.to_csv(
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
+            )
+        if os.path.isfile(
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+        ):
+            print("HEREEE")
+            prevInvocations = pd.read_pickle(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            )
+            initRecords = df.loc[
+                    (df["function"] == self.initFunc)
+                ]
+            initRecords = initRecords["start"]
+
+            newInvocations = (
+                pd.concat([prevInvocations, initRecords]).drop_duplicates().reset_index(drop=True)
+            )
+            print(newInvocations)
+            newInvocations.to_pickle(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            )
+            newInvocations.to_csv(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
+            )
+
+        else:
+            print("HEREEE NO")
+            initRecords = df.loc[
+                    (df["function"] == self.initFunc)
+                ]
+            initRecords = initRecords["start"]
+            print(initRecords)
+            initRecords.to_pickle(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            )
+            initRecords.to_csv(
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
             )
 
 

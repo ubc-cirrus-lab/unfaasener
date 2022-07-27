@@ -5,11 +5,10 @@
 3,ImageProcessing_Resize,287.22176914857965
 4,ImageProcessing_Rotate,261.22768899491234
 5,Text2SpeechCensoringWorkflow_Compression,250.0
-6,dag-Censor,298.2395148841136
-7,dag-Conversion,265.2013675419389
-8,dag-MergingPoint,359.73339236350125
-9,dag-Profanity,259.7887481652001
-10,dag-Text2Speech,251.06179421148326
+6,dag-Censor,293.0
+7,dag-Conversion,265.0
+8,dag-MergingPoint,356.02718846223314
+9,dag-Profanity,202.25
+10,dag-Text2Speech,202.47368421052633
 11,imageprocessing_GC,134.0
-12,vmTopic1,313.87030645227895
-13,vmTopic2,387.93333333333334
+12,vmTopic1,313.76494547731716
