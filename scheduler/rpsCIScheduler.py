@@ -9,13 +9,16 @@ from google.cloud import datastore
 from baselineSlackAnalysis import baselineSlackAnalysis
 from rpsMultiVMSolver import rpsOffloadingSolver
 from Estimator import Estimator
+from getInvocationRate import InvocationRate
 
 
 class CIScheduler:
-    def __init__(self):
+    def __init__(self, triggerType):
         self.workflow = rankerConfig.workflow
         slack = baselineSlackAnalysis(self.workflow)
         x = Estimator(self.workflow)
+        self.invocationRate = InvocationRate(self.workflow)
+        # self.rates = invocationRate.getRPS()
         x.getCost()
         x.getPubSubMessageSize()
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "key/schedulerKey.json"
@@ -45,75 +48,83 @@ class CIScheduler:
         print("AvailableResources ===", self.availableResources)
         # self.availableResources = rankerConfig.availResources
         self.toleranceWindow = rankerConfig.toleranceWindow
-        self.suggestBestOffloadingMultiVM()
+        self.suggestBestOffloadingMultiVM(triggerType)
 
-    def suggestBestOffloadingMultiVM(self):
+    def suggestBestOffloadingMultiVM(self, triggerType):
+        if triggerType == "highLoad":
+            prevPercentage = self.routing["active"]
+            match prevPercentage:
+                case "25":
+                    self.routing["active"] = "50"
+                    self.datastore_client.put(self.routing)
+                case "50":
+                    self.routing["active"] = "75"
+                    self.datastore_client.put(self.routing)
+                case "75":
+                    self.routing["active"] = "95"
+                    self.datastore_client.put(self.routing)
+                case "95":
+                    self.resolveOffloadingSolutions()
+                case other:
+                    print("Unknown percentile")
+        elif triggerType == "lowLoad":
+            prevPercentage = self.routing["active"]
+            match prevPercentage:
+                case "95":
+                    self.routing["active"] = "75"
+                    self.datastore_client.put(self.routing)
+                case "75":
+                    self.routing["active"] = "50"
+                    self.datastore_client.put(self.routing)
+                case "50":
+                    self.routing["active"] = "25"
+                    self.datastore_client.put(self.routing)
+                case "25":
+                    self.resolveOffloadingSolutions()
+                case other:
+                    print("Unknown percentile")
+        elif triggerType == "resolve":
+            self.resolveOffloadingSolutions()
+        else:
+            print("Unknown trigger type!")
+
+    def resolveOffloadingSolutions(self):
+        rates = self.invocationRate.getRPS()
         decisions = []
-        for decisionMode in self.decisionModes:
-            solver = rpsOffloadingSolver(
-                self.workflow, self.mode, decisionMode, self.toleranceWindow, self.rps
-            )
-            x = solver.suggestBestOffloadingMultiVM(
-                availResources=self.availableResources, alpha=self.alpha, verbose=True
-            )
-            print("Decision for case: {}:{}".format(decisionMode, x))
-            decisions.append(x)
-        # finalDecision = [[0] * len(decisions[0][0])] * len(decisions[0])
-        # for decision in decisions:
-        #     finalDecision = np.add(finalDecision, decision)
-        finalDecision = np.mean(decisions, axis=0)
-        finalDecision = finalDecision / 100
-        capArray = np.zeros(len(finalDecision))
-        for i in range(len(capArray)):
-            capArray[i] = np.full(len(finalDecision[i]), 0.9)
-            finalDecision[i] = np.minimum(finalDecision[i], capArray[i])
-        # finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
-        finalDecision = list(finalDecision)
-        for function in range(len(finalDecision)):
-            finalDecision[function] = list(finalDecision[function])
-        self.routing["routing"] = str(finalDecision)
+        for percent in rates.keys():
+            rate = rates[percent]
+            for decisionMode in self.decisionModes:
+                solver = rpsOffloadingSolver(
+                    self.workflow, self.mode, decisionMode, self.toleranceWindow, rate
+                )
+                x = solver.suggestBestOffloadingMultiVM(
+                    availResources=self.availableResources,
+                    alpha=self.alpha,
+                    verbose=True,
+                )
+                print("Decision for case: {}:{}".format(decisionMode, x))
+                decisions.append(x)
+            # finalDecision = [[0] * len(decisions[0][0])] * len(decisions[0])
+            # for decision in decisions:
+            #     finalDecision = np.add(finalDecision, decision)
+            finalDecision = np.mean(decisions, axis=0)
+            finalDecision = finalDecision / 100
+            capArray = np.zeros(len(finalDecision))
+            for i in range(len(capArray)):
+                capArray[i] = np.full(len(finalDecision[i]), 0.9)
+                finalDecision[i] = np.minimum(finalDecision[i], capArray[i])
+            # finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
+            finalDecision = list(finalDecision)
+            for function in range(len(finalDecision)):
+                finalDecision[function] = list(finalDecision[function])
+            self.routing["routing" + "_" + str(percent)] = str(finalDecision)
+            print("Final Decision: {}".format(list(finalDecision)))
+        self.routing["active"] = "50"
         self.datastore_client.put(self.routing)
-        print("Final Decision: {}".format(list(finalDecision)))
 
 
 if __name__ == "__main__":
-    # jsonPath = (
-    #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    #     + "/log_parser/get_workflow_logs/data/"
-    #     + "Text2SpeechCensoringWorkflow"
-    #     + ".json"
-    # )
-    # with open(jsonPath, "r") as json_file:
-    #     workflow_json = json.load(json_file)
-    # workflow_json["lastDecision_default"] = [
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    # ]
-    # workflow_json["lastDecision_best-case"] = [
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    # ]
-    # workflow_json["lastDecision_worst-case"] = [
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    #     [0.0, 0.0, 0.0],
-    # ]
-    # with open(jsonPath, "w") as json_file:
-    #     json.dump(workflow_json, json_file)
     start_time = time.time()
-    solver = CIScheduler()
+    triggerType = "resolve"
+    solver = CIScheduler(triggerType)
     print("--- %s seconds ---" % (time.time() - start_time))

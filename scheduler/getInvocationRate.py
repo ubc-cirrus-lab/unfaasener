@@ -9,6 +9,7 @@ import math
 from pathlib import Path
 import statistics
 
+
 class InvocationRate:
     def __init__(self, workflow):
         self.workflow = workflow
@@ -59,17 +60,23 @@ class InvocationRate:
             workflow_json = json.load(json_file)
         self.dataframe = self.dataframe.to_frame().reset_index()
         # self.getRPS()
-    
+
     def getRPS(self):
-        self.dataframe ["start"] = pd.to_datetime(self.dataframe["start"])
+        self.dataframe["start"] = pd.to_datetime(self.dataframe["start"])
         self.dataframe.sort_values(by=["start"], ascending=True, inplace=True)
         # print(self.dataframe["start"])
         # print(self.dataframe["start"].diff())
-        diff = self.dataframe["start"].diff().apply(lambda x: (x/np.timedelta64(1, 'ms'))).fillna(0).astype('int64')
+        diff = (
+            self.dataframe["start"]
+            .diff()
+            .apply(lambda x: (x / np.timedelta64(1, "ms")))
+            .fillna(0)
+            .astype("int64")
+        )
         diff = np.array(diff)
         diff = diff[1:]
-        diff = diff/1000
-        diff  = 1/ diff
+        diff = diff / 1000
+        diff = 1 / diff
         # print(diff)
         percentiles = [25, 50, 75, 95]
         results = {}
@@ -77,7 +84,7 @@ class InvocationRate:
             results[percent] = np.percentile(diff, percent)
         print("Invocation Rates: ", results)
         return results
-        
+
         # x = self.dataframe.resample('min', on='start').start.count().array
         # ## countt = np.array(np.unique(x, return_counts=True)).T
         # ## print(countt)
@@ -94,7 +101,7 @@ class InvocationRate:
 
 
 if __name__ == "__main__":
-    
+
     start_time = time.time()
     rps = InvocationRate("Text2SpeechCensoringWorkflow")
     res = rps.getRPS()

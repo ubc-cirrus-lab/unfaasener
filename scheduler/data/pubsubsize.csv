@@ -1632,93 +1632,6 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 5
 ",
-2022-06-08 11:19:00,,,,,,"count: 2
-mean: 250.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 2
-",,,,,,,"count: 4
-mean: 422.0
-sum_of_squared_deviation: 4096.0
-bucket_options {
-  exponential_buckets {
-    num_finite_buckets: 122
-    growth_factor: 1.2
-    scale: 1.0
-  }
-}
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 0
-bucket_counts: 2
-bucket_counts: 2
-"
 2022-06-10 07:06:00,,,,,,,,,,,,,"bucket_options {
   exponential_buckets {
     num_finite_buckets: 16
@@ -35540,4 +35453,47 @@ bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 0
 bucket_counts: 1
+"
+2022-07-27 05:55:00,,,,,,,,,,,,,"count: 2
+mean: 263.0
+sum_of_squared_deviation: 2.0
+bucket_options {
+  exponential_buckets {
+    num_finite_buckets: 122
+    growth_factor: 1.2
+    scale: 1.0
+  }
+}
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 0
+bucket_counts: 2
 "
