@@ -46,5 +46,29 @@ for (int i = 0; i < 15; ++i)
      return std::stof(utime) + std::stof(ktime);
     }
     
+    float get_proc_stat_memory()
+{
+
+     std::ifstream in;
+     std::string line;
+     std::string allocatedmem ;
+     std::string ktime;
+     in.open("/proc/779875/statm");
+    if(in.is_open())
+    {
+        while(std::getline(in, line))
+        {
+            std::istringstream iss(line);
+            std::string tokens;
+            std::string parsed;
+
+        iss>>allocatedmem;
+  }
+}
+float memkb=stof(allocatedmem);
+memkb = (memkb)*4;
+return memkb  ;
+}
+
 
 };
