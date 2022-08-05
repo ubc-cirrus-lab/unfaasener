@@ -41,13 +41,18 @@ int main(int, char *[]) {
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 	 float docker_utilization  = (current_docker_reading - previous_docker_reading);
+	 float docker_mem_utilization = dockerprocstat.get_proc_stat_memory();
+	 std::cout << docker_mem_utilization << std::endl;
+
 	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_utilization)/total_diff);
 	 previous_docker_reading = current_docker_reading;
 	 previous_readings[0] = current_cpu_readings[0];
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1])/ current_mem_readings[0]);
+         std::cout << current_mem_readings[1] << std::endl;
+
+	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_mem_utilization)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
          //std::cout << mem_utilization << std::endl;
 //fill the utilziation buffers for the ring_size (i.e. 10 predictions in 1 second)
