@@ -82,7 +82,7 @@ public:
     int handle_prediction_violation()
     {
 	    //execute the local scheduler
-	    system("python3 /home/centos/newrepo/de-serverlessization/scheduler/RPSCIScheduler.py resolve");
+	    system("python3 /home/centos/newrepo/newrepo2/de-serverlessization/scheduler/rpsCIScheduler.py resolve");
 	    return 1;
     }
 
