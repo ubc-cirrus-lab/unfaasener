@@ -10,6 +10,7 @@ from baselineSlackAnalysis import baselineSlackAnalysis
 from rpsMultiVMSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
+import sys
 
 
 class CIScheduler:
@@ -125,6 +126,7 @@ class CIScheduler:
 
 if __name__ == "__main__":
     start_time = time.time()
-    triggerType = "resolve"
+    # triggerType = "resolve"
+    triggerType = sys.argv[1]
     solver = CIScheduler(triggerType)
     print("--- %s seconds ---" % (time.time() - start_time))
