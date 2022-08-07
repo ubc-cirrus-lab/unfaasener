@@ -9,7 +9,6 @@
 #include <procstatparser.h>
 #include <dockerprocstatparser.h>
 #include <meminfoparser.h>
-#include <communicator.h>
 #include <chrono>
 
 using namespace std;
@@ -25,7 +24,6 @@ int main(int, char *[]) {
     double cpu_pred_old =0;
     double mem_pred_old =0;
     double prediction_buffer   = 6; //extra buffer for CPU prediction
-    communicator com;
     ring cpu_utilization_buffer(ring_size);
     ring mem_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
@@ -87,7 +85,6 @@ int main(int, char *[]) {
         typedef std::chrono::duration<float> fsec;
 //measure the time taken to communicate that prediction via http
         auto t0 = Time::now();
-	com.sendprediction();
         auto t1 = Time::now();
         fsec fs = t1 - t0;
         us d = std::chrono::duration_cast<us>(fs);
