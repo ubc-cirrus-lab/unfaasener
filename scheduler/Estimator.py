@@ -13,6 +13,8 @@ from monitoring import monitoring
 from pathlib import Path
 import rankerConfig
 import statistics
+from operator import itemgetter
+from itertools import islice
 
 pd.options.mode.chained_assignment = None
 
@@ -187,8 +189,10 @@ class Estimator:
                 ]
                 selectedInits["start"] = pd.to_datetime(selectedInits["start"])
                 selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
-                if (selectedInits.shape[0]) >= self.windowSize:
-                    selectedInits = selectedInits.head(self.windowSize)
+                g = selectedInits.groupby(selectedInits["reqID"], sort=False)
+                selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+                # if (selectedInits.shape[0]) >= self.windowSize:
+                #     selectedInits = selectedInits.head(self.windowSize)
                 for i, record in selectedInits.iterrows():
                     durations.append(record["duration"])
                 if mode == "best-case":
@@ -216,6 +220,8 @@ class Estimator:
             "w",
         ) as outfile:
             json.dump(exeTimes, outfile)
+
+    
 
     def cost_estimator_pubsub(self, bytes):
         free_tier_Bytes = 1024 * 1024 * 1024
@@ -288,8 +294,16 @@ class Estimator:
         ]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
-        if (selectedInits.shape[0]) >= self.windowSize:
-            selectedInits = selectedInits.head(self.windowSize)
+        # Needs to be implemented!!!!!!
+        if len(selectedInits) == 0:
+            return 0 
+        # newMergingPatternChanges
+        g = selectedInits.groupby(selectedInits["reqID"], sort=False)
+        selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+        # grouped = selectedInits.groupby('reqID')
+        # selectedInits = pd.concat([grouped.get_group(group) for i, group in enumerate(grouped.groups) if i>=len(grouped)-self.windowSize])
+        # if (selectedInits.shape[0]) >= self.windowSize:
+        #     selectedInits = selectedInits.head(self.windowSize)
         for i, record in selectedInits.iterrows():
             durations.append(record["duration"])
         if mode == "best-case":
@@ -306,7 +320,17 @@ class Estimator:
         elif mode == "default":
             exeTime = self.getMedian(durations)
         return exeTime
-
+    # newMergingPatternChanges
+    def get_num_per_req(self, func, test):
+        if test == True:
+            return 1
+        selectedInits = self.dataframe.loc[
+            (self.dataframe["function"] == func)
+        ]
+        counts = (selectedInits.groupby(['reqID']).size().reset_index(name='counts'))['counts'].to_numpy()
+        numPerReq = self.getMedian(counts)
+        return numPerReq
+    # Check Here!!!!    
     def getComLatency(self, child, parent, childHost, parentHost, mode):
         if childHost != "s":
             childHost = "vm" + str(childHost)
@@ -339,14 +363,14 @@ class Estimator:
                 "NOTFOUND:::", parent, "::", parentHost, "-->", child, ":::", childHost
             )
             return "NotFound"
-        if len(self.predecessors[self.workflowFunctions.index(parent)]) > 1:
-            selectedInitsParentFinish = (
+        # newMergingPatternChanges
+        selectedInitsParentFinish = (
                 selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))]
             )[["reqID", "finish"]]
-            selectedInitsParentFinish["finish"] = pd.to_datetime(
+        selectedInitsParentFinish["finish"] = pd.to_datetime(
                 selectedInitsParentFinish["finish"]
             )
-            selectedInitsParentFinish = (
+        selectedInitsParentFinish = (
                 (
                     selectedInitsParentFinish[
                         selectedInitsParentFinish.groupby("reqID").finish.transform(
@@ -357,15 +381,41 @@ class Estimator:
                 )
                 .set_index("reqID")
                 .to_dict()["finish"]
-            )
-        else:
-            selectedInitsParentFinish = (
-                (selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))])[
-                    ["reqID", "finish"]
-                ]
-                .set_index("reqID")
-                .to_dict()["finish"]
-            )
+        )
+        # if len(self.predecessors[self.workflowFunctions.index(parent)]) > 1:
+        #     selectedInitsParentFinish = (
+        #         selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))]
+        #     )[["reqID", "finish"]]
+        #     selectedInitsParentFinish["finish"] = pd.to_datetime(
+        #         selectedInitsParentFinish["finish"]
+        #     )
+        #     selectedInitsParentFinish = (
+        #         (
+        #             selectedInitsParentFinish[
+        #                 selectedInitsParentFinish.groupby("reqID").finish.transform(
+        #                     "max"
+        #                 )
+        #                 == selectedInitsParentFinish["finish"]
+        #             ]
+        #         )
+        #         .set_index("reqID")
+        #         .to_dict()["finish"]
+        #     )
+        # else:
+        #     # selectedInitsParentFinish = (
+        #     #     (selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))])[
+        #     #         ["reqID", "finish"]
+        #     #     ]
+        #     #     .set_index("reqID")
+        #     #     .to_dict()["finish"]
+        #     # )
+        #     selectedInitsParentFinish = (selectedInitsParent[selectedInitsParent.reqID.isin(reqs)])[
+        #                         ["reqID", "finish"]
+        #                     ]
+        #     selectedInitsParentFinish = (selectedInitsParentFinish.groupby(['reqID'])['finish'].max()).to_frame()
+        #     selectedInitsParentFinish = selectedInitsParentFinish.to_dict()["finish"]
+
+        # newMergingPatternChanges
         if len(self.predecessors[self.workflowFunctions.index(child)]) > 1:
             selectedInitsChildStart = (
                 (
@@ -378,12 +428,35 @@ class Estimator:
                 .to_dict()["start"]
             )
         else:
+            # selectedInitsChildStart = (
+            #     (selectedInitsChild[selectedInitsChild.reqID.isin(reqs)])[
+            #         ["reqID", "start"]
+            #     ]
+            #     .set_index("reqID")
+            #     .to_dict()["start"]
+            # )
+            # selectedInitsChildStart = (selectedInitsChild[selectedInitsChild.reqID.isin(reqs)])[
+            #                     ["reqID", "start"]
+            #                 ]
+            # selectedInitsChildStart = (selectedInitsChildStart.groupby(['reqID'])['start'].min()).to_frame()
+            # selectedInitsChildStart = selectedInitsChildStart.to_dict()["start"]
             selectedInitsChildStart = (
-                (selectedInitsChild[selectedInitsChild.reqID.isin(reqs)])[
-                    ["reqID", "start"]
-                ]
-                .set_index("reqID")
-                .to_dict()["start"]
+                    selectedInitsChild[(selectedInitsChild.reqID.isin(reqs))]
+                )[["reqID", "start"]]
+            selectedInitsChildStart["start"] = pd.to_datetime(
+                    selectedInitsChildStart["start"]
+                )
+            selectedInitsChildStart = (
+                    (
+                        selectedInitsChildStart[
+                            selectedInitsChildStart.groupby("reqID").start.transform(
+                                "min"
+                            )
+                            == selectedInitsChildStart["start"]
+                        ]
+                    )
+                    .set_index("reqID")
+                    .to_dict()["start"]
             )
         newDF = pd.DataFrame(
             {
@@ -438,8 +511,10 @@ class Estimator:
                 ]
                 selectedInits["start"] = pd.to_datetime(selectedInits["start"])
                 selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
-                if (selectedInits.shape[0]) >= self.windowSize:
-                    selectedInits = selectedInits.head(self.windowSize)
+                g = selectedInits.groupby(selectedInits["reqID"], sort=False)
+                selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+                # if (selectedInits.shape[0]) >= self.windowSize:
+                #     selectedInits = selectedInits.head(self.windowSize)
                 for i, record in selectedInits.iterrows():
                     durations.append(record["duration"])
                 if mode == "best-case":
@@ -473,8 +548,10 @@ class Estimator:
         ]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
-        if (selectedInits.shape[0]) >= self.windowSize:
-            selectedInits = selectedInits.head(self.windowSize)
+        g = selectedInits.groupby(selectedInits["reqID"], sort=False)
+        selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+        # if (selectedInits.shape[0]) >= self.windowSize:
+        #     selectedInits = selectedInits.head(self.windowSize)
         for i, record in selectedInits.iterrows():
             durations.append(record["duration"])
         if mode == "best-case":

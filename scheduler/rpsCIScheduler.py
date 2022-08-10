@@ -96,7 +96,7 @@ class CIScheduler:
             rate = rates[percent]
             for decisionMode in self.decisionModes:
                 solver = rpsOffloadingSolver(
-                    self.workflow, self.mode, decisionMode, self.toleranceWindow, rate
+                    self.workflow, self.mode, decisionMode, self.toleranceWindow, rate, False
                 )
                 x = solver.suggestBestOffloadingMultiVM(
                     availResources=self.availableResources,

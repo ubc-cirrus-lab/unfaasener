@@ -13,6 +13,8 @@ from criticalpath import Node
 from pathlib import Path
 import rankerConfig
 import statistics
+import functools
+import operator
 
 
 class baselineSlackAnalysis:
@@ -94,7 +96,8 @@ class baselineSlackAnalysis:
                 (self.dataframe["reqID"] == record["reqID"])
                 & (self.dataframe["host"] == "s")
             ]
-            if selectedReq.shape[0] == self.recordNum:
+            # newMergingPatternChanges
+            if selectedReq.shape[0] >= self.recordNum:
                 selectedRecords.append(record["reqID"])
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]
@@ -103,6 +106,7 @@ class baselineSlackAnalysis:
 
     def getObservations(self):
         for func in self.workflowFunctions:
+            # newMergingPatternChanges
             for reqID in self.selectedIDs:
                 df2 = self.dataframe.loc[
                     (
@@ -116,12 +120,16 @@ class baselineSlackAnalysis:
                     selectedDuration = df2.iloc[0]["duration"]
                     self.slackData[func].append(selectedDuration)
                     # self.dataframe.loc[((self.dataframe["reqID"] == reqID) & (self.dataframe["function"] == func)), "duration"]
-                else:
+                elif len(self.predecessors[self.workflowFunctions.index(func)]) > 1:
                     start = df2["start"].max()
                     finish = df2["finish"].max()
                     duration = ((finish - start).total_seconds()) * 1000
                     self.slackData[func].append(duration)
+                else:
+                    duration = df2["duration"].mean()
+                    self.slackData[func].append(duration)
         for entry in self.slackData.keys():
+            # newMergingPatternChanges
             if entry not in self.workflowFunctions:
                 for reqID in self.selectedIDs:
                     prevFunc = entry.split("-")[0]
@@ -140,16 +148,30 @@ class baselineSlackAnalysis:
                     ]
                     if dfPrev.shape[0] == 1:
                         finish = dfPrev.iloc[0]["finish"]
-                    else:
+                    elif len(self.predecessors[self.workflowFunctions.index(prevFunc)]) > 1:
                         finish = dfPrev["finish"].max()
+                    else:
+                        start = self.avg_datetime(dfNext['start'])
                     if dfNext.shape[0] == 1:
                         start = dfNext.iloc[0]["start"]
-                    else:
+                    elif len(self.predecessors[self.workflowFunctions.index(nextFunc)]) > 1:
                         start = dfNext.loc[dfNext["mergingPoint"] == prevFunc].iloc[0][
                             "start"
                         ]
+                    else:
+                        start = self.avg_datetime(dfNext['start'])
+                        # start = dfNext.loc[dfNext["mergingPoint"] == prevFunc].iloc[0][
+                        #     "start"
+                        # ]
+
                     duration = ((start - finish).total_seconds()) * 1000
                     self.slackData[entry].append(duration)
+    
+    # newMergingPatternChanges
+    def avg_datetime(self, series):
+        dt_min = series.min()
+        deltas = [x-dt_min for x in series]
+        return dt_min + functools.reduce(operator.add, deltas) / len(deltas)
 
     def getUpperBound(self, array):
         n = len(array)

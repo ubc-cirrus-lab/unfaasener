@@ -65,7 +65,8 @@ class garbageCollector:
                 (self.dataframe["reqID"] == record["reqID"])
                 & (self.dataframe["host"] == "s")
             ]
-            if selectedReq.shape[0] == self.recordNum:
+            # newMergingPatternChanges
+            if selectedReq.shape[0] >= self.recordNum:
                 selectedRecords.append(record["reqID"])
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]

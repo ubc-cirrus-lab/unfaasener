@@ -103,7 +103,6 @@ class dataStoreLogParser(GetLog):
         if os.path.isfile(
             (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
         ):
-            print("HEREEE")
             prevInvocations = pd.read_pickle(
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
             )
@@ -124,7 +123,6 @@ class dataStoreLogParser(GetLog):
             )
 
         else:
-            print("HEREEE NOO")
             initRecords = df.loc[
                     (df["function"] == self.initFunc)
                 ]

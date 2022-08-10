@@ -312,7 +312,6 @@ class getNewLogs(GetLog):
         if os.path.isfile(
             (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
         ):
-            print("HEREEE")
             prevInvocations = pd.read_pickle(
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
             )
@@ -333,7 +332,6 @@ class getNewLogs(GetLog):
             )
 
         else:
-            print("HEREEE NO")
             initRecords = df.loc[
                     (df["function"] == self.initFunc)
                 ]

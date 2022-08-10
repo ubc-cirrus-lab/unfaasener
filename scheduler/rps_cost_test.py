@@ -42,6 +42,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
@@ -93,6 +94,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -157,6 +159,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -184,6 +187,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [{"cores": 0, "mem_mb": 0}]
         alpha = 0
@@ -274,6 +278,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [
             {"cores": 1, "mem_mb": 300},
@@ -323,6 +328,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [{"cores": 100, "mem_mb": 10000}]
         alpha = 0
@@ -356,6 +362,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
+            testingFlag = True
         )
         availResources = [
             {"cores": 10000, "mem_mb": 300000},

@@ -1,0 +1,1 @@
+{"ChatBot_Header": {"best-case": 3.3000000000000006e-06, "worst-case": 3.3000000000000006e-06, "default": 3.3000000000000006e-06}, "ChatBot_Split": {"best-case": 0.0008037000000000002, "worst-case": 0.0006993000000000001, "default": 0.0007515000000000001}, "ChatBot_TrainIntent": {"best-case": 1.7975000000000003e-05, "worst-case": 1.705e-05, "default": 1.7512500000000006e-05}}

@@ -15,7 +15,8 @@ import itertools
 
 
 class rpsOffloadingSolver:
-    def __init__(self, workflow, mode, decisionMode, toleranceWindow, rps):
+    def __init__(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
+        self.testingFlag = testingFlag
         self.rps = rps
         with open(
             (
@@ -158,6 +159,11 @@ class rpsOffloadingSolver:
         vm = self.estimator.getFuncExecutionTime(
             offloadingCandidate, ("vm" + str(vm)), self.decisionMode
         )
+        if vm == 0:
+            vm = self.estimator.getFuncExecutionTime(
+            offloadingCandidate, "s", self.decisionMode
+        )
+
         return vm
 
     def addedExecLatency(self, offloadingCandidate, vm):
@@ -323,6 +329,8 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
+                                *
+                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], self.testingFlag)
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -344,6 +352,8 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
+                                *
+                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -379,6 +389,8 @@ class rpsOffloadingSolver:
                             ((10**5) * 2)
                             * (1 - alphaConst)
                             * self.rps
+                            *
+                                self.estimator.get_num_per_req(offloadingCandidates[i], False)
                             * self.GetServerlessCostEstimate(offloadingCandidates[i])
                             * (
                                 (
@@ -422,6 +434,10 @@ class rpsOffloadingSolver:
                                                         )
                                                     )
                                                     * self.rps
+                                                    *
+                                                    self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                                                    *
+                                                    self.estimator.get_num_per_req(offloadingCandidates[j], False)
                                                     * self.GetPubsubCost(
                                                         (offloadingCandidates[i]),
                                                         (offloadingCandidates[j]),
@@ -523,6 +539,8 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
+                                *   
+                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -544,6 +562,8 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
+                                *
+                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -710,6 +730,7 @@ class rpsOffloadingSolver:
                             ((10**5) * 2)
                             * (1 - alphaConst)
                             * self.rps
+                            *self.estimator.get_num_per_req(offloadingCandidates[i], False)
                             * self.GetServerlessCostEstimate(offloadingCandidates[i])
                             * (
                                 (
@@ -748,6 +769,8 @@ class rpsOffloadingSolver:
                                                         )
                                                     )
                                                     * self.rps
+                                                    *self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                                                    *self.estimator.get_num_per_req(offloadingCandidates[j], False)
                                                     * self.GetPubsubCost(
                                                         (offloadingCandidates[i]),
                                                         (offloadingCandidates[j]),
