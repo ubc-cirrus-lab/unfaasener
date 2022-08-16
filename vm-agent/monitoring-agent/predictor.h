@@ -82,7 +82,7 @@ public:
     int handle_prediction_violation()
     {
 	    //execute the local scheduler
-	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve");
+	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 	    return 1;
     }
 
