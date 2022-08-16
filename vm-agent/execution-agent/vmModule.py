@@ -121,6 +121,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     
     global writtenData
     global executionDurations
+    global cpulimit
     receivedDateObj = datetime.datetime.utcnow()
     decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
     print(f"received data:{decodedMessage}")
@@ -168,7 +169,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             cont.start()
             cont.exec_run("python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,detach=False )
         else:
-            container = client.containers.create("name:"+ invokedFun,mem_limit = str(memoryLimits[invokedFun]),command = "tail -f /etc/hosts",detach=False )
+            container = client.containers.create("name:"+ invokedFun,mem_limit = str(memoryLimits[invokedFun]),cpu_period=1000000, cpu_quota=500000,command = "tail -f /etc/hosts",detach=False )
             container.start()
             cmd = "python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID
             print (cmd)
