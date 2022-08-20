@@ -86,7 +86,6 @@ public:
     int handle_prediction_violation(double pred, int type)
     {
 	    //execute the local scheduler
-	    //system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 	    if ( type == 1) //memory 
 	    {
 	    double memory_pred = (100-pred) * getTotalSystemMemory()/100;
@@ -96,10 +95,14 @@ public:
 
 	    if (type == 0)//cpu
 	    {
-		    int cores=getTotalSystemCores() * (100-pred)/100;
+		    int cores=getTotalSystemCores() * (100 - pred)/100;
 		    std::cout<<"cpu  "<<cores<<std::endl;
                     writePrediction(cores,type);
 
+	    }
+	    std::ifstream lockopen("/tmp/lock");
+            if (lockopen.fail()) {
+	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 	    }
 	    return 1;
     }

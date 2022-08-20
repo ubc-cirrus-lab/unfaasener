@@ -1,7 +1,8 @@
-import rankerConfig
+# import rankerConfig
 import time
 import numpy as np
 import sys
+import configparser
 import os
 import json
 from pathlib import Path
@@ -15,25 +16,30 @@ import sys
 
 class CIScheduler:
     def __init__(self, triggerType):
-        self.workflow = rankerConfig.workflow
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.workflow = self.rankerConfig["workflow"]
         slack = baselineSlackAnalysis(self.workflow)
         x = Estimator(self.workflow)
         self.invocationRate = InvocationRate(self.workflow)
         # self.rates = invocationRate.getRPS()
         x.getCost()
         x.getPubSubMessageSize()
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "key/schedulerKey.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/key/schedulerKey.json"
         project = "ubc-serverless-ghazal"
         self.datastore_client = datastore.Client()
         kind = "routingDecision"
         name = self.workflow
         routing_key = self.datastore_client.key(kind, name)
         self.routing = self.datastore_client.get(key=routing_key)
-        self.decisionModes = rankerConfig.decisionMode
-        self.mode = rankerConfig.mode
-        self.alpha = rankerConfig.statisticalParameter
-        self.rps = rankerConfig.rps
-        resources = open("resources.txt", "r")
+        self.decisionModes = (self.rankerConfig["decisionMode"]).split()
+        print("FDH", self.decisionModes)
+        self.mode = self.rankerConfig["mode"]
+        self.alpha = float(self.rankerConfig["statisticalParameter"])
+        self.rps = float(self.rankerConfig["rps"])
+        resources = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt", "r")
         Lines = resources.readlines()
         cpus = Lines[0].split()
         memories = Lines[1].split()
@@ -48,7 +54,7 @@ class CIScheduler:
             self.availableResources.append(dict)
         print("AvailableResources ===", self.availableResources)
         # self.availableResources = rankerConfig.availResources
-        self.toleranceWindow = rankerConfig.toleranceWindow
+        self.toleranceWindow = int(self.rankerConfig["toleranceWindow"])
         self.suggestBestOffloadingMultiVM(triggerType)
 
     def suggestBestOffloadingMultiVM(self, triggerType):
@@ -126,7 +132,15 @@ class CIScheduler:
 
 if __name__ == "__main__":
     start_time = time.time()
+    #Added by mohamed to allow locking
+    if os.path.exists('/tmp/lock'):
+        exit()
+    with open("/tmp/lock","xt") as f:
+        f.write("lock")
+        f.close
     # triggerType = "resolve"
     triggerType = sys.argv[1]
     solver = CIScheduler(triggerType)
     print("--- %s seconds ---" % (time.time() - start_time))
+    os.remove("/tmp/lock")
+
