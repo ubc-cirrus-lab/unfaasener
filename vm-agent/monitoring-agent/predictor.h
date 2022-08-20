@@ -3,6 +3,10 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <iostream>
+#include <fstream>
+
 class predictor
 {
 
@@ -43,7 +47,7 @@ public:
     std::cout << "Time window's Mean is  "<< mean <<" and StdDev is "<< standardDeviation << std::endl;
     return  standardDeviation + mean;
     }
-    double compute_predicton_ExponentialMovingAverage(double x)
+    double compute_predicton_ExponentialMovingAverage(double x,int type)
     {
      alpha = 0.8;
      margin = 0.4;
@@ -73,20 +77,71 @@ public:
     if ( (int(max) > int(x) ) || (prediction > x + 100*margin))
     {
             std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
-            handle_prediction_violation();
+            handle_prediction_violation(prediction,type);
     }
 
     return  prediction;
     }
 
-    int handle_prediction_violation()
+    int handle_prediction_violation(double pred, int type)
     {
 	    //execute the local scheduler
-	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+	    //system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+	    if ( type == 1) //memory 
+	    {
+	    double memory_pred = (100-pred) * getTotalSystemMemory()/100;
+            std::cout<<"memory  "<<memory_pred<<std::endl;
+            writePrediction(memory_pred,type);
+	    }
+
+	    if (type == 0)//cpu
+	    {
+		    int cores=getTotalSystemCores() * (100-pred)/100;
+		    std::cout<<"cpu  "<<cores<<std::endl;
+                    writePrediction(cores,type);
+
+	    }
 	    return 1;
     }
 
-
+unsigned long long getTotalSystemMemory()
+{
+    long pages = sysconf(_SC_PHYS_PAGES);
+    long page_size = sysconf(_SC_PAGE_SIZE);
+    return (pages * page_size)/1024/1024;
+}
     
+unsigned int getTotalSystemCores()
+{
+	return  sysconf(_SC_NPROCESSORS_ONLN);
+}
+ void writePrediction(double pred,int type)
+{
+  std::fstream file;
+  std::ofstream myfile;
+  std::string line;
+  std::string line2;
+  file.open ("../../scheduler/resources.txt");
+  getline(file,line);
+  getline(file,line2);
+  file.close();
+  myfile.open ("../../scheduler/resources.txt");
+  if (type == 1 )
+  {
+  myfile << line;
+  myfile << "\n";
+  myfile << pred ;
+  myfile.close();
+  }
+  if (type == 0)
+  {
+  myfile << pred ;
+  myfile << "\n";
+  myfile << line2;
+  myfile.close();
+
+  }
+
+}
 
 };

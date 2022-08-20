@@ -65,8 +65,8 @@ int main(int, char *[]) {
                 typedef std::chrono::microseconds us;
                 typedef std::chrono::duration<float> fsec;
                 auto t0 = Time::now();
-		cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old));
-		mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old));
+		cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0);
+		mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1);
                 std::cout << "Total Prediction "<< cpu_pred_old <<"% of CPU consumption in the next window "<<std::endl;
                 std::cout << "Total Prediction "<< mem_pred_old <<"% of Memory consumption in the next window "<<std::endl;
                 auto t1 = Time::now();
