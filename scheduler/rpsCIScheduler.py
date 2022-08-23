@@ -35,7 +35,6 @@ class CIScheduler:
         routing_key = self.datastore_client.key(kind, name)
         self.routing = self.datastore_client.get(key=routing_key)
         self.decisionModes = (self.rankerConfig["decisionMode"]).split()
-        print("FDH", self.decisionModes)
         self.mode = self.rankerConfig["mode"]
         self.alpha = float(self.rankerConfig["statisticalParameter"])
         self.rps = float(self.rankerConfig["rps"])
@@ -133,14 +132,20 @@ class CIScheduler:
 if __name__ == "__main__":
     start_time = time.time()
     #Added by mohamed to allow locking
-    if os.path.exists('/tmp/lock'):
+    if os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'):
+        print("LOCK EXISTSSS!!")
+        # os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/tmp/lock.txt')
+        # print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/tmp/lock.txt'))
         exit()
-    with open("/tmp/lock","xt") as f:
+    with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt","w") as f:
         f.write("lock")
         f.close
+    print("LOCK CREATED!!!")
     # triggerType = "resolve"
     triggerType = sys.argv[1]
     solver = CIScheduler(triggerType)
+    os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt")
+    print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'))
     print("--- %s seconds ---" % (time.time() - start_time))
-    os.remove("/tmp/lock")
+
 

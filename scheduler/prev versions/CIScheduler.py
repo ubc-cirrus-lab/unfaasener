@@ -1,5 +1,6 @@
 from MultiVMSolver import OffloadingSolver
-import rankerConfig
+# import rankerConfig
+import configparser
 import time
 import numpy as np
 import sys
@@ -13,7 +14,11 @@ from Estimator import Estimator
 
 class CIScheduler:
     def __init__(self):
-        self.workflow = rankerConfig.workflow
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.workflow = self.rankerConfig["workflow"]
         slack = baselineSlackAnalysis(self.workflow)
         x = Estimator(self.workflow)
         x.getCost()
@@ -25,9 +30,9 @@ class CIScheduler:
         name = self.workflow
         routing_key = self.datastore_client.key(kind, name)
         self.routing = self.datastore_client.get(key=routing_key)
-        self.decisionModes = rankerConfig.decisionMode
-        self.mode = rankerConfig.mode
-        self.alpha = rankerConfig.statisticalParameter
+        self.decisionModes = (self.rankerConfig["decisionMode"]).split()
+        self.mode = self.rankerConfig["mode"]
+        self.alpha = float(self.rankerConfig["statisticalParameter"])
         resources = open('resources.txt', 'r')
         Lines = resources.readlines()
         cpus = Lines[0].split()
@@ -41,7 +46,7 @@ class CIScheduler:
             self.availableResources.append(dict)
         print("AvailableResources ===", self.availableResources)
         # self.availableResources = rankerConfig.availResources
-        self.toleranceWindow = rankerConfig.toleranceWindow
+        self.toleranceWindow = int(self.rankerConfig["toleranceWindow"])
         self.suggestBestOffloadingMultiVM()
 
 

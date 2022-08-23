@@ -154,6 +154,8 @@ class rpsOffloadingSolver:
             for node in nodes:
                 duration += self.getDuration(node)
             self.allPathsSlack[duration] = path
+  
+        
 
     def getVMexecution(self, offloadingCandidate, vm):
         vm = self.estimator.getFuncExecutionTime(

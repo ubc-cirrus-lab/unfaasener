@@ -1,5 +1,4 @@
 import unittest
-from MultiVMSolver import OffloadingSolver
 from tabnanny import verbose
 from mip import *
 import os
@@ -138,7 +137,7 @@ class TestSolver(unittest.TestCase):
             "r",
         ) as json_file:
             prevCosts = json.load(json_file)
-        highCost = prevCosts
+        highCost = prevCosts.copy()
         for func in highCost.keys():
             highCost[func]["default"] = 10e10
         with open(

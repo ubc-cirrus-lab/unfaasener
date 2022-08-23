@@ -2,6 +2,7 @@ from concurrent.futures import TimeoutError
 from google.cloud import pubsub_v1
 from google.cloud import datastore
 import datetime
+from pathlib import Path
 import os
 import json
 import logging
@@ -25,6 +26,7 @@ subscription_id = "vmSubscriber1"
 
 #publish_topic_id = "vm-subscribe"
 #timeout = 22.0
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/vmExeModule.json"
 
 
 

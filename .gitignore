@@ -6,3 +6,4 @@ venv
 *.pyc
 monitoringKey.json
 schedulerKey.json
+vmExeModule.json

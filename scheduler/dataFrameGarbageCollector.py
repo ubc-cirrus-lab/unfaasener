@@ -9,12 +9,12 @@ import os
 import pandas as pd
 import numpy as np
 import math
-import networkx as nx
 from monitoring import monitoring
 from criticalpath import Node
 from pathlib import Path
-import rankerConfig
 import statistics
+pd.options.mode.chained_assignment = None
+import configparser
 
 
 class garbageCollector:
@@ -32,16 +32,36 @@ class garbageCollector:
             + self.workflow
             + "/generatedDataFrame.pkl"
         )
+        dataframePathCSV = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/generatedDataFrame.csv"
+        )
+        dataJsonPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/data.json"
+        )
+        
         self.dataframe = pd.read_pickle(dataframePath)
 
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
+        with open(dataJsonPath, "r") as json_file:
+            self.dataJson = json.load(json_file)
         self.initFunc = workflow_json["initFunc"]
         self.workflowFunctions = workflow_json["workflowFunctions"]
         self.predecessors = workflow_json["predecessors"]
         self.successors = workflow_json["successors"]
         self.recordNum = 0
-        self.windowSize = 50
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.windowSize = int(self.rankerConfig["windowSize"])
+        # self.windowSize = 50
         self.slackData = {}
         self.dependencies = []
         self.recordNum = len(self.workflowFunctions)
@@ -53,7 +73,8 @@ class garbageCollector:
         self.memories = workflow_json["memory"]
         self.selectedIDs = self.selectRecords()
         self.getLastObservations()
-        # self.dataframe.to_pickle(dataframePath)
+        self.dataframe.to_pickle(dataframePath)
+        self.dataframe.to_csv(dataframePathCSV)
 
     def selectRecords(self):
         selectedInits = self.dataframe.loc[self.dataframe["function"] == self.initFunc]
@@ -66,15 +87,20 @@ class garbageCollector:
                 & (self.dataframe["host"] == "s")
             ]
             # newMergingPatternChanges
-            if selectedReq.shape[0] >= self.recordNum:
+            createdSet = selectedReq["function"].copy()
+            createdSet = set(createdSet.to_numpy())
+            if (selectedReq.shape[0] >= self.recordNum) and (len(createdSet) == len(self.workflowFunctions)):
                 selectedRecords.append(record["reqID"])
+        # print("selected::: ", selectedRecords)
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]
         self.finalRecodreqID = selectedRecords[-1]
         return selectedRecords
 
     def getLastObservations(self):
+        print(self.finalRecodreqID)
         for func in self.workflowFunctions:
+            # print("BEFORE::", self.dataframe.shape[0])
             selectedReq = self.dataframe.loc[
                 (self.dataframe["reqID"] == self.finalRecodreqID)
                 & (self.dataframe["function"] == func)
@@ -82,25 +108,29 @@ class garbageCollector:
             selectedReqForFunc = selectedReq.iloc[0]["start"]
             startDate = selectedReqForFunc
             # startDate = datetime.date((selectedReqForFunc["start"])
-            self.dataframe["start"] = pd.to_datetime(
-                self.dataframe["start"], format="%Y-%m-%d %H:%M:%S.%f"
-            )
+            # self.dataframe["start"] = pd.to_datetime(
+            #     self.dataframe["start"], format="%Y-%m-%d %H:%M:%S.%f"
+            # )
             # self.dataframe
-            # selected = self.dataframe.loc[
-            #     (self.dataframe["function"] == func)
-            #     & (self.dataframe["host"] == "s")
-            #     & ((self.dataframe["start"]) < startDate)
-            # ]
-            selected = self.dataframe.drop(
-                self.dataframe[
-                    (self.dataframe["function"] == func)
-                    & (self.dataframe["host"] == "s")
-                    & ((self.dataframe["start"]) < startDate)
-                ].index,
+            selected2 = self.dataframe.loc[
+                (self.dataframe["function"] == func)
+                & (self.dataframe["host"] == "s")
+            ]
+            selected2["start"] = pd.to_datetime(
+                selected2["start"], format="%Y-%m-%d %H:%M:%S.%f"
+            )
+            selected2 = selected2.loc[
+                ((selected2["start"]) < startDate) & (~selected2["reqID"].isin(self.selectedIDs))
+            ]
+            # print(func, ",:::,",  selected2.index)
+            self.dataframe.drop(
+                selected2.index,
                 inplace=True,
             )
-            print("func:::", func)
-            print(selected)
+            # print("AFTER::", self.dataframe.shape[0])
+            # selected = pd.merge(self.dataframe,selected, indicator=True, how='outer').query('_merge=="left_only"').drop('_merge', axis=1)
+            # print("func:::", func)
+            # print(selected2)
 
 
 if __name__ == "__main__":

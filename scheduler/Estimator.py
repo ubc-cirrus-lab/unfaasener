@@ -11,7 +11,8 @@ import numpy as np
 import math
 from monitoring import monitoring
 from pathlib import Path
-import rankerConfig
+# import rankerConfig
+import configparser
 import statistics
 from operator import itemgetter
 from itertools import islice
@@ -21,6 +22,10 @@ pd.options.mode.chained_assignment = None
 
 class Estimator:
     def __init__(self, workflow):
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
         self.workflow = workflow
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -72,7 +77,8 @@ class Estimator:
         self.predecessors = workflow_json["predecessors"]
         self.successors = workflow_json["successors"]
         self.topics = workflow_json["topics"]
-        self.windowSize = 50
+        self.windowSize = int(self.rankerConfig["windowSize"])
+        # self.windowSize = 50
         self.memories = workflow_json["memory"]
         with open(
             (
@@ -177,7 +183,7 @@ class Estimator:
 
     def getExecutionTime(self, host):
         exeTimes = {}
-        decisionModes = rankerConfig.decisionMode
+        decisionModes = (self.rankerConfig["decisionMode"]).split()
         for func in self.workflowFunctions:
             exeTimes[func] = {}
         for mode in decisionModes:
@@ -498,7 +504,7 @@ class Estimator:
 
     def getCost(self):
         costs = {}
-        decisionModes = rankerConfig.decisionMode
+        decisionModes = (self.rankerConfig["decisionMode"]).split()
         for func in self.workflowFunctions:
             costs[func] = {}
         for mode in decisionModes:

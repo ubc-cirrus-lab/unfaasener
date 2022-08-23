@@ -10,11 +10,11 @@ def main():
     client_api = docker.APIClient(base_url='unix://var/run/docker.sock')
     info = client_api.df()
     for container in info['Containers']:
-      if 'Created' in container:
+      if (('Created' in container) and (container['State'] == 'running')):
         print(container['Created'])
         created_at = datetime.fromtimestamp((container['Created']))
         print (created_at)
-        if (created_at + timedelta(seconds=int(sys.argv[2])) < datetime.now()):
+        if (created_at + timedelta(seconds=int(sys.argv[1])) < datetime.now()):
             print ("Container too old... Stopping It")
             client_api.stop(container)
 
@@ -24,7 +24,7 @@ def main():
 
 if __name__ == '__main__':
     while True:
-      time.sleep(int(sys.argv[1]))
+      time.sleep(5)
       main()
 
 

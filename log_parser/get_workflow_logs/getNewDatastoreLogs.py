@@ -7,6 +7,7 @@ from google.cloud import datastore
 import pandas as pd
 from getNewLogs import GetLog
 import datetime
+import configparser
 
 
 class dataStoreLogParser(GetLog):
@@ -23,7 +24,12 @@ class dataStoreLogParser(GetLog):
         self.workflowFunctions = workflow_json["workflowFunctions"]
         self.initFunc = workflow_json["initFunc"]
         self.dictData = {}
-        self.windowSize = 50
+        # self.windowSize = 50
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])+ "/scheduler/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.windowSize = int(self.rankerConfig["windowSize"])
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -70,7 +76,7 @@ class dataStoreLogParser(GetLog):
             self.dictData["host"].append(res["host"])
             self.dictData["duration"].append(float(res["duration"]))
             log_key = self.datastore_client.key("vmLogs", res.key.id_or_name)
-            # self.datastore_client.delete(log_key)
+            self.datastore_client.delete(log_key)
 
     def saveNewLogs(self):
         df = pd.DataFrame(self.dictData)

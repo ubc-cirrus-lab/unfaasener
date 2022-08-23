@@ -4,7 +4,7 @@
 2,Text2SpeechCensoringWorkflow_Compression,250.0
 3,dag-Censor,293.0
 4,dag-Conversion,265.0
-5,dag-MergingPoint,356.02718846223314
-6,dag-Profanity,202.25
-7,dag-Text2Speech,202.43243243243242
-8,vmTopic1,312.90220515578403
+5,dag-MergingPoint,355.59758868427366
+6,dag-Profanity,204.79787234042553
+7,dag-Text2Speech,204.58490566037736
+8,vmTopic1,306.21471779775703

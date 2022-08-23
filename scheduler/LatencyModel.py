@@ -1,15 +1,18 @@
 import numpy as np
 import configparser
+from pathlib import Path
+import os
 
 
 class LatencyModel:
     def __init__(self):
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/latencyConfig.ini"
         self.config = configparser.ConfigParser()
-        self.config.read("latencyConfig.ini")
+        self.config.read(path)
         self.latencyConfig = self.config["model"]
 
     def updateModel(self, mode, polynomialDegree, points):
-
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/latencyConfig.ini"
         x = []
         y = []
         for point in points:
@@ -19,12 +22,12 @@ class LatencyModel:
         if mode == "vm":
             coefficientsStr = " ".join(str(c) for c in coefficients)
             self.latencyConfig["vmCoefficients"] = coefficientsStr
-            with open("latencyConfig.ini", "w") as configfile:
+            with open(path, "w") as configfile:
                 self.config.write(configfile)
         elif mode == "serverless":
             coefficientsStr = " ".join(str(c) for c in coefficients)
             self.latencyConfig["serverlessCoefficients"] = coefficientsStr
-            with open("latencyConfig.ini", "w") as configfile:
+            with open(path, "w") as configfile:
                 self.config.write(configfile)
 
     def getLinearAddedLatency(self, msgSize):

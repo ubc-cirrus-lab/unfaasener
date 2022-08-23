@@ -11,10 +11,12 @@ import numpy as np
 import math
 from criticalpath import Node
 from pathlib import Path
-import rankerConfig
+# import rankerConfig
+import configparser
 import statistics
 import functools
 import operator
+pd.options.mode.chained_assignment = None
 
 
 class baselineSlackAnalysis:
@@ -66,7 +68,12 @@ class baselineSlackAnalysis:
         self.predecessors = workflow_json["predecessors"]
         self.successors = workflow_json["successors"]
         self.recordNum = 0
-        self.windowSize = 50
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.windowSize = int(self.rankerConfig["windowSize"])
+        # self.windowSize = 50
         self.slackData = {}
         self.dependencies = []
         self.recordNum = len(self.workflowFunctions)
@@ -97,7 +104,10 @@ class baselineSlackAnalysis:
                 & (self.dataframe["host"] == "s")
             ]
             # newMergingPatternChanges
-            if selectedReq.shape[0] >= self.recordNum:
+            createdSet = selectedReq["function"].copy()
+            createdSet = set(createdSet.to_numpy())
+            if (selectedReq.shape[0] >= self.recordNum) and (len(createdSet) == len(self.workflowFunctions)):
+            # if selectedReq.shape[0] >= self.recordNum:
                 selectedRecords.append(record["reqID"])
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]
@@ -274,7 +284,12 @@ class baselineSlackAnalysis:
         for col in self.slackData.keys():
             slackResults[col] = {}
             slackDurations[col] = {}
-        decisionModes = rankerConfig.decisionMode
+
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        config = configparser.ConfigParser()
+        config.read(path)
+        rankerConfig = config["settings"]
+        decisionModes = rankerConfig["decisionMode"].split()
         for decisionMode in decisionModes:
             self.tasks = {}
             self.es = {}

@@ -3,4 +3,7 @@ pandas
 gekko
 google-cloud-datastore
 google-cloud-monitoring
+google-cloud-pubsub
+google-cloud-functions
+docker
 criticalpath

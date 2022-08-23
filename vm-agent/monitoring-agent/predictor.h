@@ -100,10 +100,10 @@ public:
                     writePrediction(cores,type);
 
 	    }
-	    std::ifstream lockopen("/tmp/lock");
-            if (lockopen.fail()) {
+	    // std::ifstream lockopen("/tmp/lock");
+        // if (lockopen.fail()) {
 	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
-	    }
+	    // }
 	    return 1;
     }
 

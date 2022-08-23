@@ -34,7 +34,7 @@ jobs:
     - name: Test with unittest
       run: |
         cd scheduler
-        python multiVM_cost_test.py
-        python multiVM_latency_test.py
+        # python multiVM_cost_test.py
+        # python multiVM_latency_test.py
         python rps_cost_test.py
         python rps_latency_test.py

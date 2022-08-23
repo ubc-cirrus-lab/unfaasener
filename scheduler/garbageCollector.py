@@ -1,12 +1,19 @@
-from datastoreGabageCollcetor import mergingDataGarbageCollector
+from datastoreGarbageCollector import mergingDataGarbageCollector
+from pathlib import Path
 from dataFrameGarbageCollector import garbageCollector
 import time
-import rankerConfig
-
+import os
+# import rankerConfig
+import configparser
 
 class dataGarbageCollector:
     def __init__(self):
-        workflow = rankerConfig.workflow
+
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        workflow = self.rankerConfig["workflow"]
         serverless = mergingDataGarbageCollector()
         gc = garbageCollector(workflow)
 

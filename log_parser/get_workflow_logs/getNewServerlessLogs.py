@@ -12,6 +12,8 @@ import math
 import pandas as pd
 from pathlib import Path
 from getNewLogs import GetLog
+import configparser
+import copy
 
 
 class getNewLogs(GetLog):
@@ -19,7 +21,12 @@ class getNewLogs(GetLog):
         super().__init__(workflow)
         self.exeData = {}
         self.dictData = {}
-        self.windowSize = 50
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])+ "/scheduler/rankerConfig.ini"
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.windowSize = int(self.rankerConfig["windowSize"])
+        # self.windowSize = 50
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -39,15 +46,16 @@ class getNewLogs(GetLog):
         self.memories = workflow_json["memory"]
         for func in self.workflowFunctions:
             self.writeLogs[func] = []
-        self.lastTimestamp = None
+        self.newTimeStampRecorded = {}
         # self.checkLatestTimeStamp()
         for func in self.workflowFunctions:
+            self.lastTimestamp = None
             self.checkLatestTimeStamp(func)
             self.pullLogs(func)
         with open(
             ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"), "w"
         ) as outfile:
-            json.dump(self.writeLogs, outfile)
+            json.dump(self.newTimeStampRecorded, outfile)
         self.getDict()
         self.saveCost()
 
@@ -74,11 +82,14 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
             ) as outfile:
                 workflow_json = json.load(outfile)
-                lastRecordedTimestamp = str(workflow_json[func][0]["time_utc"])
-                arrayTS = lastRecordedTimestamp.split()
-                self.lastTimestamp = arrayTS[0] + "T" + arrayTS[1]
-                print("TT::::", self.lastTimestamp)
-                self.writeLogs = workflow_json
+                self.newTimeStampRecorded = copy.deepcopy(workflow_json)
+                if func in workflow_json.keys():
+                    lastRecordedTimestamp = str(workflow_json[func])
+                    # lastRecordedTimestamp = str(workflow_json[func][0]["time_utc"]
+                    arrayTS = lastRecordedTimestamp.split()
+                    self.lastTimestamp = arrayTS[0] + "T" + arrayTS[1]
+                    print("TT::::", self.lastTimestamp)
+                    # self.writeLogs = workflow_json
 
     def pullLogs(self, function):
         if self.lastTimestamp != None:
@@ -116,7 +127,7 @@ class getNewLogs(GetLog):
                 )
                 project_logs = subprocess.check_output(shlex.split(project_list_logs))
                 project_logs_json = json.loads(project_logs)
-                prevData = self.writeLogs[function]
+                prevData = copy.deepcopy(self.writeLogs[function])
                 project_logs_json = [
                     x for x in project_logs_json if x not in (self.writeLogs[function])
                 ]
@@ -138,13 +149,17 @@ class getNewLogs(GetLog):
                 ]
                 numNewInvocations = len(newInvocations)
                 self.NI += numNewInvocations
+                if(len(self.writeLogs[function]) != 0):
+                    self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
                 if (self.writeLogs[function]) == prevData:
+                    # if(len(self.writeLogs[function]) != 0):
+                    #     self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
                     endFlag = True
                 with open(
                     ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"),
                     "w",
                 ) as outfile:
-                    json.dump(self.writeLogs, outfile)
+                    json.dump(self.newTimeStampRecorded, outfile)
                 self.checkLatestTimeStamp(function)
         else:
             project_list_logs = (
@@ -166,6 +181,9 @@ class getNewLogs(GetLog):
                 if ("finished with status" in element["log"])
             ]
             numNewInvocations = len(newInvocations)
+            self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
+            with open(((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"),"w",) as outfile:
+                json.dump(self.newTimeStampRecorded, outfile)
             self.NI += numNewInvocations
 
     def addCost(self, mem, dur):
@@ -188,10 +206,11 @@ class getNewLogs(GetLog):
 
     def getDict(self):
         # self.dictData
-        with open(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
-        ) as outfile:
-            workflow_json = json.load(outfile)
+        # with open(
+        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
+        # ) as outfile:
+        #     workflow_json = json.load(outfile)
+        workflow_json = self.writeLogs
         for func in self.workflowFunctions:
             # matchingDict = {}
             funcData = workflow_json[func]

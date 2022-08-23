@@ -190,7 +190,8 @@ class GetWorkflowLogs:
 
 if __name__ == "__main__":
     # workflow = "ImageProcessingWorkflow"
-    workflow = "Text2SpeechCensoringWorkflow"
+    # workflow = "Text2SpeechCensoringWorkflow"
+    workflow = "ChatBotWorkflow"
     
 
     with open((os.path.dirname(os.path.abspath(__file__))) + "/data/" + workflow + ".json", "r") as json_file:

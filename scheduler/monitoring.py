@@ -1,5 +1,6 @@
 from google.cloud import monitoring_v3
 from google.cloud.monitoring_v3 import query
+from pathlib import Path
 import os
 import re
 import numpy as np
@@ -8,7 +9,7 @@ import pandas as pd
 
 class monitoring:
     def __init__(self):
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "key/monitoringKey.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/key/monitoringKey.json"
         project = "ubc-serverless-ghazal"
         client = monitoring_v3.MetricServiceClient()
         q = query.Query(
