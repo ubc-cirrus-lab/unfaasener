@@ -67,9 +67,10 @@ def flushExecutionDurations(executionDurations):
                  task["host"]=executionDurations[key][key2]["host"]
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
                  datastore_client.put(task)
-        executionDurations[key].pop(key2,None)
-    executionDurations.pop(key,None)
-    executionDurations = {}
+                 print ("###### Inserted one record in vmLogs")
+    #    executionDurations[key].pop(key2,None)
+    #executionDurations.pop(key,None)
+    #executionDurations = {}
 
 
 def threaded_function(arg,lastexectimestamps):
@@ -82,7 +83,13 @@ def threaded_function(arg,lastexectimestamps):
                 cont = client.containers.list(all=True, filters={"ancestor":"name:"+key})
                 next(iter(cont)).stop()
                 print ("Stopped Old Container "+key)
-         
+        if executionDurations != {}:
+            try:
+                flushExecutionDurations (executionDurations)
+
+            except:
+                print ("Error in flushing the vmLogs")
+ 
         # wait 1 sec in between each thread
         sleep(1)
 
