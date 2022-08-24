@@ -20,6 +20,14 @@ from zipfile import ZipFile
 import subprocess
 import sys
 
+from threading import Thread
+from time import sleep
+import docker
+import sys
+import time
+from datetime import  timedelta
+
+
 
 project_id = "ubc-serverless-ghazal"
 subscription_id = "vmSubscriber1"
@@ -38,6 +46,9 @@ client = docker.from_env()
 writtenData = {}
 executionDurations = {}
 memoryLimits = {}
+lastexecutiontimestamps={}
+client_api = docker.APIClient(base_url='unix://var/run/docker.sock')
+info = client_api.df()
 
 def flushExecutionDurations(executionDurations):
     seed=0
@@ -60,6 +71,20 @@ def flushExecutionDurations(executionDurations):
     executionDurations.pop(key,None)
     executionDurations = {}
 
+
+def threaded_function(arg,lastexectimestamps):
+    while True:
+        print("running")
+        for key in lastexectimestamps:
+            print (key)
+            print (lastexectimestamps[key])
+            if (lastexectimestamps[key] + timedelta(seconds=5)) < datetime.datetime.now():
+                cont = client.containers.list(all=True, filters={"ancestor":"name:"+key})
+                next(iter(cont)).stop()
+                print ("Stopped Old Container "+key)
+         
+        # wait 1 sec in between each thread
+        sleep(1)
 
 
 
@@ -99,7 +124,7 @@ def containerize(functionname):
     print ("\nUnzipping the function")
     with ZipFile(functionname+'.zip', 'r') as zipObj:
        zipObj.extractall(functionname)
-    with open("/tmp/output.log", "a") as output:
+    with open("/tmp/output2.log", "a") as output:
        print ("\nCreating the Docker container \n")
        # Copy the Docker file to the unzipped folder
        subprocess.call("cp Dockerfile "+functionname, shell=True, stdout=output, stderr=output)
@@ -162,7 +187,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun] = {}
 
 
-    with open("/tmp/output.log", "a") as output:
+    with open("/tmp/output2.log", "a") as output:
         before  = datetime.datetime.now()
         conts = client.containers.list(all=True, filters={"ancestor":"name:"+invokedFun})
         print (len(conts))
@@ -170,6 +195,8 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             cont = next(iter(conts))
             cont.start()
             cont.exec_run("python3 /app/main.py '"+  str(jsonfile).replace('\'','"') + "' " + reqID,detach=False )
+            lastexecutiontimestamps[invokedFun]=before
+            print(lastexecutiontimestamps)
         else:
             container = client.containers.create("name:"+ invokedFun,mem_limit = str(memoryLimits[invokedFun]),cpu_period=1000000, cpu_quota=500000,command = "tail -f /etc/hosts",detach=False )
             container.start()
@@ -197,7 +224,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
 
     if "Text2SpeechCensoringWorkflow_Censor" in invokedFun:
-        flushExecutionDurations (executionDurations)
+        #flushExecutionDurations (executionDurations)
         print (executionDurations)
 
 
@@ -211,6 +238,10 @@ with open('data.json', mode='w') as f:
     json.dump(writtenData, f)
 streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
 print(f"Listening for messages on {subscription_path}..\n")
+thread = Thread(target = threaded_function, args = (1000000,lastexecutiontimestamps ))
+thread.start()
+thread.join()
+
 
 
 
