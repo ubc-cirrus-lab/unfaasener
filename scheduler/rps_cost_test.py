@@ -1,6 +1,5 @@
 import unittest
 from tabnanny import verbose
-from mip import *
 import os
 import json
 import pandas as pd
@@ -18,25 +17,19 @@ class TestSolver(unittest.TestCase):
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
-            + "Text2SpeechCensoringWorkflow"
+            + "TestCase3Workflow"
             + ".json"
         )
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
         workflow_json["lastDecision_default"] = [
-            [0.0],
-            [0.0],
-            [0.0],
-            [0.0],
-            [0.0],
-            [0.0],
-            [0.0],
+        [0.0], [0.0], [0.0], [0.0]
         ]
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
         toleranceWindow = 0
         solver = rpsOffloadingSolver(
-            workflow=self.workflow,
+            workflow="TestCase3Workflow",
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
@@ -48,7 +41,7 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
+        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
     def test_highPubsubCost(self):
         jsonPath = (
@@ -181,7 +174,7 @@ class TestSolver(unittest.TestCase):
     def test_limitedVMResources(self):
         toleranceWindow = 0
         solver = rpsOffloadingSolver(
-            workflow=self.workflow,
+            workflow="TestCaseWorkflow",
             mode=self.mode,
             decisionMode=None,
             toleranceWindow=toleranceWindow,
@@ -193,7 +186,7 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]])
+        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
     # def test_multipleVMs_chooseTwoMostCostlyFuncs(self):
     #     jsonPath = (
