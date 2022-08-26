@@ -5,11 +5,9 @@ import os
 import json
 from pathlib import Path
 from google.cloud import datastore
-from baselineSlackAnalysis import baselineSlackAnalysis
-from rpsMultiVMSolver import rpsOffloadingSolver
-from Estimator import Estimator
-from getInvocationRate import InvocationRate
 import sys
+import copy
+import datetime
 
 
 class resetDicision:
@@ -33,7 +31,20 @@ class resetDicision:
         routing_key = self.datastore_client.key(kind, name)
         self.routing = self.datastore_client.get(key=routing_key)
         self.resetRouting()
+        self.resetSavedTimestamps()
 
+
+    def resetSavedTimestamps(self):
+        now = str(datetime.datetime.now())
+        dataJSONN = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/log_parser/get_workflow_logs/data/"+self.workflow+"/data.json"
+                )
+        newData = {}
+        for func in self.workflow_json["workflowFunctions"]:
+            newData[func] = now
+        with open(dataJSONN, "w") as outfile:
+            json.dump(newData, outfile)
 
 
     def resetRouting(self):

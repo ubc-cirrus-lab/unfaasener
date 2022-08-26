@@ -4,7 +4,6 @@ import numpy as np
 import sys
 import configparser
 import os
-import json
 from pathlib import Path
 from google.cloud import datastore
 from baselineSlackAnalysis import baselineSlackAnalysis
@@ -21,14 +20,12 @@ class CIScheduler:
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.workflow = self.rankerConfig["workflow"]
-        slack = baselineSlackAnalysis(self.workflow)
         x = Estimator(self.workflow)
         self.invocationRate = InvocationRate(self.workflow)
         # self.rates = invocationRate.getRPS()
         x.getCost()
         x.getPubSubMessageSize()
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/key/schedulerKey.json"
-        project = "ubc-serverless-ghazal"
         self.datastore_client = datastore.Client()
         kind = "routingDecision"
         name = self.workflow
@@ -147,5 +144,11 @@ if __name__ == "__main__":
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt")
     print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'))
     print("--- %s seconds ---" % (time.time() - start_time))
+    # my_process = psutil.Process(getpid())
+    # print("Name:", my_process.name())
+    # print("PID:", my_process.pid)
+    # print("Executable:", my_process.exe())
+    # print("CPU%:", my_process.cpu_percent(interval=1))
+    # print("MEM%:", my_process.memory_percent())
 
 

@@ -10,7 +10,7 @@ class getWorkflowLogs():
 
 
 if __name__ == "__main__":
-    interuptTime = 60*10
+    interuptTime = 60
     initial = int(sys.argv[2])
     if initial == 1:
         start_time = time.time()
@@ -20,6 +20,7 @@ if __name__ == "__main__":
         x = getWorkflowLogs(workflow)
         print("--- %s seconds ---" % (time.time() - start_time))
     else:
+        print("---------getting new logs:---------------")
         while True:
                 start_time = time.time()
                 # workflow = "Text2SpeechCensoringWorkflow"

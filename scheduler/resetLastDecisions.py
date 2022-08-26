@@ -55,11 +55,15 @@ class resetLastDicision:
                     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                     + "/log_parser/get_workflow_logs/data/"+workflow+"/invocationRates.csv"
                 )
-        dataJSONN = (
-                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-                    + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
+        lockFile = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))))
+                    + "/lock.txt"
                 )
-        filePaths = [dfPickel, dfCSV, irPickel, irCSV, dataJSONN]
+        # dataJSONN = (
+        #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
+        #         )
+        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile]
         for filePath in filePaths:
             if os.path.isfile(filePath):
                 os.remove(filePath)
