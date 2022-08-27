@@ -12,4 +12,5 @@ To set up the tool simply run the following script:
 
 ## Acknowledgments
 
-This work was supported in part by the Natural Sciences and Engineering Research Council of Canada and the Google Cloud Research Credits program.
+This work was supported in part by the Natural Sciences and Engineering Research Council of Canada (NSERC).
+We are also thankful for cloud resources made available to us by the Digital Research Alliance of Canada and the Google Cloud Research Credits program.

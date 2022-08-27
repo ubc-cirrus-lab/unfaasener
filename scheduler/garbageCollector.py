@@ -21,6 +21,7 @@ class dataGarbageCollector:
 if __name__ == "__main__":
     interuptTime = 60 * 60
     while True:
+        print("GC is running......")
         start_time = time.time()
         x = dataGarbageCollector()
         print("--- %s seconds ---" % (time.time() - start_time))

@@ -6,7 +6,6 @@ import datetime
 from sys import getsizeof
 import time
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 import math
 import pandas as pd

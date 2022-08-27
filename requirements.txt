@@ -7,3 +7,4 @@ google-cloud-pubsub
 google-cloud-functions
 docker
 criticalpath
+psutil
