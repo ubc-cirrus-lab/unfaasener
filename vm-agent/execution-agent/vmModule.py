@@ -67,7 +67,8 @@ def flushExecutionDurations(executionDurations):
                  task["host"]=executionDurations[key][key2]["host"]
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
                  datastore_client.put(task)
-                 print ("###### Inserted one record in vmLogs")
+#                 print ("###### Inserted one record in vmLogs")
+            #executionDurations[key][key2] = {}
     #    executionDurations[key].pop(key2,None)
     #executionDurations.pop(key,None)
     #executionDurations = {}
@@ -86,7 +87,6 @@ def threaded_function(arg,lastexectimestamps):
         if executionDurations != {}:
             try:
                 flushExecutionDurations (executionDurations)
-
             except:
                 print ("Error in flushing the vmLogs")
  
@@ -247,7 +247,7 @@ streaming_pull_future = subscriber.subscribe(subscription_path, callback=callbac
 print(f"Listening for messages on {subscription_path}..\n")
 thread = Thread(target = threaded_function, args = (1000000,lastexecutiontimestamps ))
 thread.start()
-thread.join()
+#thread.join()
 
 
 
