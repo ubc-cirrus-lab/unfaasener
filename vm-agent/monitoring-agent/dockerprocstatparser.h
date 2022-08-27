@@ -21,7 +21,7 @@ public:
      std::string line;
      std::string utime;
      std::string ktime;
-     in.open("/proc/684/stat");
+     in.open("/proc/1242/stat");
     if(in.is_open())
     {
         while(std::getline(in, line))
@@ -53,7 +53,7 @@ for (int i = 0; i < 15; ++i)
      std::string line;
      std::string allocatedmem ;
      std::string ktime;
-     in.open("/proc/684/statm");
+     in.open("/proc/1242/statm");
     if(in.is_open())
     {
         while(std::getline(in, line))

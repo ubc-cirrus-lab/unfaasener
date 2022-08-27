@@ -1,1 +1,1 @@
-g++ -std=c++11 -lcurl  -I . agent.cpp -o monitoring-agent
+g++ -std=c++11   -I . agent.cpp -o monitoring-agent
