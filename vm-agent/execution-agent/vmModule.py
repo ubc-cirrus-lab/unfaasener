@@ -30,7 +30,8 @@ from datetime import  timedelta
 
 
 project_id = "ubc-serverless-ghazal"
-subscription_id = "vmSubscriber1"
+#subscription_id = "vmSubscriber1"
+subscription_id =sys.argv[1] 
 
 #publish_topic_id = "vm-subscribe"
 #timeout = 22.0
@@ -67,7 +68,7 @@ def flushExecutionDurations(executionDurations):
                  task["host"]=executionDurations[key][key2]["host"]
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
                  datastore_client.put(task)
-#                 print ("###### Inserted one record in vmLogs")
+                 print ("###### Inserted one record in vmLogs")
             #executionDurations[key][key2] = {}
     #    executionDurations[key].pop(key2,None)
     #executionDurations.pop(key,None)
@@ -222,7 +223,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun]["duration"] = str(delta.microseconds/1000)
         executionDurations[reqID][invokedFun]["start"] = str(before)
         executionDurations[reqID][invokedFun]["finish"] = str(after)
-        executionDurations[reqID][invokedFun]["host"] = "vm0"
+        executionDurations[reqID][invokedFun]["host"] = sys.argv[2]
         executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
         executionDurations[reqID][invokedFun]["mergingPoint"] = ""
         if "Merg" in invokedFun:
