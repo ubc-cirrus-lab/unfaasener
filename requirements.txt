@@ -1,6 +1,4 @@
-collections
 criticalpath
-deque
 docker
 gekko
 google-cloud
