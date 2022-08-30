@@ -107,16 +107,12 @@ class CIScheduler:
                 )
                 print("Decision for case: {}:{}".format(decisionMode, x))
                 decisions.append(x)
-            # finalDecision = [[0] * len(decisions[0][0])] * len(decisions[0])
-            # for decision in decisions:
-            #     finalDecision = np.add(finalDecision, decision)
             finalDecision = np.mean(decisions, axis=0)
             finalDecision = finalDecision / 100
             capArray = np.zeros(len(finalDecision))
             for i in range(len(capArray)):
                 capArray[i] = np.full(len(finalDecision[i]), 0.9)
-                finalDecision[i] = np.minimum(finalDecision[i], capArray[i])
-            # finalDecision = np.where(finalDecision == 1, 0.9, finalDecision)
+                finalDecision[i] = np.multiply(finalDecision[i], capArray[i])
             finalDecision = list(finalDecision)
             for function in range(len(finalDecision)):
                 finalDecision[function] = list(finalDecision[function])
@@ -131,8 +127,6 @@ if __name__ == "__main__":
     #Added by mohamed to allow locking
     if os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'):
         print("LOCK EXISTSSS!!")
-        # os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/tmp/lock.txt')
-        # print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/tmp/lock.txt'))
         exit()
     with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt","w") as f:
         f.write("lock")
@@ -144,11 +138,5 @@ if __name__ == "__main__":
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt")
     print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'))
     print("--- %s seconds ---" % (time.time() - start_time))
-    # my_process = psutil.Process(getpid())
-    # print("Name:", my_process.name())
-    # print("PID:", my_process.pid)
-    # print("Executable:", my_process.exe())
-    # print("CPU%:", my_process.cpu_percent(interval=1))
-    # print("MEM%:", my_process.memory_percent())
 
 
