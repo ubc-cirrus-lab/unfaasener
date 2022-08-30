@@ -17,7 +17,7 @@ python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py $
 python3 ~/de-serverlessization/scheduler/rpsCIScheduler.py $mode 
 
 # running the vm execution agent in the background
-python3 ~/de-serverlessization/vm-agent/execution-agent/vmModule.py &
+python3 ~/de-serverlessization/vm-agent/execution-agent/vmModule.py vmSubscriber1 vm0 &
 pidOne=$!
 
 # periodically (every 10m) collecting the execution logs of the workflow in the background

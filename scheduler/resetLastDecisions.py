@@ -5,6 +5,7 @@ import json
 # import rankerConfig
 import configparser
 import pandas as pd
+import datetime
 
 class resetLastDicision:
     def __init__(self, workflow, vmNum, mode):
@@ -27,6 +28,7 @@ class resetLastDicision:
         decisionModes = (self.rankerConfig["decisionMode"]).split()
         self.rankerConfig["workflow"] = workflow
         self.rankerConfig["mode"] = mode
+        self.rankerConfig["startTest"] = str(datetime.datetime.now())
         with open(path, "w") as configfile:
                 self.config.write(configfile)
         for decisionMode in decisionModes:

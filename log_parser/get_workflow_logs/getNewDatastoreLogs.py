@@ -30,6 +30,8 @@ class dataStoreLogParser(GetLog):
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
+        startDate = str(self.rankerConfig["startTest"])
+        self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -54,8 +56,6 @@ class dataStoreLogParser(GetLog):
             results = results + list(query.fetch())
         print("num of new res:::", len(results))
         for res in results:
-            self.dictData["function"].append(res["function"])
-            self.dictData["reqID"].append(res["reqID"])
             if (res["finish"]).endswith("Z"):
                         (res["finish"]) = (
                             res["finish"]
@@ -70,11 +70,14 @@ class dataStoreLogParser(GetLog):
             start = datetime.datetime.strptime(
                         (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
-            self.dictData["start"].append(start)
-            self.dictData["finish"].append(finish)
-            self.dictData["mergingPoint"].append(res["mergingPoint"])
-            self.dictData["host"].append(res["host"])
-            self.dictData["duration"].append(float(res["duration"]))
+            if start >= self.startTest:
+                self.dictData["function"].append(res["function"])
+                self.dictData["reqID"].append(res["reqID"])
+                self.dictData["start"].append(start)
+                self.dictData["finish"].append(finish)
+                self.dictData["mergingPoint"].append(res["mergingPoint"])
+                self.dictData["host"].append(res["host"])
+                self.dictData["duration"].append(float(res["duration"]))
             log_key = self.datastore_client.key("vmLogs", res.key.id_or_name)
             self.datastore_client.delete(log_key)
 
