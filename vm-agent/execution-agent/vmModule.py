@@ -54,8 +54,8 @@ info = client_api.df()
 def flushExecutionDurations(executionDurations):
     seed=0
     kind="vmLogs"
-    for key in executionDurations:
-        for key2 in executionDurations[key]:
+    for key in list(executionDurations):
+        for key2 in list(executionDurations[key]):
             if executionDurations[key][key2] != {}:
                  task_key = datastore_client.key(kind, str(key)+str(seed))
                  task = datastore.Entity(key=task_key)
@@ -68,7 +68,7 @@ def flushExecutionDurations(executionDurations):
                  task["host"]=executionDurations[key][key2]["host"]
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
                  datastore_client.put(task)
-                 print ("###### Inserted one record in vmLogs")
+                 #print ("###### Inserted one record in vmLogs")
             #executionDurations[key][key2] = {}
     #    executionDurations[key].pop(key2,None)
     #executionDurations.pop(key,None)
@@ -231,9 +231,6 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
 
 
-    if "Text2SpeechCensoringWorkflow_Censor" in invokedFun:
-        #flushExecutionDurations (executionDurations)
-        print (executionDurations)
 
 
 
