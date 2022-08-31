@@ -10,6 +10,9 @@
 #include <dockerprocstatparser.h>
 #include <meminfoparser.h>
 #include <chrono>
+#define _GNU_SOURCE
+#include <sched.h>
+
 
 using namespace std;
 int main(int, char *[]) {
@@ -31,6 +34,10 @@ int main(int, char *[]) {
     dockerprocstatparser dockerprocstat; 
     procstatparser procstat(current_cpu_readings);
     meminfoparser memstat(current_mem_readings);
+    cpu_set_t  mask;
+CPU_ZERO(&mask);
+CPU_SET(0, &mask);
+int result = sched_setaffinity(0, sizeof(mask), &mask);
     while (true) 
 	{
 //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
@@ -40,7 +47,7 @@ int main(int, char *[]) {
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 	 float docker_utilization  = (current_docker_reading - previous_docker_reading);
 	 float docker_mem_utilization = dockerprocstat.get_proc_stat_memory();
-	 std::cout << docker_mem_utilization << std::endl;
+	 //std::cout << docker_mem_utilization << std::endl;
 
 	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_utilization)/total_diff);
 	 previous_docker_reading = current_docker_reading;
@@ -48,7 +55,7 @@ int main(int, char *[]) {
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-         std::cout << current_mem_readings[1] << std::endl;
+         //std::cout << current_mem_readings[1] << std::endl;
 
 	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_mem_utilization)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;

@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
-
 class predictor
 {
 
@@ -103,6 +102,8 @@ public:
 	    // std::ifstream lockopen("/tmp/lock");
         // if (lockopen.fail()) {
 	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+	    //system("date");
+
 	    // }
 	    return 1;
     }
