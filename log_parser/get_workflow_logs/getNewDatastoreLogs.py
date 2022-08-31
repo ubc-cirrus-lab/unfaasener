@@ -8,6 +8,9 @@ import pandas as pd
 from getNewLogs import GetLog
 import datetime
 import configparser
+import logging
+logging.basicConfig(filename=str(Path(os.path.dirname(os.path.abspath(__file__))))+"/logs/logParser.log", level=logging.INFO)
+
 
 
 class dataStoreLogParser(GetLog):
@@ -30,7 +33,7 @@ class dataStoreLogParser(GetLog):
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
-        startDate = str(self.rankerConfig["startTest"])
+        startDate = str(self.rankerConfig["starttest"])
         self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
         self.dictData["function"] = []
         self.dictData["reqID"] = []
@@ -55,6 +58,8 @@ class dataStoreLogParser(GetLog):
             query.add_filter("function", "=", func)
             results = results + list(query.fetch())
         print("num of new res:::", len(results))
+        logInsrt = "num of new res:::" +  str(len(results))
+        logging.info(logInsrt)
         for res in results:
             if (res["finish"]).endswith("Z"):
                         (res["finish"]) = (

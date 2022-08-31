@@ -28,7 +28,7 @@ class resetLastDicision:
         decisionModes = (self.rankerConfig["decisionMode"]).split()
         self.rankerConfig["workflow"] = workflow
         self.rankerConfig["mode"] = mode
-        self.rankerConfig["startTest"] = str(datetime.datetime.now())
+        self.rankerConfig["starttest"] = str(datetime.datetime.now())
         with open(path, "w") as configfile:
                 self.config.write(configfile)
         for decisionMode in decisionModes:

@@ -7,3 +7,4 @@ venv
 monitoringKey.json
 schedulerKey.json
 vmExeModule.json
+*.log

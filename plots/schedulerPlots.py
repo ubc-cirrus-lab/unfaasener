@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import math
 import json
+import seaborn as sns
 
 
 class getPlots:
@@ -31,15 +32,28 @@ class getPlots:
         self.latencyPlot()
         self.costPlot()
 
+    def getArrivalTime(self, startByReq, reqID):
+        if reqID in startByReq.keys():
+            return startByReq[reqID]
+        else:
+            return np.nan
+
     def exePlot(self):
+        startByReq = self.getArrivalDict()
         plt.figure()
         Temps = copy.deepcopy(self.dataframe)
-        Temps = Temps[["start", "host"]]
-        Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
-        Temps = Temps.groupby(["start", "host"]).size().unstack()
-        Temps.plot()
-        plt.xlabel("Invocation Arrival Time")
-        plt.ylabel("Host")
+        Temps = Temps[["host", "reqID"]]
+        Temps["arrivalDate"] = Temps.apply(
+            lambda row: self.getArrivalTime(startByReq, row.reqID),
+            axis=1,
+        )
+        Temps = Temps[Temps['arrivalDate'].notna()]
+        Temps = Temps[["arrivalDate", "host"]]
+        tempDict = (Temps.groupby(["arrivalDate", "host"])["host"].count()).to_dict()
+        dataTemp = pd.Series(tempDict).rename_axis(['arrivalDate', 'host']).reset_index(name='counts')
+        print(dataTemp)
+        plt.figure()
+        g = sns.catplot(x="arrivalDate", hue="host", y="counts",data=dataTemp)
         plt.show()
         plt.savefig(self.workflow + "/invocations.png")
 
@@ -56,10 +70,9 @@ class getPlots:
         startByReqSet = set(startByReq)
         endDFSet = set(endDF)
         finalDict = {}
-        for keyy in startByReqSet.intersection(startByReqSet):
+        for keyy in startByReqSet.intersection(endDFSet):
             duration = ((endDF[keyy] - startByReq[keyy]).total_seconds()) * 1000
             finalDict[startByReq[keyy]] = duration
-        # print(finalDict)
         plt.figure()
         arrival_time, duration = zip(*sorted(finalDict.items()))
         plt.plot(arrival_time, duration)
@@ -87,7 +100,6 @@ class getPlots:
         finalDict = {}
         for keyy in startByReqSet.intersection(costlDFSet):
             finalDict[startByReq[keyy]] = costlDF[keyy]
-        # print(finalDict)
         plt.figure()
         arrival_time, cost = zip(*sorted(finalDict.items()))
         plt.plot(arrival_time, cost)
@@ -141,7 +153,6 @@ class getPlots:
         for each in workflowSuccessors:
             if len(each) == 0:
                 terminals.append(workflowFunctions[workflowSuccessors.index(each)])
-        # print(terminals)
         return terminals
 
 
