@@ -78,16 +78,18 @@ def flushExecutionDurations(executionDurations):
 def threaded_function(arg,lastexectimestamps):
     while True:
         print("running")
-        for key in lastexectimestamps:
+        staticlastexectimestamps = lastexectimestamps
+        for key in list(staticlastexectimestamps):
             print (key)
             print (lastexectimestamps[key])
             if (lastexectimestamps[key] + timedelta(seconds=5)) < datetime.datetime.now():
                 cont = client.containers.list(all=True, filters={"ancestor":"name:"+key})
                 next(iter(cont)).stop()
                 print ("Stopped Old Container "+key)
-        if executionDurations != {}:
+        staticexecutionDurations = executionDurations
+        if staticexecutionDurations != {}:
             try:
-                flushExecutionDurations (executionDurations)
+                flushExecutionDurations (staticexecutionDurations)
             except:
                 print ("Error in flushing the vmLogs")
  
