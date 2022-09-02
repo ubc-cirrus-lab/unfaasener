@@ -32,7 +32,15 @@ class resetDicision:
         self.routing = self.datastore_client.get(key=routing_key)
         self.resetRouting()
         self.resetSavedTimestamps()
+        self.resetResources()
 
+
+    def resetResources(self):
+        lines = [0, 0]
+        with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/resources.txt", 'w') as f:
+            for line in lines:
+                f.write(str(line))
+                f.write('\n')
 
     def resetSavedTimestamps(self):
         now = str(datetime.datetime.now())
