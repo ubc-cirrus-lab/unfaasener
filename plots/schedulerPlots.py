@@ -1,17 +1,29 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import configparser
 import copy
 from pathlib import Path
+import datetime
 import os
 import sys
 import numpy as np
 import math
 import json
 import seaborn as sns
-
+from matplotlib.pyplot import figure
+from sklearn.preprocessing import MinMaxScaler
+import matplotlib
+BIGGER_SIZE = 30
+matplotlib.rc('font', size=BIGGER_SIZE)
+matplotlib.rc('axes', titlesize=BIGGER_SIZE)
 
 class getPlots:
     def __init__(self, workflow):
+        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/dateTest.ini"
+        config = configparser.ConfigParser()
+        config.read(path)
+        dateConfig = config["settings"]
+        self.startTestDate = dateConfig["date"]
         self.workflow = workflow
         dfPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -39,23 +51,81 @@ class getPlots:
             return np.nan
 
     def exePlot(self):
-        startByReq = self.getArrivalDict()
-        plt.figure()
         Temps = copy.deepcopy(self.dataframe)
-        Temps = Temps[["host", "reqID"]]
-        Temps["arrivalDate"] = Temps.apply(
-            lambda row: self.getArrivalTime(startByReq, row.reqID),
+        Temps = Temps[["host", "start", "finish"]]
+        Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
+        Temps["finish"] = pd.to_datetime(Temps["finish"], utc=True)
+        cols_to_norm = ['start','finish']
+        startTestDate = datetime.datetime.strptime(
+                        (self.startTestDate), "%Y-%m-%d %H:%M:%S.%f"
+                    )
+        dictStartT = {"startTest" : ([startTestDate]*10)}
+        dfStartT = pd.DataFrame(dictStartT)
+        dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
+        minDate = dfStartT["startTest"].min()
+        minDateData = ((Temps.loc[(Temps['start'] >= minDate) & (Temps["host"] == "s")])["start"]).min()
+        print("min:::", minDate)
+        print("min Data:::", minDateData)
+        maxDateStart = Temps["start"].max()
+        maxDateFinish = Temps["finish"].max()
+        maxDate = max(maxDateStart, maxDateFinish)
+        Temps2 = copy.deepcopy(self.dataframe)
+        Temps2 = Temps2[["host", "start", "finish"]]
+        Temps2 = Temps2.loc[Temps2['host'] == "s"]
+        Temps2["start"] = pd.to_datetime(Temps2["start"], utc=True)
+        Temps2["finish"] = pd.to_datetime(Temps2["finish"], utc=True)
+        Temps2['dummy'] = 1
+        Temps3 = copy.deepcopy(self.dataframe)
+        Temps3 = Temps3[["host", "start", "finish"]]
+        Temps3 = Temps3.loc[Temps3['host'] == "vm0"]
+        Temps3["start"] = pd.to_datetime(Temps3["start"], utc=True)
+        Temps3["finish"] = pd.to_datetime(Temps3["finish"], utc=True)
+        Temps3['dummy'] = 1
+        dateSeries = pd.date_range((minDateData -  datetime.timedelta(0,1)), (maxDate + datetime.timedelta(0,1)), freq='1S')
+        dateDF = pd.DataFrame(dict(date=dateSeries, dummy=1))
+        crossJoin = dateDF.merge(Temps2, on='dummy')
+        condJoin = crossJoin[(crossJoin.start <= crossJoin.date) & (crossJoin.date <= crossJoin.finish)]
+        joinGrp = condJoin.groupby(['date'])
+        final = (
+            pd.DataFrame(dict(
+                serverless=joinGrp.size()
+            ), index=dateSeries)
+            .fillna(0)
+            .reset_index()
+        )
+        # print((final.loc[final['serverless'] == 0])["index"])
+        crossJoin2 = dateDF.merge(Temps3, on='dummy')
+        condJoin2 = crossJoin2[(crossJoin2.start <= crossJoin2.date) & (crossJoin2.date <= crossJoin2.finish)]
+        joinGrp2 = condJoin2.groupby(['date'])
+        final2 = (
+            pd.DataFrame(dict(
+                vm0=joinGrp.size()
+            ), index=dateSeries)
+            .fillna(0)
+            .reset_index()
+        )
+        finalFrame =  final.merge(final2, on='index')
+        finalFrame["vm0"] = finalFrame.apply(
+            lambda row: self.getVmCount(row.vm0, row.serverless),
             axis=1,
         )
-        Temps = Temps[Temps['arrivalDate'].notna()]
-        Temps = Temps[["arrivalDate", "host"]]
-        tempDict = (Temps.groupby(["arrivalDate", "host"])["host"].count()).to_dict()
-        dataTemp = pd.Series(tempDict).rename_axis(['arrivalDate', 'host']).reset_index(name='counts')
-        print(dataTemp)
+        finalFrame['index'] = finalFrame['index'].apply(lambda x: (x - finalFrame['index'].min()).total_seconds())
         plt.figure()
-        g = sns.catplot(x="arrivalDate", hue="host", y="counts",data=dataTemp)
+        finalFrame.set_index('index')[['vm0', 'serverless']].plot(figsize=(40, 10), linewidth=3)
+        plt.xlabel("Time(Seconds)")
+        plt.ylabel("Concurrency")
         plt.show()
         plt.savefig(self.workflow + "/invocations.png")
+
+        
+
+    def getVmCount(self,count_vm0, count_s):
+        total = count_vm0 + count_s
+        # if total == count_s:
+        #     return np.nan
+        # else:
+        return total
+
 
     def latencyPlot(self):
         terminals = self.findTerminals()
@@ -68,12 +138,13 @@ class getPlots:
         endDF = endTempGroup.agg(Maximum_Date=("finish", np.max))
         endDF = endDF.to_dict()["Maximum_Date"]
         startByReqSet = set(startByReq)
+        minStart = min(list(startByReq.values()))
         endDFSet = set(endDF)
         finalDict = {}
         for keyy in startByReqSet.intersection(endDFSet):
             duration = ((endDF[keyy] - startByReq[keyy]).total_seconds()) * 1000
-            finalDict[startByReq[keyy]] = duration
-        plt.figure()
+            finalDict[(startByReq[keyy] - minStart).total_seconds()] = duration
+        plt.figure(figsize=(12, 10), dpi=80)
         arrival_time, duration = zip(*sorted(finalDict.items()))
         plt.plot(arrival_time, duration)
         plt.xlabel("Invocation Arrival Time")
@@ -100,7 +171,7 @@ class getPlots:
         finalDict = {}
         for keyy in startByReqSet.intersection(costlDFSet):
             finalDict[startByReq[keyy]] = costlDF[keyy]
-        plt.figure()
+        plt.figure(figsize=(12, 10), dpi=80)
         arrival_time, cost = zip(*sorted(finalDict.items()))
         plt.plot(arrival_time, cost)
         plt.xlabel("Invocation Arrival Time")
