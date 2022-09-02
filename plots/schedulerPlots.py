@@ -13,13 +13,15 @@ import seaborn as sns
 from matplotlib.pyplot import figure
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib
+
 BIGGER_SIZE = 30
-matplotlib.rc('font', size=BIGGER_SIZE)
-matplotlib.rc('axes', titlesize=BIGGER_SIZE)
+matplotlib.rc("font", size=BIGGER_SIZE)
+matplotlib.rc("axes", titlesize=BIGGER_SIZE)
+
 
 class getPlots:
     def __init__(self, workflow):
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/dateTest.ini"
+        path = str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/dateTest.ini"
         config = configparser.ConfigParser()
         config.read(path)
         dateConfig = config["settings"]
@@ -55,15 +57,17 @@ class getPlots:
         Temps = Temps[["host", "start", "finish"]]
         Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
         Temps["finish"] = pd.to_datetime(Temps["finish"], utc=True)
-        cols_to_norm = ['start','finish']
+        cols_to_norm = ["start", "finish"]
         startTestDate = datetime.datetime.strptime(
-                        (self.startTestDate), "%Y-%m-%d %H:%M:%S.%f"
-                    )
-        dictStartT = {"startTest" : ([startTestDate]*10)}
+            (self.startTestDate), "%Y-%m-%d %H:%M:%S.%f"
+        )
+        dictStartT = {"startTest": ([startTestDate] * 10)}
         dfStartT = pd.DataFrame(dictStartT)
         dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
         minDate = dfStartT["startTest"].min()
-        minDateData = ((Temps.loc[(Temps['start'] >= minDate) & (Temps["host"] == "s")])["start"]).min()
+        minDateData = (
+            (Temps.loc[(Temps["start"] >= minDate) & (Temps["host"] == "s")])["start"]
+        ).min()
         print("min:::", minDate)
         print("min Data:::", minDateData)
         maxDateStart = Temps["start"].max()
@@ -71,61 +75,66 @@ class getPlots:
         maxDate = max(maxDateStart, maxDateFinish)
         Temps2 = copy.deepcopy(self.dataframe)
         Temps2 = Temps2[["host", "start", "finish"]]
-        Temps2 = Temps2.loc[Temps2['host'] == "s"]
+        Temps2 = Temps2.loc[Temps2["host"] == "s"]
         Temps2["start"] = pd.to_datetime(Temps2["start"], utc=True)
         Temps2["finish"] = pd.to_datetime(Temps2["finish"], utc=True)
-        Temps2['dummy'] = 1
+        Temps2["dummy"] = 1
         Temps3 = copy.deepcopy(self.dataframe)
         Temps3 = Temps3[["host", "start", "finish"]]
-        Temps3 = Temps3.loc[Temps3['host'] == "vm0"]
+        Temps3 = Temps3.loc[Temps3["host"] == "vm0"]
         Temps3["start"] = pd.to_datetime(Temps3["start"], utc=True)
         Temps3["finish"] = pd.to_datetime(Temps3["finish"], utc=True)
-        Temps3['dummy'] = 1
-        dateSeries = pd.date_range((minDateData -  datetime.timedelta(0,1)), (maxDate + datetime.timedelta(0,1)), freq='1S')
-        dateDF = pd.DataFrame(dict(date=dateSeries, dummy=1))
-        crossJoin = dateDF.merge(Temps2, on='dummy')
-        condJoin = crossJoin[(crossJoin.start <= crossJoin.date) & (crossJoin.date <= crossJoin.finish)]
-        joinGrp = condJoin.groupby(['date'])
+        Temps3["dummy"] = 1
+        date_series = pd.date_range(
+            (minDateData - datetime.timedelta(0, 1)),
+            (maxDate + datetime.timedelta(0, 1)),
+            freq="1S",
+        )
+        datedf = pd.DataFrame(dict(date=date_series, dummy=1))
+        crossJoin = datedf.merge(Temps2, on="dummy")
+        condJoin = crossJoin[
+            (crossJoin.start <= crossJoin.date) & (crossJoin.date <= crossJoin.finish)
+        ]
+        joinGrp = condJoin.groupby(["date"])
         final = (
-            pd.DataFrame(dict(
-                serverless=joinGrp.size()
-            ), index=dateSeries)
+            pd.DataFrame(dict(serverless=joinGrp.size()), index=date_series)
             .fillna(0)
             .reset_index()
         )
-        # print((final.loc[final['serverless'] == 0])["index"])
-        crossJoin2 = dateDF.merge(Temps3, on='dummy')
-        condJoin2 = crossJoin2[(crossJoin2.start <= crossJoin2.date) & (crossJoin2.date <= crossJoin2.finish)]
-        joinGrp2 = condJoin2.groupby(['date'])
+        crossJoin2 = datedf.merge(Temps3, on="dummy")
+        condJoin2 = crossJoin2[
+            (crossJoin2.start <= crossJoin2.date)
+            & (crossJoin2.date <= crossJoin2.finish)
+        ]
+        joinGrp2 = condJoin2.groupby(["date"])
         final2 = (
-            pd.DataFrame(dict(
-                vm0=joinGrp.size()
-            ), index=dateSeries)
+            pd.DataFrame(dict(vm0=joinGrp2.size()), index=date_series)
             .fillna(0)
             .reset_index()
         )
-        finalFrame =  final.merge(final2, on='index')
+        finalFrame = final.merge(final2, on="index")
         finalFrame["vm0"] = finalFrame.apply(
             lambda row: self.getVmCount(row.vm0, row.serverless),
             axis=1,
         )
-        finalFrame['index'] = finalFrame['index'].apply(lambda x: (x - finalFrame['index'].min()).total_seconds())
+        finalFrame["index"] = finalFrame["index"].apply(
+            lambda x: (x - finalFrame["index"].min()).total_seconds()
+        )
         plt.figure()
-        finalFrame.set_index('index')[['vm0', 'serverless']].plot(figsize=(40, 10), linewidth=3)
+        finalFrame.set_index("index")[["vm0", "serverless"]].plot(
+            figsize=(40, 10), linewidth=3
+        )
         plt.xlabel("Time(Seconds)")
         plt.ylabel("Concurrency")
         plt.show()
         plt.savefig(self.workflow + "/invocations.png")
 
-        
-
-    def getVmCount(self,count_vm0, count_s):
+    def getVmCount(self, count_vm0, count_s):
         total = count_vm0 + count_s
         # if total == count_s:
         #     return np.nan
         # else:
         return total
-
 
     def latencyPlot(self):
         terminals = self.findTerminals()
