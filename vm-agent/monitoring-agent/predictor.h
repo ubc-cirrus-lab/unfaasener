@@ -49,7 +49,7 @@ public:
     double compute_predicton_ExponentialMovingAverage(double x,int type)
     {
      alpha = 0.8;
-     margin = 0.4;
+     margin = 0.1;
      max = 0;
      size=utilization_records->size();
      int i = 0;
@@ -73,7 +73,7 @@ public:
     {
 	   prediction = 100 ;
     }
-    if ( (int(max) > int(x) ) || (prediction > x + 100*margin))
+    if ( (int(max) > int(x) ) || (prediction > x + 100*margin)|| (prediction + 100 *margin < x ))
     {
             std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
             handle_prediction_violation(prediction,type);
@@ -94,7 +94,7 @@ public:
 
 	    if (type == 0)//cpu
 	    {
-		    int cores=getTotalSystemCores() * (100 - pred)/100;
+		    double cores=getTotalSystemCores() * (100 - pred)/100;
 		    std::cout<<"cpu  "<<cores<<std::endl;
                     writePrediction(cores,type);
 
