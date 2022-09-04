@@ -134,7 +134,7 @@ def containerize(functionname):
     print ("\nUnzipping the function")
     with ZipFile(functionname+'.zip', 'r') as zipObj:
        zipObj.extractall(functionname)
-    with open("/tmp/output2.log", "a") as output:
+    with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/output2.log", "a") as output:
        print ("\nCreating the Docker container \n")
        # Copy the Docker file to the unzipped folder
        subprocess.call("cp Dockerfile "+functionname, shell=True, stdout=output, stderr=output)
@@ -197,7 +197,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun] = {}
 
 
-    with open("/tmp/output2.log", "a") as output:
+    with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/output2.log", "a") as output:
         before  = datetime.datetime.now()
         conts = client.containers.list(all=True, filters={"ancestor":"name:"+invokedFun})
         print (len(conts))
