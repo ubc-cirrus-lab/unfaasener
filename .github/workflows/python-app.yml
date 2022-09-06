@@ -27,6 +27,4 @@ jobs:
         bash setup.sh
     - name: Test with unittest
       run: |
-        cd scheduler
-        python rps_cost_test.py
-        python rps_latency_test.py
+        ./run_tests.sh
