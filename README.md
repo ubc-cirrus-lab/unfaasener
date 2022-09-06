@@ -3,11 +3,15 @@
 
 Seamless Integration of Serverless and VM-based Cloud Applications for Increased Cost Efficiency
 
-## Setting Up the Tool
+## Setting Up and Building the Tool
 
-To set up the tool simply run the following script:
+To set up the dependencies for the tool simply run the following script:
 ```
 ./setup.sh
+```
+Then, run the following script to build those components that need to be compiled:
+```
+./build.sh
 ```
 
 ## Acknowledgments
