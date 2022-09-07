@@ -19,7 +19,7 @@ import string
 from zipfile import ZipFile
 import subprocess
 import sys
-
+import uuid
 from threading import Thread
 from time import sleep
 import docker
@@ -66,6 +66,8 @@ def flushExecutionDurations(executionDurations):
                  task["start"]=executionDurations[key][key2]["start"]
                  task["finish"]=executionDurations[key][key2]["finish"]
                  task["host"]=executionDurations[key][key2]["host"]
+                 if ":fanout:" in executionDurations[key][key2]["mergingPoint"]:
+                    executionDurations[key][key2]["mergingPoint"] = ""
                  task["mergingPoint"]=executionDurations[key][key2]["mergingPoint"]
                  datastore_client.put(task)
                  #print ("###### Inserted one record in vmLogs")
@@ -220,7 +222,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         if executionDurations[reqID][invokedFun] != {}:
             if message.attributes.get("branch") != None:
             #Cover the second Merging function
-                invokedFun = str(invokedFun) + str(message.attributes.get("branch"))
+                invokedFun = str(invokedFun) + "_"+str(message.attributes.get("branch"))
+                executionDurations[reqID][invokedFun] = {}
+            else:
+                newHash = uuid.uuid4().hex
+                invokedFun = str(invokedFun) + ":fanout:"+str(newHash)
                 executionDurations[reqID][invokedFun] = {}
 
 
@@ -231,7 +237,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
         executionDurations[reqID][invokedFun]["mergingPoint"] = ""
         if message.attributes.get("branch") != None:
-            executionDurations[reqID][invokedFun]["mergingPoint"]=str(message.attributes.get("branch"))
+            executionDurations[reqID][invokedFun]["mergingPoint"] = str(message.attributes.get("branch"))
+        elif ":fanout:" in  invokedFun:
+            executionDurations[reqID][invokedFun]["mergingPoint"] = invokedFun
+
+        
 
 
 
