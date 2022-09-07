@@ -14,7 +14,7 @@ from matplotlib.pyplot import figure
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib
 
-BIGGER_SIZE = 30
+BIGGER_SIZE = 35
 matplotlib.rc("font", size=BIGGER_SIZE)
 matplotlib.rc("axes", titlesize=BIGGER_SIZE)
 
@@ -120,12 +120,17 @@ class getPlots:
         finalFrame["index"] = finalFrame["index"].apply(
             lambda x: (x - finalFrame["index"].min()).total_seconds()
         )
-        plt.figure()
-        finalFrame.set_index("index")[["vm0", "serverless"]].plot(
-            figsize=(40, 10), linewidth=3
-        )
+        plt.figure(figsize=(40, 10), linewidth=3)
+        # finalFrame.set_index("index")[["vm0", "serverless"]].plot(
+        #     figsize=(40, 10), linewidth=3
+        # )
+        plt.plot([],[],color='#d2e69c', label='serverless', linewidth=6)
+        plt.plot([],[],color='#B5179E', label='vm0', linewidth=6)
+        plt.stackplot(finalFrame["index"], finalFrame["serverless"], finalFrame["vm0"],
+              colors =['#d2e69c', '#B5179E'])
         plt.xlabel("Time(Seconds)")
         plt.ylabel("Concurrency")
+        plt.legend()
         plt.show()
         plt.savefig(self.workflow + "/invocations.png")
 
