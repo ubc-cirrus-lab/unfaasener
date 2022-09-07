@@ -61,11 +61,15 @@ class resetLastDicision:
                     str(Path(os.path.dirname(os.path.abspath(__file__))))
                     + "/lock.txt"
                 )
+        vmAgentLogFile = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/vm-agent/execution-agent/output2.log"
+                )
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
         #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
         #         )
-        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile]
+        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile]
         for filePath in filePaths:
             if os.path.isfile(filePath):
                 os.remove(filePath)
