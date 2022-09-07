@@ -10,11 +10,14 @@ mode="resolve"
 # clean all privious metadata, logs, and caches for that workflow
 python3 ~/de-serverlessization/scheduler/resetLastDecisions.py $workflow $numvm $solvingMode
 
+# clean the vm execution agent queue
+python3 ~/de-serverlessization/vm-agent/execution-agent/cleanup-queue.py vmSubscriber1 vm0
+
 # get the most recent serverless logs for the specified workflow
 python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py $workflow 1 
 
 # running the scheduler
-python3 ~/de-serverlessization/scheduler/rpsCIScheduler.py $mode 
+# python3 ~/de-serverlessization/scheduler/rpsCIScheduler.py $mode 
 
 # running the vm execution agent in the background
 python3 ~/de-serverlessization/vm-agent/execution-agent/vmModule.py vmSubscriber1 vm0 &
@@ -34,7 +37,7 @@ cd ~/de-serverlessization/vm-agent/monitoring-agent
 pidFour=$!
 
 # terminating background processes upon termination of this script
-trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; exit 1" INT SIGINT SIGTERM EXIT
+trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py ${workflow} 1; exit 1" INT SIGINT SIGTERM EXIT
 wait
 
 

@@ -180,9 +180,11 @@ streaming_pull_future = subscriber.subscribe(subscription_path, callback=callbac
 
 with subscriber:
     try:
-        streaming_pull_future.result()
-    except Exception as e:
-        print(f"Listening for messages on {subscription_path} threw an exception: {e.__class__}, {repr(e)}.")
+        # num of seconds the subscriber pulls the unacked messages
+        timeout = 10
+        streaming_pull_future.result(timeout = timeout)
+    except TimeoutError:
         streaming_pull_future.cancel()
-        streaming_pull_future.result()
+        streaming_pull_future.result()  
+
 
