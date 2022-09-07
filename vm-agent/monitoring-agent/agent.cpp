@@ -16,7 +16,7 @@
 
 using namespace std;
 int main(int, char *[]) {
-
+    int initialFlag = 1;
     size_t ring_size=10; // keep last 10 records, i.e. 1 second  
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
@@ -72,8 +72,16 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 typedef std::chrono::microseconds us;
                 typedef std::chrono::duration<float> fsec;
                 auto t0 = Time::now();
-		cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0);
-		mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1);
+                if (initialFlag == 1){
+                	cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0, 1);
+		        mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 1);
+                        initialFlag = 0;
+                }
+                else
+                {
+                        cpu_pred_old = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0, 0);
+                        mem_pred_old = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 0);
+                }
                 std::cout << "Total Prediction "<< cpu_pred_old <<"% of CPU consumption in the next window "<<std::endl;
                 std::cout << "Total Prediction "<< mem_pred_old <<"% of Memory consumption in the next window "<<std::endl;
                 auto t1 = Time::now();

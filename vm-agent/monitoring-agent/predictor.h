@@ -46,7 +46,7 @@ public:
     std::cout << "Time window's Mean is  "<< mean <<" and StdDev is "<< standardDeviation << std::endl;
     return  standardDeviation + mean;
     }
-    double compute_predicton_ExponentialMovingAverage(double x,int type)
+    double compute_predicton_ExponentialMovingAverage(double x,int type, int initialFlag)
     {
      alpha = 0.8;
      margin = 0.1;
@@ -73,7 +73,7 @@ public:
     {
 	   prediction = 100 ;
     }
-    if ( (int(max) > int(x) ) || (prediction > x + 100*margin)|| (prediction + 100 *margin < x ))
+    if ( (int(max) > int(x) ) || (prediction > x + 100*margin)|| (prediction + 100 *margin < x ) || (initialFlag == 1))
     {
             std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
             handle_prediction_violation(prediction,type);
