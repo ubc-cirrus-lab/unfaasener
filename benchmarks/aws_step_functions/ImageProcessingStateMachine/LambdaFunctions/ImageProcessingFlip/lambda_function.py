@@ -48,4 +48,3 @@ def lambda_handler(event, context):
             'data': {'imageName': fileName, 'path_list': path_list},
         })
     }
-
