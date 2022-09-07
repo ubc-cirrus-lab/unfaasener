@@ -33,7 +33,7 @@ pidThree=$!
 
 # running the monitoring scripts and the predictor agent in the background
 cd ~/de-serverlessization/vm-agent/monitoring-agent
-./monitoring-agent &
+./monitoringAgent &
 pidFour=$!
 
 # terminating background processes upon termination of this script

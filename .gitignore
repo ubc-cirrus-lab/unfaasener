@@ -5,6 +5,7 @@ venv
 .vscode
 *.pyc
 *.log
+monitoringAgent
 monitoringKey.json
 schedulerKey.json
 vmExeModule.json
