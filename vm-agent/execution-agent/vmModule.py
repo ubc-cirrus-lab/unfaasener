@@ -61,7 +61,7 @@ def flushExecutionDurations(executionDurations):
                  task = datastore.Entity(key=task_key)
                  seed = seed + 1
                  task["reqID"] = key 
-                 task["function"]=str(key2).replace('Number2','')
+                 task["function"]=str(key2).replace(executionDurations[key][key2]["mergingPoint"],'')
                  task["duration"]=executionDurations[key][key2]["duration"]
                  task["start"]=executionDurations[key][key2]["start"]
                  task["finish"]=executionDurations[key][key2]["finish"]
@@ -76,6 +76,7 @@ def flushExecutionDurations(executionDurations):
 
 
 def threaded_function(arg,lastexectimestamps):
+    global executionDurations
     while True:
         print("running")
         staticlastexectimestamps = lastexectimestamps
@@ -217,9 +218,10 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         after  = datetime.datetime.now()
         delta =  after - before
         if executionDurations[reqID][invokedFun] != {}:
+            if message.attributes.get("branch") != None:
             #Cover the second Merging function
-            invokedFun = str(invokedFun) +"Number2"
-            executionDurations[reqID][invokedFun] = {}
+                invokedFun = str(invokedFun) + str(message.attributes.get("branch"))
+                executionDurations[reqID][invokedFun] = {}
 
 
         executionDurations[reqID][invokedFun]["duration"] = str(delta.microseconds/1000)
@@ -228,7 +230,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[reqID][invokedFun]["host"] = sys.argv[2]
         executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
         executionDurations[reqID][invokedFun]["mergingPoint"] = ""
-        if "Merg" in invokedFun:
+        if message.attributes.get("branch") != None:
             executionDurations[reqID][invokedFun]["mergingPoint"]=str(message.attributes.get("branch"))
 
 
