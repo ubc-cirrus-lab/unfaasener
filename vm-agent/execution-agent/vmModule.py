@@ -19,6 +19,7 @@ from time import sleep
 import docker
 import sys
 from datetime import timedelta
+from multiprocessing import cpu_count
 
 
 project_id = "ubc-serverless-ghazal"
@@ -40,6 +41,7 @@ client = docker.from_env()
 writtenData = {}
 executionDurations = {}
 memoryLimits = {}
+cpuLimits = {}
 lastexecutiontimestamps = {}
 client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
@@ -113,6 +115,9 @@ def getFunctionParameters(functionname):
     memoryLimits[functionname] = (
         str(client.get_function(request=request).available_memory_mb) + "MB"
     )
+
+
+
 
 
 def containerize(functionname):
@@ -207,6 +212,17 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     global writtenData
     global executionDurations
     global cpulimit
+    # Initalize cpuLimits
+    n_cores = cpu_count()
+    cpuLimits['128MB'] = 83000 / n_cores
+    cpuLimits['256MB'] = 167000 / n_cores
+    cpuLimits['512MB'] = 333000 / n_cores
+    cpuLimits['1024MB'] = 583000 / n_cores
+    cpuLimits['2048MB'] = 1000000 / n_cores
+    cpuLimits['4096MB'] = 2000000 / n_cores
+    cpuLimits['8192MB'] = 2000000 / n_cores
+    cpuLimits['16384MB'] = 4000000 / n_cores
+
     receivedDateObj = datetime.datetime.utcnow()
     decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
     print(f"received data:{decodedMessage}")
@@ -252,6 +268,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             all=True, filters={"ancestor": "name:" + invokedFun}
         )
         print(len(conts))
+        #This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
+        #It is disabled to enable the system to create more containers as more requests arrive
+        #These containers are then stopped by the thread
+        # TO -renable it , just remove the line what sets conts = {}
+        conts = {} #THis line can be removed to allow reusing containers
         if len(conts) != 0:
             cont = next(iter(conts))
             cont.start()
@@ -269,7 +290,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 "name:" + invokedFun,
                 mem_limit=str(memoryLimits[invokedFun]),
                 cpu_period=1000000,
-                cpu_quota=500000,
+                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
                 command="tail -f /etc/hosts",
                 detach=False,
             )
