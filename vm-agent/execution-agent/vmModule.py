@@ -214,14 +214,14 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     global cpulimit
     # Initalize cpuLimits
     n_cores = cpu_count()
-    cpuLimits['128MB'] = 83000 / n_cores
-    cpuLimits['256MB'] = 167000 / n_cores
-    cpuLimits['512MB'] = 333000 / n_cores
-    cpuLimits['1024MB'] = 583000 / n_cores
-    cpuLimits['2048MB'] = 1000000 / n_cores
-    cpuLimits['4096MB'] = 2000000 / n_cores
-    cpuLimits['8192MB'] = 2000000 / n_cores
-    cpuLimits['16384MB'] = 4000000 / n_cores
+    cpuLimits['128MB'] = 83000 
+    cpuLimits['256MB'] = 167000 
+    cpuLimits['512MB'] = 333000 
+    cpuLimits['1024MB'] = 583000 
+    cpuLimits['2048MB'] = 1000000 
+    cpuLimits['4096MB'] = 2000000 
+    cpuLimits['8192MB'] = 2000000 
+    cpuLimits['16384MB'] = 4000000 
 
     receivedDateObj = datetime.datetime.utcnow()
     decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
