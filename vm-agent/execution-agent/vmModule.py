@@ -87,9 +87,11 @@ def threaded_function(arg, lastexectimestamps):
                 lastexectimestamps[key] + timedelta(seconds=5)
             ) < datetime.datetime.now():
                 cont = client.containers.list(
-                    all=True, filters={"ancestor": "name:" + key}
+                    #all=True, filters={"ancestor": "name:" + key}
+                    all=True, filters={"id": key}
                 )
-                next(iter(cont)).stop()
+                for container_single in cont:
+                    container_single.stop()
                 print("Stopped Old Container " + key)
         staticexecutionDurations = executionDurations
         if staticexecutionDurations != {}:
@@ -294,7 +296,8 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 command="tail -f /etc/hosts",
                 detach=False,
             )
-            lastexecutiontimestamps[invokedFun] = before
+            #lastexecutiontimestamps[invokedFun] = before
+            lastexecutiontimestamps[container.id] = before
             container.start()
             cmd = (
                 "python3 /app/main.py '"
