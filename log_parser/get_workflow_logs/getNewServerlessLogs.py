@@ -3,6 +3,7 @@ import subprocess
 import json
 import shlex
 import datetime
+from datetime import timedelta
 from sys import getsizeof
 import time
 import os
@@ -13,6 +14,13 @@ from pathlib import Path
 from getNewLogs import GetLog
 import configparser
 import copy
+import logging
+
+logging.basicConfig(
+    filename=str(Path(os.path.dirname(os.path.abspath(__file__))))
+    + "/logs/logParser.log",
+    level=logging.INFO,
+)
 
 
 class getNewLogs(GetLog):
@@ -20,7 +28,10 @@ class getNewLogs(GetLog):
         super().__init__(workflow)
         self.exeData = {}
         self.dictData = {}
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])+ "/scheduler/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+            + "/scheduler/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
@@ -37,7 +48,13 @@ class getNewLogs(GetLog):
         self.GBSec = 0
         self.GHzSec = 0
         self.writeLogs = {}
-        with open((os.path.dirname(os.path.abspath(__file__))) + "/data/" + workflow + ".json", "r") as json_file:
+        with open(
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + workflow
+            + ".json",
+            "r",
+        ) as json_file:
             workflow_json = json.load(json_file)
         self.initFunc = workflow_json["initFunc"]
         self.workflowFunctions = workflow_json["workflowFunctions"]
@@ -47,12 +64,39 @@ class getNewLogs(GetLog):
             self.writeLogs[func] = []
         self.newTimeStampRecorded = {}
         # self.checkLatestTimeStamp()
+        if os.path.isfile(
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + str(self.workflow)
+            + "/"
+            + "prevData.json"
+        ):
+            with open(
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "prevData.json",
+                "r",
+            ) as outfile:
+                self.prevData = json.load(outfile)
+        else:
+            self.prevData = {}
+            for func in self.workflowFunctions:
+                self.prevData[func] = []
         for func in self.workflowFunctions:
             self.lastTimestamp = None
             self.checkLatestTimeStamp(func)
             self.pullLogs(func)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"), "w"
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "data.json"
+            ),
+            "w",
         ) as outfile:
             json.dump(self.newTimeStampRecorded, outfile)
         self.getDict()
@@ -75,10 +119,19 @@ class getNewLogs(GetLog):
 
     def checkLatestTimeStamp(self, func):
         if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + str(self.workflow)
+            + "/"
+            + "data.json"
         ):
             with open(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json", "r"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "data.json",
+                "r",
             ) as outfile:
                 workflow_json = json.load(outfile)
                 self.newTimeStampRecorded = copy.deepcopy(workflow_json)
@@ -101,19 +154,25 @@ class getNewLogs(GetLog):
                 )
                 lastLog_logs = subprocess.check_output(shlex.split(lastLog))
                 lastLog_logs_json = json.loads(lastLog_logs)
-                if len(lastLog_logs_json) == 0:
-                    endFlag = True
-                    break
+                # if len(lastLog_logs_json) == 0:
+                #     endFlag = True
+                #     break
                 lastLog_date = [
                     element["time_utc"] for idx, element in enumerate(lastLog_logs_json)
                 ]
-                lastLogEndDate = lastLog_date[0]
+                lastLogEndDate = datetime.datetime.strptime(
+                    lastLog_date[0], "%Y-%m-%d %H:%M:%S.%f"
+                )
+                lastLogEndDate = lastLogEndDate + timedelta(milliseconds=1)
+                lastLogEndDate = lastLogEndDate.strftime("%Y-%m-%d %H:%M:%S.%f")
+                # lastLogEndDate = lastLog_date[0]
                 arrayLLET = lastLogEndDate.split()
-                timeLast = arrayLLET[1]
-                lastDigit = int(timeLast[-1])
-                timeLast = timeLast[:-1]
-                timeLast = timeLast + str(lastDigit + 1)
-                lastLogEndDate = arrayLLET[0] + "T" + timeLast
+                # timeLast = arrayLLET[1]
+                # lastDigit = int(timeLast[-1])
+                # timeLast = timeLast[:-1]
+                # timeLast = timeLast + str(lastDigit + 1)
+                # lastLogEndDate = arrayLLET[0] + "T" + timeLast
+                lastLogEndDate = arrayLLET[0] + "T" + arrayLLET[1]
                 project_list_logs = (
                     "gcloud functions logs read "
                     + function
@@ -126,6 +185,9 @@ class getNewLogs(GetLog):
                 )
                 project_logs = subprocess.check_output(shlex.split(project_list_logs))
                 project_logs_json = json.loads(project_logs)
+                if len(project_logs_json) == 0:
+                    endFlag = True
+                    break
                 prevData = copy.deepcopy(self.writeLogs[function])
                 project_logs_json = [
                     x for x in project_logs_json if x not in (self.writeLogs[function])
@@ -148,14 +210,22 @@ class getNewLogs(GetLog):
                 ]
                 numNewInvocations = len(newInvocations)
                 self.NI += numNewInvocations
-                if(len(self.writeLogs[function]) != 0):
-                    self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
-                if (self.writeLogs[function]) == prevData:
+                if len(self.writeLogs[function]) != 0:
+                    self.newTimeStampRecorded[function] = str(
+                        self.writeLogs[function][0]["time_utc"]
+                    )
+                if len(project_logs_json) == 0:
                     # if(len(self.writeLogs[function]) != 0):
                     #     self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
                     endFlag = True
                 with open(
-                    ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"),
+                    (
+                        (os.path.dirname(os.path.abspath(__file__)))
+                        + "/data/"
+                        + str(self.workflow)
+                        + "/"
+                        + "data.json"
+                    ),
                     "w",
                 ) as outfile:
                     json.dump(self.newTimeStampRecorded, outfile)
@@ -180,8 +250,19 @@ class getNewLogs(GetLog):
                 if ("finished with status" in element["log"])
             ]
             numNewInvocations = len(newInvocations)
-            self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
-            with open(((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "data.json"),"w",) as outfile:
+            self.newTimeStampRecorded[function] = str(
+                self.writeLogs[function][0]["time_utc"]
+            )
+            with open(
+                (
+                    (os.path.dirname(os.path.abspath(__file__)))
+                    + "/data/"
+                    + str(self.workflow)
+                    + "/"
+                    + "data.json"
+                ),
+                "w",
+            ) as outfile:
                 json.dump(self.newTimeStampRecorded, outfile)
             self.NI += numNewInvocations
 
@@ -212,12 +293,15 @@ class getNewLogs(GetLog):
         workflow_json = self.writeLogs
         for func in self.workflowFunctions:
             # matchingDict = {}
-            funcData = workflow_json[func]
-            startLogs = [
-                element["execution_id"]
+            funcData = workflow_json[func] + self.prevData[func]
+            startLogsTot = [
+                (element["execution_id"], idx)
                 for idx, element in enumerate(funcData)
                 if ("Function execution started" in element["log"])
             ]
+            startLogs = [i[0] for i in startLogsTot]
+            startLogsIndex = [i[1] for i in startLogsTot]
+
             startTimes = [
                 element["time_utc"]
                 for idx, element in enumerate(funcData)
@@ -233,26 +317,35 @@ class getNewLogs(GetLog):
                 for idx, element in enumerate(funcData)
                 if ("WARNING:root:" in element["log"])
             ]
-            reqLogs = [
-                element["execution_id"]
+            reqLogsTot = [
+                (element["execution_id"], idx)
                 for idx, element in enumerate(funcData)
                 if ("WARNING:root:" in element["log"])
             ]
-            finishLogs = [
-                element["execution_id"]
+            reqLogs = [i[0] for i in reqLogsTot]
+            reqLogsIndex = [i[1] for i in reqLogsTot]
+
+            finishLogsTot = [
+                (element["execution_id"], idx)
                 for idx, element in enumerate(funcData)
                 if (
-                    (("finished with status" in element["log"])
-                    or ("Finished with status" in element["log"]))
+                    (
+                        ("finished with status" in element["log"])
+                        or ("Finished with status" in element["log"])
+                    )
                     and ("crash" not in element["log"])
                 )
             ]
+            finishLogs = [i[0] for i in finishLogsTot]
+            finishLogsIndex = [i[1] for i in finishLogsTot]
             finishTimes = [
                 element["time_utc"]
                 for idx, element in enumerate(funcData)
                 if (
-                    (("finished with status" in element["log"])
-                    or ("Finished with status" in element["log"]))
+                    (
+                        ("finished with status" in element["log"])
+                        or ("Finished with status" in element["log"])
+                    )
                     and ("crash" not in element["log"])
                 )
             ]
@@ -266,8 +359,14 @@ class getNewLogs(GetLog):
             # sortedIDs = []
             # for date in sortingArray:
             #     sortedIDs.append(matchingDict[date])
+            deleteStartList = []
+            deleteFinishList = []
+            deleteReqList = []
             for exe in startLogs:
                 if (exe in finishLogs) and (exe in reqLogs):
+                    deleteStartList.append(startLogs.index(exe))
+                    deleteFinishList.append(finishLogs.index(exe))
+                    deleteReqList.append(reqLogs.index(exe))
                     self.dictData["host"].append("s")
                     self.dictData["function"].append(func)
                     self.dictData["reqID"].append(reqIDs[reqLogs.index(exe)])
@@ -302,65 +401,124 @@ class getNewLogs(GetLog):
                     else:
                         mergingBranch = ((mergeData[reqLogs.index(exe)]).split("*"))[1]
                         self.dictData["mergingPoint"].append(mergingBranch)
+                    # del startLogsIndex[startLogs.index(exe)]
+                    # del reqLogsIndex[reqLogs.index(exe)]
+                    # del finishLogsIndex[finishLogs.index(exe)]
+            for index in sorted(deleteStartList, reverse=True):
+                del startLogsIndex[index]
+            for index in sorted(deleteFinishList, reverse=True):
+                del finishLogsIndex[index]
+            for index in sorted(deleteReqList, reverse=True):
+                del reqLogsIndex[index]
+            self.prevData[func] = (
+                [funcData[i] for i in startLogsIndex]
+                + [funcData[i] for i in reqLogsIndex]
+                + [funcData[i] for i in finishLogsIndex]
+            )
         df = pd.DataFrame(self.dictData)
         if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + self.workflow
+            + "/generatedDataFrame.pkl"
         ):
             prevDataframe = pd.read_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/generatedDataFrame.pkl"
             )
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
             )
             newDataFrame.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/generatedDataFrame.pkl"
             )
             newDataFrame.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/generatedDataFrame.csv"
             )
 
         else:
             print(df.shape[0])
             df.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/generatedDataFrame.pkl"
             )
             df.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/generatedDataFrame.csv"
             )
         if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + self.workflow
+            + "/invocationRates.pkl"
         ):
             prevInvocations = pd.read_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/invocationRates.pkl"
             )
-            initRecords = df.loc[
-                    (df["function"] == self.initFunc)
-                ]
+            initRecords = df.loc[(df["function"] == self.initFunc)]
             initRecords = initRecords["start"]
 
             newInvocations = (
-                pd.concat([prevInvocations, initRecords]).drop_duplicates().reset_index(drop=True)
+                pd.concat([prevInvocations, initRecords])
+                .drop_duplicates()
+                .reset_index(drop=True)
             )
             print(newInvocations)
             newInvocations.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/invocationRates.pkl"
             )
             newInvocations.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/invocationRates.csv"
             )
 
         else:
-            initRecords = df.loc[
-                    (df["function"] == self.initFunc)
-                ]
+            initRecords = df.loc[(df["function"] == self.initFunc)]
             initRecords = initRecords["start"]
             print(initRecords)
             initRecords.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/invocationRates.pkl"
             )
             initRecords.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + self.workflow
+                + "/invocationRates.csv"
             )
+        with open(
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "prevData.json"
+            ),
+            "w",
+        ) as outfile:
+            json.dump(self.prevData, outfile)
 
 
 if __name__ == "__main__":
