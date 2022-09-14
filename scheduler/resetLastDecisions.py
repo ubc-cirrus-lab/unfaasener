@@ -65,11 +65,23 @@ class resetLastDicision:
                     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                     + "/vm-agent/execution-agent/output2.log"
                 )
+        dateDataframepkl = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/log_parser/get_workflow_logs/data/"+workflow+"/dateDate.pkl"
+                )
+        dateDataframecsv = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/log_parser/get_workflow_logs/data/"+workflow+"/dateDate.csv"
+                )
+        prevDataJson = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/log_parser/get_workflow_logs/data/"+workflow+"/prevData.json"
+                )
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
         #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
         #         )
-        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile]
+        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson]
         for filePath in filePaths:
             if os.path.isfile(filePath):
                 os.remove(filePath)

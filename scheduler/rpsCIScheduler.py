@@ -4,6 +4,8 @@ import numpy as np
 import sys
 import configparser
 import os
+import pandas as pd
+import datetime
 from pathlib import Path
 from google.cloud import datastore
 from baselineSlackAnalysis import baselineSlackAnalysis
@@ -15,6 +17,10 @@ import sys
 
 class CIScheduler:
     def __init__(self, triggerType):
+        self.dateDFData = {}
+        self.dateDFData["effected"] = []
+        self.dateDFData["triggered"] = []
+        self.dateDFData["triggered"].append(datetime.datetime.now())
         path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
         self.config = configparser.ConfigParser()
         self.config.read(path)
@@ -52,6 +58,42 @@ class CIScheduler:
         # self.availableResources = rankerConfig.availResources
         self.toleranceWindow = int(self.rankerConfig["toleranceWindow"])
         self.suggestBestOffloadingMultiVM(triggerType)
+        self.dateDFData = pd.DataFrame.from_dict(self.dateDFData)
+        self.dateDF = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"  + self.workflow
+            + "/dateDate.pkl"
+        )
+        if os.path.isfile(
+            self.dateDF
+        ):
+            prevDataframeDate = pd.read_pickle(
+                self.dateDF
+            )
+            newDataFrame = (
+                pd.concat([prevDataframeDate, self.dateDFData]).drop_duplicates().reset_index(drop=True)
+            )
+            newDataFrame.to_pickle(
+                self.dateDF
+            )
+            newDataFrame.to_csv(
+            (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"  + self.workflow
+            + "/dateDate.csv"
+            )
+            )
+        else:
+            self.dateDFData.to_pickle(
+                self.dateDF
+            )
+            self.dateDFData.to_csv(
+                (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"  + self.workflow
+            + "/dateDate.csv"
+            )
+            )
 
     def suggestBestOffloadingMultiVM(self, triggerType):
         if triggerType == "highLoad":
@@ -90,6 +132,7 @@ class CIScheduler:
             self.resolveOffloadingSolutions()
         else:
             print("Unknown trigger type!")
+        self.dateDFData["effected"].append(datetime.datetime.now())
 
     def resolveOffloadingSolutions(self):
         rates = self.invocationRate.getRPS()
@@ -138,5 +181,7 @@ if __name__ == "__main__":
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt")
     print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'))
     print("--- %s seconds ---" % (time.time() - start_time))
+
+
 
 

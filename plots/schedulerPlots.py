@@ -13,6 +13,12 @@ import seaborn as sns
 from matplotlib.pyplot import figure
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib
+import logging
+
+logging.basicConfig(
+    filename=str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/plots.log",
+    level=logging.INFO,
+)
 
 BIGGER_SIZE = 35
 matplotlib.rc("font", size=BIGGER_SIZE)
@@ -33,6 +39,13 @@ class getPlots:
             + self.workflow
             + "/generatedDataFrame.pkl"
         )
+        dateDFPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/dateDate.pkl"
+        )
+        self.dateDF = pd.read_pickle(dateDFPath)
         self.dataframe = pd.read_pickle(dfPath)
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -44,7 +57,9 @@ class getPlots:
             self.workflow_json = json.load(json_file)
         self.exePlot()
         self.latencyPlot()
-        self.costPlot()
+        totalCost = self.costPlot()
+        loggingTxt = "Total Cost = " + str(totalCost)
+        logging.info(loggingTxt)
 
     def getArrivalTime(self, startByReq, reqID):
         if reqID in startByReq.keys():
@@ -53,6 +68,8 @@ class getPlots:
             return np.nan
 
     def exePlot(self):
+        self.dateDF['effected'] = pd.to_datetime(self.dateDF['effected'], utc=True)
+        self.dateDF['triggered'] = pd.to_datetime(self.dateDF['triggered'], utc=True)
         Temps = copy.deepcopy(self.dataframe)
         Temps = Temps[["host", "start", "finish"]]
         Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
@@ -66,13 +83,21 @@ class getPlots:
         dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
         minDate = dfStartT["startTest"].min()
         minDateData = (
-            (Temps.loc[(Temps["start"] >= minDate) & (Temps["host"] == "s")])["start"]
+            (Temps.loc[(Temps["start"] >= minDate)])["start"]
         ).min()
+
         print("min:::", minDate)
         print("min Data:::", minDateData)
         maxDateStart = Temps["start"].max()
         maxDateFinish = Temps["finish"].max()
         maxDate = max(maxDateStart, maxDateFinish)
+        print(maxDate)
+        dateDFChanged = self.dateDF[
+            (self.dateDF.triggered >= minDateData)
+            & (self.dateDF.triggered <= maxDate)
+            &(self.dateDF.effected >= minDateData)
+            & (self.dateDF.effected <= maxDate)
+        ]
         Temps2 = copy.deepcopy(self.dataframe)
         Temps2 = Temps2[["host", "start", "finish"]]
         Temps2 = Temps2.loc[Temps2["host"] == "s"]
@@ -113,21 +138,30 @@ class getPlots:
             .reset_index()
         )
         finalFrame = final.merge(final2, on="index")
-        finalFrame["vm0"] = finalFrame.apply(
-            lambda row: self.getVmCount(row.vm0, row.serverless),
-            axis=1,
+        # finalFrame["vm0"] = finalFrame.apply(
+        #     lambda row: self.getVmCount(row.vm0, row.serverless),
+        #     axis=1,
+        # )
+        dateDFChanged["triggered"] = dateDFChanged["triggered"].apply(
+            lambda x: (x - finalFrame["index"].min()).total_seconds()
         )
+        dateDFChanged["effected"] = dateDFChanged["effected"].apply(
+            lambda x: (x - finalFrame["index"].min()).total_seconds()
+        )
+        print("MIN:::", finalFrame["index"].min())
+        print("MAX:::", finalFrame["index"].max())
         finalFrame["index"] = finalFrame["index"].apply(
             lambda x: (x - finalFrame["index"].min()).total_seconds()
         )
-        plt.figure(figsize=(40, 10), linewidth=3)
-        # finalFrame.set_index("index")[["vm0", "serverless"]].plot(
-        #     figsize=(40, 10), linewidth=3
-        # )
+        triggered = dateDFChanged["triggered"]
+        effected = dateDFChanged["effected"]
+        plt.figure(figsize=(50, 10), linewidth=3)
         plt.plot([],[],color='#d2e69c', label='serverless', linewidth=6)
         plt.plot([],[],color='#B5179E', label='vm0', linewidth=6)
         plt.stackplot(finalFrame["index"], finalFrame["serverless"], finalFrame["vm0"],
               colors =['#d2e69c', '#B5179E'])
+        plt.vlines(x=triggered, ymin=0, ymax=max(finalFrame["serverless"] + finalFrame["vm0"]), color='salmon', label='scheduler-triggered', ls='--', lw=5)
+        plt.vlines(x=effected, ymin=0, ymax=max(finalFrame["serverless"] + finalFrame["vm0"]), color='teal', label='scheduler-effected', lw=5)
         plt.xlabel("Time(Seconds)")
         plt.ylabel("Concurrency")
         plt.legend()
@@ -136,14 +170,17 @@ class getPlots:
 
     def getVmCount(self, count_vm0, count_s):
         total = count_vm0 + count_s
-        # if total == count_s:
-        #     return np.nan
-        # else:
         return total
 
     def latencyPlot(self):
         terminals = self.findTerminals()
         plt.figure()
+        ttTemp = copy.deepcopy(self.dataframe)
+        df2 = ttTemp.groupby(['reqID'])['reqID'].count().to_dict()
+        # print(df2)
+        for x in df2:
+            if df2[x] != 8:
+                print(x, "::", df2[x])
         startByReq = self.getArrivalDict()
         endTemp = copy.deepcopy(self.dataframe)
         endTemp = (endTemp[(endTemp.function.isin(terminals))])[["reqID", "finish"]]
@@ -178,20 +215,8 @@ class getPlots:
             ),
             axis=1,
         )
-        costlDF = Temps[["cost", "reqID"]]
-        costlDF = (costlDF.groupby("reqID")["cost"].sum()).to_dict()
-        startByReqSet = set(startByReq)
-        costlDFSet = set(costlDF)
-        finalDict = {}
-        for keyy in startByReqSet.intersection(costlDFSet):
-            finalDict[startByReq[keyy]] = costlDF[keyy]
-        plt.figure(figsize=(12, 10), dpi=80)
-        arrival_time, cost = zip(*sorted(finalDict.items()))
-        plt.plot(arrival_time, cost)
-        plt.xlabel("Invocation Arrival Time")
-        plt.ylabel("Accumulated Cost")
-        plt.show()
-        plt.savefig(self.workflow + "/cost.png")
+        TotalCost = Temps['cost'].sum()
+        return TotalCost
 
     def getArrivalDict(self):
         Temps = copy.deepcopy(self.dataframe)
