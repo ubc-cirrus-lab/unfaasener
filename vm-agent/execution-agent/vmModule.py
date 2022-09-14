@@ -310,7 +310,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             if message.attributes.get("branch") != None:
                 # Cover the second Merging function
                 invokedFun = (
-                    str(invokedFun) + "_" + str(message.attributes.get("branch"))
+                    str(invokedFun) + str(message.attributes.get("branch"))
                 )
                 executionDurations[reqID][invokedFun] = {}
             else:
@@ -331,7 +331,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 message.attributes.get("branch")
             )
         elif ":fanout:" in invokedFun:
-            executionDurations[reqID][invokedFun]["mergingPoint"] = invokedFun
+            executionDurations[reqID][invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
 
 
 with open("data.json", mode="w") as f:
