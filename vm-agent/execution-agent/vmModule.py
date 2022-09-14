@@ -294,6 +294,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 command="tail -f /etc/hosts",
                 detach=False,
             )
+            lastexecutiontimestamps[invokedFun] = before
             container.start()
             cmd = (
                 "python3 /app/main.py '"
