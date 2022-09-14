@@ -91,7 +91,7 @@ def threaded_function(arg, lastexectimestamps):
                     all=True, filters={"id": key}
                 )
                 for container_single in cont:
-                    container_single.stop(timeout=0)
+                    container_single.stop(timeout=5)
                 print("Stopped Old Container " + key)
         staticexecutionDurations = executionDurations
         if staticexecutionDurations != {}:
