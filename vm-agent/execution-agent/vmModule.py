@@ -84,14 +84,14 @@ def threaded_function(arg, lastexectimestamps):
             print(key)
             print(lastexectimestamps[key])
             if (
-                lastexectimestamps[key] + timedelta(seconds=5)
+                lastexectimestamps[key] + timedelta(seconds=50)
             ) < datetime.datetime.now():
                 cont = client.containers.list(
                     #all=True, filters={"ancestor": "name:" + key}
                     all=True, filters={"id": key}
                 )
                 for container_single in cont:
-                    container_single.stop(timeout=5)
+                    container_single.stop(timeout=2)
                 print("Stopped Old Container " + key)
         staticexecutionDurations = executionDurations
         if staticexecutionDurations != {}:
@@ -102,6 +102,7 @@ def threaded_function(arg, lastexectimestamps):
 
         # wait 1 sec in between each thread
         sleep(1)
+
 
 
 def getFunctionParameters(functionname):
@@ -274,25 +275,32 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         #It is disabled to enable the system to create more containers as more requests arrive
         #These containers are then stopped by the thread
         # TO -renable it , just remove the line what sets conts = {}
-        conts = {} #THis line can be removed to allow reusing containers
+        #conts = {} #THis line can be removed to allow reusing containers
+        execution_complete=0
         if len(conts) != 0:
-            cont = next(iter(conts))
-            cont.start()
-            cont.exec_run(
-                "python3 /app/main.py '"
-                + str(jsonfile).replace("'", '"')
-                + "' "
-                + reqID,
-                detach=False,
-            )
-            lastexecutiontimestamps[invokedFun] = before
-            print(lastexecutiontimestamps)
-        else:
+            for cont in conts:
+                #cont = next(iter(conts))
+                cont.start()
+                statistics=cont.stats(stream=False)
+                if int(statistics['pids_stats']['current']) > 1:
+                    print ("##########################container already in use   " + str(statistics['pids_stats']['current']) )
+                    execution_complete = 0
+                    #conts = {} # reset the container list
+                #for stat in stats:
+                #    print ((stats[stat])) 
+                else: 
+                    cont.exec_run("python3 /app/main.py '"+ str(jsonfile).replace("'", '"')+ "' "+ reqID,detach=True,)
+                    lastexecutiontimestamps[invokedFun] = before
+                    execution_complete = 1
+                    break;
+        
+        if execution_complete == 0:
             container = client.containers.create(
                 "name:" + invokedFun,
                 mem_limit=str(memoryLimits[invokedFun]),
                 cpu_period=1000000,
-                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
+#                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
+                cpu_quota=1000000,
                 command="tail -f /etc/hosts",
                 detach=False,
             )
