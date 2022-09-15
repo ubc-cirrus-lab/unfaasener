@@ -84,7 +84,7 @@ def threaded_function(arg, lastexectimestamps):
             print(key)
             print(lastexectimestamps[key])
             if (
-                lastexectimestamps[key] + timedelta(seconds=50)
+                lastexectimestamps[key] + timedelta(seconds=6000)
             ) < datetime.datetime.now():
                 cont = client.containers.list(
                     #all=True, filters={"ancestor": "name:" + key}
