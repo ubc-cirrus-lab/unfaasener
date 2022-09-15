@@ -53,24 +53,24 @@ def flushExecutionDurations():
     tempexecutionDurations = copy.deepcopy(executionDurations)
     kind = "vmLogs"
     for key in tempexecutionDurations.keys():
-            if len(tempexecutionDurations[key]) == 7:
-                newHash = uuid.uuid4().hex
-                task_key = datastore_client.key(kind, str(key) + str(newHash))
-                task = datastore.Entity(key=task_key)
-                task["reqID"] = tempexecutionDurations[key]["reqID"]
-                task["function"] = str(key).replace(
-                    tempexecutionDurations[key]["mergingPoint"], ""
-                )
-                task["duration"] = tempexecutionDurations[key]["duration"]
-                task["start"] = tempexecutionDurations[key]["start"]
-                task["finish"] = tempexecutionDurations[key]["finish"]
-                task["host"] = tempexecutionDurations[key]["host"]
-                if ":fanout:" in tempexecutionDurations[key]["mergingPoint"]:
-                    tempexecutionDurations[key]["mergingPoint"] = ""
-                task["mergingPoint"] = tempexecutionDurations[key]["mergingPoint"]
-                datastore_client.put(task)
-                executionDurations.pop(key)
-
+        if len(tempexecutionDurations[key]) == 7:
+            newHash = uuid.uuid4().hex
+            task_key = datastore_client.key(kind, str(key) + str(newHash))
+            task = datastore.Entity(key=task_key)
+            task["reqID"] = tempexecutionDurations[key]["reqID"]
+            removedPart = str(key).replace(
+                str(tempexecutionDurations[key]["mergingPoint"]), ""
+            )
+            task["function"] = str(removedPart).replace(str(task["reqID"]), "")
+            task["duration"] = tempexecutionDurations[key]["duration"]
+            task["start"] = tempexecutionDurations[key]["start"]
+            task["finish"] = tempexecutionDurations[key]["finish"]
+            task["host"] = tempexecutionDurations[key]["host"]
+            if ":fanout:" in tempexecutionDurations[key]["mergingPoint"]:
+                tempexecutionDurations[key]["mergingPoint"] = ""
+            task["mergingPoint"] = tempexecutionDurations[key]["mergingPoint"]
+            datastore_client.put(task)
+            executionDurations.pop(key)
 
 
 def threaded_function(arg, lastexectimestamps):
@@ -85,8 +85,9 @@ def threaded_function(arg, lastexectimestamps):
                 lastexectimestamps[key] + timedelta(seconds=6000)
             ) < datetime.datetime.now():
                 cont = client.containers.list(
-                    #all=True, filters={"ancestor": "name:" + key}
-                    all=True, filters={"id": key}
+                    # all=True, filters={"ancestor": "name:" + key}
+                    all=True,
+                    filters={"id": key},
                 )
                 for container_single in cont:
                     container_single.stop(timeout=2)
@@ -102,7 +103,6 @@ def threaded_function(arg, lastexectimestamps):
         sleep(1)
 
 
-
 def getFunctionParameters(functionname):
     client = functions_v1.CloudFunctionsServiceClient()
     request = functions_v1.GetFunctionRequest(
@@ -116,9 +116,6 @@ def getFunctionParameters(functionname):
     memoryLimits[functionname] = (
         str(client.get_function(request=request).available_memory_mb) + "MB"
     )
-
-
-
 
 
 def containerize(functionname):
@@ -215,14 +212,14 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     global cpulimit
     # Initalize cpuLimits
     n_cores = cpu_count()
-    cpuLimits['128MB'] = 83000 
-    cpuLimits['256MB'] = 167000 
-    cpuLimits['512MB'] = 333000 
-    cpuLimits['1024MB'] = 583000 
-    cpuLimits['2048MB'] = 1000000 
-    cpuLimits['4096MB'] = 2000000 
-    cpuLimits['8192MB'] = 2000000 
-    cpuLimits['16384MB'] = 4000000 
+    cpuLimits["128MB"] = 83000
+    cpuLimits["256MB"] = 167000
+    cpuLimits["512MB"] = 333000
+    cpuLimits["1024MB"] = 583000
+    cpuLimits["2048MB"] = 1000000
+    cpuLimits["4096MB"] = 2000000
+    cpuLimits["8192MB"] = 2000000
+    cpuLimits["16384MB"] = 4000000
 
     receivedDateObj = datetime.datetime.utcnow()
     decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
@@ -264,40 +261,49 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             all=True, filters={"ancestor": "name:" + invokedFun}
         )
         print(len(conts))
-        #This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
-        #It is disabled to enable the system to create more containers as more requests arrive
-        #These containers are then stopped by the thread
+        # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
+        # It is disabled to enable the system to create more containers as more requests arrive
+        # These containers are then stopped by the thread
         # TO -renable it , just remove the line what sets conts = {}
-        #conts = {} #THis line can be removed to allow reusing containers
-        execution_complete=0
+        # conts = {} #THis line can be removed to allow reusing containers
+        execution_complete = 0
         if len(conts) != 0:
             for cont in conts:
-                #cont = next(iter(conts))
+                # cont = next(iter(conts))
                 cont.start()
-                statistics=cont.stats(stream=False)
-                if int(statistics['pids_stats']['current']) > 1:
-                    print ("##########################container already in use   " + str(statistics['pids_stats']['current']) )
+                statistics = cont.stats(stream=False)
+                if int(statistics["pids_stats"]["current"]) > 1:
+                    print(
+                        "##########################container already in use   "
+                        + str(statistics["pids_stats"]["current"])
+                    )
                     execution_complete = 0
-                    #conts = {} # reset the container list
-                #for stat in stats:
-                #    print ((stats[stat])) 
-                else: 
-                    cont.exec_run("python3 /app/main.py '"+ str(jsonfile).replace("'", '"')+ "' "+ reqID,detach=True,)
+                    # conts = {} # reset the container list
+                # for stat in stats:
+                #    print ((stats[stat]))
+                else:
+                    cont.exec_run(
+                        "python3 /app/main.py '"
+                        + str(jsonfile).replace("'", '"')
+                        + "' "
+                        + reqID,
+                        detach=True,
+                    )
                     lastexecutiontimestamps[invokedFun] = before
                     execution_complete = 1
-                    break;
-        
+                    break
+
         if execution_complete == 0:
             container = client.containers.create(
                 "name:" + invokedFun,
                 mem_limit=str(memoryLimits[invokedFun]),
                 cpu_period=1000000,
-#                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
+                #                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
                 cpu_quota=1000000,
                 command="tail -f /etc/hosts",
                 detach=False,
             )
-            #lastexecutiontimestamps[invokedFun] = before
+            # lastexecutiontimestamps[invokedFun] = before
             lastexecutiontimestamps[container.id] = before
             container.start()
             cmd = (
@@ -312,34 +318,36 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         after = datetime.datetime.now()
         delta = after - before
         if message.attributes.get("branch") != None:
-                # Cover the Merging functions
-                invokedFun = (
-                    str(invokedFun) + str(message.attributes.get("branch"))
-                )
-                executionDurations[invokedFun] = {}
+            # Cover the Merging functions
+            invokedFun = (
+                str(invokedFun) + str(message.attributes.get("branch")) + str(reqID)
+            )
+            executionDurations[invokedFun] = {}
 
-        if  invokedFun in executionDurations.keys():
+        if (invokedFun + str(reqID)) in executionDurations.keys():
             newHash = uuid.uuid4().hex
-            invokedFun = str(invokedFun) + ":fanout:" + str(newHash)
+            invokedFun = str(invokedFun) + ":fanout:" + str(newHash) + str(reqID)
             executionDurations[invokedFun] = {}
         else:
-            executionDurations[invokedFun] = {}
+            executionDurations[invokedFun + str(reqID)] = {}
 
-        executionDurations[invokedFun]["duration"] = str(
+        executionDurations[invokedFun + str(reqID)]["duration"] = str(
             delta.microseconds / 1000
         )
-        executionDurations[invokedFun]["reqID"] = reqID
-        executionDurations[invokedFun]["start"] = str(before)
-        executionDurations[invokedFun]["finish"] = str(after)
-        executionDurations[invokedFun]["host"] = sys.argv[2]
-        executionDurations[invokedFun]["function"] = str(invokedFun)
-        executionDurations[invokedFun]["mergingPoint"] = ""
+        executionDurations[invokedFun + str(reqID)]["reqID"] = reqID
+        executionDurations[invokedFun + str(reqID)]["start"] = str(before)
+        executionDurations[invokedFun + str(reqID)]["finish"] = str(after)
+        executionDurations[invokedFun + str(reqID)]["host"] = sys.argv[2]
+        executionDurations[invokedFun + str(reqID)]["function"] = str(invokedFun)
+        executionDurations[invokedFun + str(reqID)]["mergingPoint"] = ""
         if message.attributes.get("branch") != None:
-            executionDurations[invokedFun]["mergingPoint"] = str(
+            executionDurations[invokedFun + str(reqID)]["mergingPoint"] = str(
                 message.attributes.get("branch")
             )
         elif ":fanout:" in invokedFun:
-            executionDurations[invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
+            executionDurations[invokedFun + str(reqID)][
+                "mergingPoint"
+            ] = ":fanout:" + str(newHash)
 
 
 with open("data.json", mode="w") as f:
