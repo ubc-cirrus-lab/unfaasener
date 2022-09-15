@@ -3,6 +3,7 @@ from google.cloud import pubsub_v1
 from google.cloud import datastore
 import datetime
 from pathlib import Path
+import copy
 import os
 import json
 import uuid
@@ -47,32 +48,29 @@ client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
 
 
-def flushExecutionDurations(executionDurations):
-    seed = 0
+def flushExecutionDurations():
+    global executionDurations
+    tempexecutionDurations = copy.deepcopy(executionDurations)
     kind = "vmLogs"
-    for key in list(executionDurations):
-        for key2 in list(executionDurations[key]):
-            if executionDurations[key][key2] != {}:
-                task_key = datastore_client.key(kind, str(key) + str(seed))
+    for key in tempexecutionDurations.keys():
+            if len(tempexecutionDurations[key]) == 7:
+                newHash = uuid.uuid4().hex
+                task_key = datastore_client.key(kind, str(key) + str(newHash))
                 task = datastore.Entity(key=task_key)
-                seed = seed + 1
-                task["reqID"] = key
-                task["function"] = str(key2).replace(
-                    executionDurations[key][key2]["mergingPoint"], ""
+                task["reqID"] = tempexecutionDurations[key]["reqID"]
+                task["function"] = str(key).replace(
+                    tempexecutionDurations[key]["mergingPoint"], ""
                 )
-                task["duration"] = executionDurations[key][key2]["duration"]
-                task["start"] = executionDurations[key][key2]["start"]
-                task["finish"] = executionDurations[key][key2]["finish"]
-                task["host"] = executionDurations[key][key2]["host"]
-                if ":fanout:" in executionDurations[key][key2]["mergingPoint"]:
-                    executionDurations[key][key2]["mergingPoint"] = ""
-                task["mergingPoint"] = executionDurations[key][key2]["mergingPoint"]
+                task["duration"] = tempexecutionDurations[key]["duration"]
+                task["start"] = tempexecutionDurations[key]["start"]
+                task["finish"] = tempexecutionDurations[key]["finish"]
+                task["host"] = tempexecutionDurations[key]["host"]
+                if ":fanout:" in tempexecutionDurations[key]["mergingPoint"]:
+                    tempexecutionDurations[key]["mergingPoint"] = ""
+                task["mergingPoint"] = tempexecutionDurations[key]["mergingPoint"]
                 datastore_client.put(task)
-                # print ("###### Inserted one record in vmLogs")
-            # executionDurations[key][key2] = {}
-    #    executionDurations[key].pop(key2,None)
-    # executionDurations.pop(key,None)
-    # executionDurations = {}
+                executionDurations.pop(key)
+
 
 
 def threaded_function(arg, lastexectimestamps):
@@ -93,12 +91,12 @@ def threaded_function(arg, lastexectimestamps):
                 for container_single in cont:
                     container_single.stop(timeout=2)
                 print("Stopped Old Container " + key)
-        staticexecutionDurations = executionDurations
-        if staticexecutionDurations != {}:
-            try:
-                flushExecutionDurations(staticexecutionDurations)
-            except:
-                print("Error in flushing the vmLogs")
+        # staticexecutionDurations = executionDurations
+        if executionDurations != {}:
+            # try:
+            flushExecutionDurations()
+            # except:
+            #     print("Error in flushing the vmLogs")
 
         # wait 1 sec in between each thread
         sleep(1)
@@ -258,11 +256,6 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     print(str(jsonfile).replace("'", '"'))
     if invokedFun not in memoryLimits:
         getFunctionParameters(invokedFun)
-    if reqID not in executionDurations:
-        executionDurations[reqID] = {}
-    if invokedFun not in executionDurations[reqID]:
-        executionDurations[reqID][invokedFun] = {}
-
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
     ) as output:
@@ -318,32 +311,35 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
         after = datetime.datetime.now()
         delta = after - before
-        if executionDurations[reqID][invokedFun] != {}:
-            if message.attributes.get("branch") != None:
-                # Cover the second Merging function
+        if message.attributes.get("branch") != None:
+                # Cover the Merging functions
                 invokedFun = (
                     str(invokedFun) + str(message.attributes.get("branch"))
                 )
-                executionDurations[reqID][invokedFun] = {}
-            else:
-                newHash = uuid.uuid4().hex
-                invokedFun = str(invokedFun) + ":fanout:" + str(newHash)
-                executionDurations[reqID][invokedFun] = {}
+                executionDurations[invokedFun] = {}
 
-        executionDurations[reqID][invokedFun]["duration"] = str(
+        if  invokedFun in executionDurations.keys():
+            newHash = uuid.uuid4().hex
+            invokedFun = str(invokedFun) + ":fanout:" + str(newHash)
+            executionDurations[invokedFun] = {}
+        else:
+            executionDurations[invokedFun] = {}
+
+        executionDurations[invokedFun]["duration"] = str(
             delta.microseconds / 1000
         )
-        executionDurations[reqID][invokedFun]["start"] = str(before)
-        executionDurations[reqID][invokedFun]["finish"] = str(after)
-        executionDurations[reqID][invokedFun]["host"] = sys.argv[2]
-        executionDurations[reqID][invokedFun]["function"] = str(invokedFun)
-        executionDurations[reqID][invokedFun]["mergingPoint"] = ""
+        executionDurations[invokedFun]["reqID"] = reqID
+        executionDurations[invokedFun]["start"] = str(before)
+        executionDurations[invokedFun]["finish"] = str(after)
+        executionDurations[invokedFun]["host"] = sys.argv[2]
+        executionDurations[invokedFun]["function"] = str(invokedFun)
+        executionDurations[invokedFun]["mergingPoint"] = ""
         if message.attributes.get("branch") != None:
-            executionDurations[reqID][invokedFun]["mergingPoint"] = str(
+            executionDurations[invokedFun]["mergingPoint"] = str(
                 message.attributes.get("branch")
             )
         elif ":fanout:" in invokedFun:
-            executionDurations[reqID][invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
+            executionDurations[invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
 
 
 with open("data.json", mode="w") as f:
