@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <tuple>
+
+using namespace std;
+
 class predictor
 {
 
@@ -46,8 +50,9 @@ public:
     std::cout << "Time window's Mean is  "<< mean <<" and StdDev is "<< standardDeviation << std::endl;
     return  standardDeviation + mean;
     }
-    double compute_predicton_ExponentialMovingAverage(double x,int type, int initialFlag)
+    auto compute_predicton_ExponentialMovingAverage(double x,int type, int initialFlag)
     {
+     size_t violation = 0;
      alpha = 0.8;
      margin = 0.1;
      max = 0;
@@ -73,79 +78,42 @@ public:
     {
 	   prediction = 100 ;
     }
-    if ( (int(max) > int(x) ) || (prediction > x + 100*margin)|| (prediction + 100 *margin < x ) || (initialFlag == 1))
+    if ( (int(max) - int(x) > 100*margin ) || (int(x) - int(max) > 100*margin ) || (prediction > x + 100*margin)|| (prediction + 100 *margin < x ) || (initialFlag == 1))
     {
-            std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
-            handle_prediction_violation(prediction,type);
+            // std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
+            violation = 1;
+            // handle_prediction_violation(prediction,type);
+    }
+    struct result {double prediction; size_t violation;};
+    return result {prediction, violation};
     }
 
-    return  prediction;
-    }
+    // int handle_prediction_violation(double pred, int type)
+    // {
+	//     //execute the local scheduler
+	//     if ( type == 1) //memory 
+	//     {
+	//     double memory_pred = (100-pred) * getTotalSystemMemory()/100;
+    //         std::cout<<"memory  "<<memory_pred<<std::endl;
+    //         writePrediction(memory_pred,type);
+	//     }
 
-    int handle_prediction_violation(double pred, int type)
-    {
-	    //execute the local scheduler
-	    if ( type == 1) //memory 
-	    {
-	    double memory_pred = (100-pred) * getTotalSystemMemory()/100;
-            std::cout<<"memory  "<<memory_pred<<std::endl;
-            writePrediction(memory_pred,type);
-	    }
+	//     if (type == 0)//cpu
+	//     { 
+    //         std::cout<<"Total number of cores: "<<getTotalSystemCores()<<std::endl;
+    //         std::cout<<"Predicted value:  "<<pred<<std::endl;
+	// 	    double cores=getTotalSystemCores() * (100 - pred)/100;
+	// 	    std::cout<<"cpu  "<<cores<<std::endl;
+    //                 writePrediction(cores,type);
 
-	    if (type == 0)//cpu
-	    {
-		    double cores=getTotalSystemCores() * (100 - pred)/100;
-		    std::cout<<"cpu  "<<cores<<std::endl;
-                    writePrediction(cores,type);
+	//     }
+	//     // std::ifstream lockopen("/tmp/lock");
+    //     // if (lockopen.fail()) {
+	//     system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+	//     //system("date");
 
-	    }
-	    // std::ifstream lockopen("/tmp/lock");
-        // if (lockopen.fail()) {
-	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
-	    //system("date");
-
-	    // }
-	    return 1;
-    }
-
-unsigned long long getTotalSystemMemory()
-{
-    long pages = sysconf(_SC_PHYS_PAGES);
-    long page_size = sysconf(_SC_PAGE_SIZE);
-    return (pages * page_size)/1024/1024;
-}
-    
-unsigned int getTotalSystemCores()
-{
-	return  sysconf(_SC_NPROCESSORS_ONLN);
-}
- void writePrediction(double pred,int type)
-{
-  std::fstream file;
-  std::ofstream myfile;
-  std::string line;
-  std::string line2;
-  file.open ("../../scheduler/resources.txt");
-  getline(file,line);
-  getline(file,line2);
-  file.close();
-  myfile.open ("../../scheduler/resources.txt");
-  if (type == 1 )
-  {
-  myfile << line;
-  myfile << "\n";
-  myfile << pred ;
-  myfile.close();
-  }
-  if (type == 0)
-  {
-  myfile << pred ;
-  myfile << "\n";
-  myfile << line2;
-  myfile.close();
-
-  }
-
-}
-
+	//     // }
+	//     return 1;
+    // }
+ 
 };
