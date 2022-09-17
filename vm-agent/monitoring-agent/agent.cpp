@@ -12,18 +12,17 @@
 #include <chrono>
 #define _GNU_SOURCE
 #include <sched.h>
-#include <tuple>
+
+using namespace std;
 
 void writePrediction(double cpu_pred, double mem_pred)
 {
   std::ofstream myfile;
-  myfile.open ("../../scheduler/resources.txt");
+  myfile.open("../../scheduler/resources.txt");
   myfile << cpu_pred;
   myfile << "\n";
   myfile << mem_pred ;
   myfile.close();
-
-
 }
 
 unsigned int getTotalSystemCores()
@@ -42,20 +41,18 @@ int handle_prediction_violation(double cpu_pred, double memory_pred)
     {
 	    //execute the local scheduler
 	    double mem_pred = (100-memory_pred) * getTotalSystemMemory()/100;
-            std::cout<<"memory  "<<mem_pred<<std::endl;
-            std::cout<<"Total number of cores: "<< getTotalSystemCores()<<std::endl;
-            std::cout<<"Predicted value:  "<<cpu_pred<<std::endl;
-		    double cores=getTotalSystemCores() * (100 - cpu_pred)/100;
-		    std::cout<<"cpu  "<<cores<<std::endl;
+            std::cout << "memory  " << mem_pred << std::endl;
+            std::cout << "Total number of cores: " << getTotalSystemCores() << std::endl;
+            std::cout << "Predicted value:  " << cpu_pred << std::endl;
+		    double cores = getTotalSystemCores() * (100 - cpu_pred)/100;
+		    std::cout << "cpu  " << cores << std::endl;
                 writePrediction(cores, mem_pred);
 	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
-
 
 	    return 1;
     }
 
 
-using namespace std;
 int main(int, char *[]) {
     int initialFlag = 1;
     size_t ring_size = 10; // keep last 10 records, i.e. 1 second  
@@ -67,10 +64,10 @@ int main(int, char *[]) {
     float current_docker_reading =  0 ;
     float previous_docker_reading =  0 ;
     size_t previous_readings[2] = { 0 };
-    int monitor_intervals = 100000; // 1000ms in microseconds
+    int monitor_intervals = 100000; // in microseconds
     double cpu_pred_old = 0;
     double mem_pred_old = 0;
-    double prediction_buffer   = 6; //extra buffer for CPU prediction
+    double prediction_buffer   = 6; // extra buffer for CPU prediction
     ring cpu_utilization_buffer(ring_size);
     ring mem_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
@@ -84,7 +81,7 @@ CPU_SET(0, &mask);
 int result = sched_setaffinity(0, sizeof(mask), &mask);
     while (true) 
 	{
-//get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
+     //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
 	 procstat.get_proc_stat_times(current_cpu_readings);
  	 current_docker_reading = dockerprocstat.get_proc_stat_times();
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
@@ -153,15 +150,13 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                                 recentViols ++;
                 }
                 if (recentViols >= int(0.5*triggerBufferSize)) {
-                        std::cout<<"Violation Has Occured!" <<std::endl;
+                        std::cout << "Violation Has Occured!" << std::endl;
                         handle_prediction_violation(cpu_pred_old, mem_pred_old);
                 }
                 auto t1 = Time::now();
                 fsec fs = t1 - t0;
                 us d = std::chrono::duration_cast<us>(fs);
                 //std::cout <<"Time taken to generate a prediction "<< d.count() << "us\n";
-               // std::cout <<"#####################################################\n";
-
          }
  
 //wait for the next monitor_interval to repreat this cycle
@@ -177,12 +172,6 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
         us d = std::chrono::duration_cast<us>(fs);
        // std::cout <<"Time taken to transmit the prediction "<< d.count() << "us\n";
         //std::cout <<"#####################################################\n";
-
-	
-
-
 	}
 
-
 }
-

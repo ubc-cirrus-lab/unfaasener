@@ -6,13 +6,11 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
-#include <tuple>
 
 using namespace std;
 
 class predictor
 {
-
     ring* utilization_records;
     double sum,standardDeviation = 0.0,mean = 0.0;
     double max,alpha,margin,prediction = 0.0;
@@ -75,45 +73,11 @@ public:
 
     prediction = (alpha *  max  + (1-alpha)*x );
     if ( prediction * (1+margin) > 100)
-    {
 	   prediction = 100 ;
-    }
     if ( (int(max) - int(x) > 100*margin ) || (int(x) - int(max) > 100*margin ) || (prediction > x + 100*margin)|| (prediction + 100 *margin < x ) || (initialFlag == 1))
-    {
-            // std::cout<<"Violation Has Occured x = " << x << "and Max is "<< max <<std::endl;
-            violation = 1;
-            // handle_prediction_violation(prediction,type);
-    }
+        violation = 1;
     struct result {double prediction; size_t violation;};
     return result {prediction, violation};
     }
-
-    // int handle_prediction_violation(double pred, int type)
-    // {
-	//     //execute the local scheduler
-	//     if ( type == 1) //memory 
-	//     {
-	//     double memory_pred = (100-pred) * getTotalSystemMemory()/100;
-    //         std::cout<<"memory  "<<memory_pred<<std::endl;
-    //         writePrediction(memory_pred,type);
-	//     }
-
-	//     if (type == 0)//cpu
-	//     { 
-    //         std::cout<<"Total number of cores: "<<getTotalSystemCores()<<std::endl;
-    //         std::cout<<"Predicted value:  "<<pred<<std::endl;
-	// 	    double cores=getTotalSystemCores() * (100 - pred)/100;
-	// 	    std::cout<<"cpu  "<<cores<<std::endl;
-    //                 writePrediction(cores,type);
-
-	//     }
-	//     // std::ifstream lockopen("/tmp/lock");
-    //     // if (lockopen.fail()) {
-	//     system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
-	//     //system("date");
-
-	//     // }
-	//     return 1;
-    // }
  
 };
