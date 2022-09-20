@@ -49,32 +49,29 @@ client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
 
 
-def flushExecutionDurations(executionDurations):
-    seed = 0
+def flushExecutionDurations():
+    global executionDurations
+    tempexecutionDurations = copy.deepcopy(executionDurations)
     kind = "vmLogs"
-    for key in list(executionDurations):
-        for key2 in list(executionDurations[key]):
-            if executionDurations[key][key2] != {}:
-                task_key = datastore_client.key(kind, str(key) + str(seed))
-                task = datastore.Entity(key=task_key)
-                seed = seed + 1
-                task["reqID"] = key
-                task["function"] = str(key2).replace(
-                    executionDurations[key][key2]["mergingPoint"], ""
-                )
-                task["duration"] = executionDurations[key][key2]["duration"]
-                task["start"] = executionDurations[key][key2]["start"]
-                task["finish"] = executionDurations[key][key2]["finish"]
-                task["host"] = executionDurations[key][key2]["host"]
-                if ":fanout:" in executionDurations[key][key2]["mergingPoint"]:
-                    executionDurations[key][key2]["mergingPoint"] = ""
-                task["mergingPoint"] = executionDurations[key][key2]["mergingPoint"]
-                datastore_client.put(task)
-                # print ("###### Inserted one record in vmLogs")
-            # executionDurations[key][key2] = {}
-    #    executionDurations[key].pop(key2,None)
-    # executionDurations.pop(key,None)
-    # executionDurations = {}
+    for key in tempexecutionDurations.keys():
+        if len(tempexecutionDurations[key]) == 7:
+            newHash = uuid.uuid4().hex
+            task_key = datastore_client.key(kind, str(key) + str(newHash))
+            task = datastore.Entity(key=task_key)
+            task["reqID"] = tempexecutionDurations[key]["reqID"]
+            removedPart = str(key).replace(
+                str(tempexecutionDurations[key]["mergingPoint"]), ""
+            )
+            task["function"] = str(removedPart).replace(str(task["reqID"]), "")
+            task["duration"] = tempexecutionDurations[key]["duration"]
+            task["start"] = tempexecutionDurations[key]["start"]
+            task["finish"] = tempexecutionDurations[key]["finish"]
+            task["host"] = tempexecutionDurations[key]["host"]
+            if ":fanout:" in tempexecutionDurations[key]["mergingPoint"]:
+                tempexecutionDurations[key]["mergingPoint"] = ""
+            task["mergingPoint"] = tempexecutionDurations[key]["mergingPoint"]
+            datastore_client.put(task)
+            executionDurations.pop(key)
 
 
 def threaded_function(arg, lastexectimestamps):
