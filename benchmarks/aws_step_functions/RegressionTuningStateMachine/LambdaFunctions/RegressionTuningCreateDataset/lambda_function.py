@@ -39,3 +39,4 @@ def lambda_handler(event, context):
             'data': {'n_samples': n_samples, 'upPath': upPath, 'reqID': reqID},
         })
     }
+

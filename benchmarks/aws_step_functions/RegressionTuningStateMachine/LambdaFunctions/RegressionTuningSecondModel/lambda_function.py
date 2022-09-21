@@ -14,7 +14,7 @@ s3 = boto3.resource('s3')
 def lambda_handler(event, context):
     
     # Get input
-    print("FirstModelTrain Function")
+    print("SecondModelTrain Function")
     print(event)
     n_samples = json.loads(event['body'])['data']['n_samples']
     datasetPath = json.loads(event['body'])['data']['upPath']
@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     split_index = int(len(dataset) * 0.8)
     train_dataset = dataset[:split_index]
     test_dataset = dataset[split_index:]
-    learning_rate = 0.1
+    learning_rate = 0.2
     
     # build the model
     x_train = np.array([[_[0]] for _ in train_dataset])
@@ -49,13 +49,13 @@ def lambda_handler(event, context):
     # store loss for downstream tasks
     results = x_model.evaluate(x_test, y_test)
     model_name = "/tmp/"+"regression-Model"
-    local_tar_name = "/tmp/"+str(reqID)+"-model1.tar.gz"
+    local_tar_name = "/tmp/"+str(reqID)+"-model2.tar.gz"
     x_model.save(filepath=model_name)
     # zip keras folder to a single tar file
     with tarfile.open(local_tar_name, mode="w:gz") as _tar:
         _tar.add(model_name, recursive=True)
     
-    upPath = str(reqID)+"-model1.tar.gz"
+    upPath = str(reqID)+"-model2.tar.gz"
     bucket.upload_file(local_tar_name, upPath)
     
     
@@ -63,7 +63,7 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'timestamp': datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         'body': json.dumps({
-            'data': {'n_samples': n_samples, 'firstModel': upPath, 'reqID': reqID},
+            'data': {'n_samples': n_samples, 'secondModel': upPath, 'reqID': reqID},
         })
     }
 
