@@ -64,6 +64,7 @@ int main(int, char *[]) {
     size_t current_mem_readings[2]= { 0 };
     float current_docker_reading =  0 ;
     float previous_docker_reading =  0 ;
+    float prev_docker_utilization = 0 ;
     size_t previous_readings[2] = { 0 };
     int monitor_intervals = 100000; // in microseconds
     double cpu_pred_old = 0;
@@ -149,20 +150,21 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                         if (hardTriggerBuffer[i]!=0)
                                 recentViols ++;
                 }
-                double lowTriggerThreshhold = 0.2;
-                double highTriggerThreshhold = 0.8;
+                double lowTriggerThreshold = 0.2;
+                double highTriggerThreshold = 0.8;
+                double docker_utilization_change_threshold = 1;
                 double availableCores = getTotalSystemCores() * (100 - cpu_pred_old)/100;
-                std::cout << "idle_diff:" << idle_diff << std::endl;
-                std::cout << "docker_utilization:" << docker_utilization << std::endl;
-                std::cout << "total_diff:" << total_diff << std::endl;
-                std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
-                std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
-                std::cout << "available_num_of_cores:" << availableCores << std::endl;
-                if ((docker_utilization/availableCores) < lowTriggerThreshhold){
+                // std::cout << "idle_diff:" << idle_diff << std::endl;
+                // std::cout << "docker_utilization:" << docker_utilization << std::endl;
+                // std::cout << "total_diff:" << total_diff << std::endl;
+                // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
+                // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
+                // std::cout << "available_num_of_cores:" << availableCores << std::endl;
+                if ( ((docker_utilization/availableCores)  < lowTriggerThreshold) && ((docker_utilization - prev_docker_utilization)  > docker_utilization_change_threshold) ){
                         std::cout << "Low Load Sensed"<< std::endl;
                         softTriggerVote -= 1;
                 }
-                else if ((docker_utilization/availableCores) > highTriggerThreshhold) {
+                else if ( ((docker_utilization/availableCores) > highTriggerThreshold) && ((docker_utilization - prev_docker_utilization)  > docker_utilization_change_threshold) ) {
                         std::cout << "High Load Sensed"<< std::endl;
                         softTriggerVote += 1;
                 }
@@ -186,7 +188,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                         }
                 }
 
-                
+                // update docker utilixation
+                prev_docker_utilization = docker_utilization;
 
                 hardTriggerBufferIndex = (hardTriggerBufferIndex + 1) % hardTriggerBufferSize;
 
