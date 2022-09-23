@@ -56,9 +56,10 @@ int handle_prediction_violation(double cpu_pred, double memory_pred)
 int main(int, char *[]) {
     int initialFlag = 1;
     size_t ring_size = 10; // keep last 10 records, i.e. 1 second  
-    size_t triggerBufferSize = 4;
-    size_t triggerBuffer[triggerBufferSize] = {0};
-    size_t triggerBufferIndex = 0;
+    size_t hardTriggerBufferSize = 4;
+    size_t hardTriggerBuffer[hardTriggerBufferSize] = {0};
+    size_t hardTriggerBufferIndex = 0;
+    short int softTriggerVote = 0;
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
     float current_docker_reading =  0 ;
@@ -138,21 +139,57 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 std::cout << "Total Prediction "<< mem_pred_old <<"% of Memory consumption in the next window "<<std::endl;
                 
                 if ((cpu_violation==1) || (mem_violation==1))
-                        triggerBuffer[triggerBufferIndex] = 1;
+                        hardTriggerBuffer[hardTriggerBufferIndex] = 1;
                 else
-                        triggerBuffer[triggerBufferIndex] = 0;
-                triggerBufferIndex = (triggerBufferIndex + 1) % triggerBufferSize;
+                        hardTriggerBuffer[hardTriggerBufferIndex] = 0;
                 
                 // Check if the trigger buffer has sufficient violations
                 size_t recentViols = 0;
-                for (int i=0; i<triggerBufferSize; i++) {
-                        if (triggerBuffer[i]!=0)
+                for (int i=0; i<hardTriggerBufferSize; i++) {
+                        if (hardTriggerBuffer[i]!=0)
                                 recentViols ++;
                 }
-                if (recentViols >= int(0.5*triggerBufferSize)) {
-                        std::cout << "Violation Has Occured!" << std::endl;
-                        handle_prediction_violation(cpu_pred_old, mem_pred_old);
+                double lowTriggerThreshhold = 0.2;
+                double highTriggerThreshhold = 0.8;
+                double availableCores = getTotalSystemCores() * (100 - cpu_pred_old)/100;
+                std::cout << "idle_diff:" << idle_diff << std::endl;
+                std::cout << "docker_utilization:" << docker_utilization << std::endl;
+                std::cout << "total_diff:" << total_diff << std::endl;
+                std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
+                std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
+                std::cout << "available_num_of_cores:" << availableCores << std::endl;
+                if ((docker_utilization/availableCores) < lowTriggerThreshhold){
+                        std::cout << "Low Load Sensed"<< std::endl;
+                        softTriggerVote -= 1;
                 }
+                else if ((docker_utilization/availableCores) > highTriggerThreshhold) {
+                        std::cout << "High Load Sensed"<< std::endl;
+                        softTriggerVote += 1;
+                }
+                
+                if (softTriggerVote > 4) {
+                    std::cout << "Triggering scheduler with HIGH LOAD option."<< std::endl;
+                    system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
+                    softTriggerVote = 0;
+                } else if (softTriggerVote < -4 ) {
+                    std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
+                    system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
+                    softTriggerVote = 0;
+                } else if (recentViols >= int(0.5*hardTriggerBufferSize)) {
+                        std::cout << "Triggering scheduler with RESOLVE option."<< std::endl;
+                        handle_prediction_violation(cpu_pred_old, mem_pred_old);
+                        // reset the buffer
+                        for (int i=0; i<hardTriggerBufferSize; i++) {
+                            if (hardTriggerBuffer[i]!=0) {
+                                hardTriggerBuffer[i] = 0;
+                            }
+                        }
+                }
+
+                
+
+                hardTriggerBufferIndex = (hardTriggerBufferIndex + 1) % hardTriggerBufferSize;
+
                 auto t1 = Time::now();
                 fsec fs = t1 - t0;
                 us d = std::chrono::duration_cast<us>(fs);
