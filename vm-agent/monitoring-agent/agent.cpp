@@ -12,6 +12,7 @@
 #include <chrono>
 #define _GNU_SOURCE
 #include <sched.h>
+#include <cmath>
 
 using namespace std;
 
@@ -160,11 +161,11 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
                 // std::cout << "available_num_of_cores:" << availableCores << std::endl;
-                if ( ((docker_utilization/availableCores)  < lowTriggerThreshold) && ((docker_utilization - prev_docker_utilization)  > docker_utilization_change_threshold) ){
+                if ( ((docker_utilization/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_utilization - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
                         std::cout << "Low Load Sensed"<< std::endl;
                         softTriggerVote -= 1;
                 }
-                else if ( ((docker_utilization/availableCores) > highTriggerThreshold) && ((docker_utilization - prev_docker_utilization)  > docker_utilization_change_threshold) ) {
+                else if ( ((docker_utilization/availableCores) > highTriggerThreshold) && ( (fabs(docker_utilization - prev_docker_utilization) )  > docker_utilization_change_threshold) ) {
                         std::cout << "High Load Sensed"<< std::endl;
                         softTriggerVote += 1;
                 }
