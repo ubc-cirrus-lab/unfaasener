@@ -63,6 +63,7 @@ class getNewLogs(GetLog):
         for func in self.workflowFunctions:
             self.writeLogs[func] = []
         self.newTimeStampRecorded = {}
+        self.tempTimeStampRecorded = {}
         # self.checkLatestTimeStamp()
         if os.path.isfile(
             (os.path.dirname(os.path.abspath(__file__)))
@@ -135,6 +136,7 @@ class getNewLogs(GetLog):
             ) as outfile:
                 workflow_json = json.load(outfile)
                 self.newTimeStampRecorded = copy.deepcopy(workflow_json)
+                self.tempTimeStampRecorded = copy.deepcopy(workflow_json)
                 if func in workflow_json.keys():
                     lastRecordedTimestamp = str(workflow_json[func])
                     # lastRecordedTimestamp = str(workflow_json[func][0]["time_utc"]
@@ -145,56 +147,60 @@ class getNewLogs(GetLog):
 
     def pullLogs(self, function):
         if self.lastTimestamp != None:
-            endFlag = False
-            while endFlag != True:
-                lastLog = (
+            lastLog = (
                     "gcloud functions logs read "
                     + function
                     + " --region northamerica-northeast1 --format json --limit 1 "
                 )
-                lastLog_logs = subprocess.check_output(shlex.split(lastLog))
-                lastLog_logs_json = json.loads(lastLog_logs)
+            lastLog_logs = subprocess.check_output(shlex.split(lastLog))
+            lastLog_logs_json = json.loads(lastLog_logs)
                 # if len(lastLog_logs_json) == 0:
                 #     endFlag = True
                 #     break
-                lastLog_date = [
+            lastLog_date = [
                     element["time_utc"] for idx, element in enumerate(lastLog_logs_json)
                 ]
-                lastLogEndDate = datetime.datetime.strptime(
-                    lastLog_date[0], "%Y-%m-%d %H:%M:%S.%f"
+            # lastLogEndDate = datetime.datetime.strptime(
+            #         lastLog_date[0], "%Y-%m-%d %H:%M:%S.%f"
+            #     )
+            # # lastLogEndDate = lastLogEndDate + timedelta(milliseconds=1)
+            # lastLogEndDate = lastLogEndDate.strftime("%Y-%m-%d %H:%M:%S.%f")
+            # arrayLLET = lastLogEndDate.split()
+            # lastLogEndDate = arrayLLET[0] + "T" + arrayLLET[1]
+            # !!!!!!!!!!
+            # self.newTimeStampRecorded[function] = lastLogEndDate
+            self.tempTimeStampRecorded[function] = lastLog_date[0]
+            endFlag = False
+            while endFlag != True:
+                tempDate = datetime.datetime.strptime(
+                    self.tempTimeStampRecorded[function], "%Y-%m-%d %H:%M:%S.%f"
                 )
-                lastLogEndDate = lastLogEndDate + timedelta(milliseconds=1)
-                lastLogEndDate = lastLogEndDate.strftime("%Y-%m-%d %H:%M:%S.%f")
-                # lastLogEndDate = lastLog_date[0]
-                arrayLLET = lastLogEndDate.split()
-                # timeLast = arrayLLET[1]
-                # lastDigit = int(timeLast[-1])
-                # timeLast = timeLast[:-1]
-                # timeLast = timeLast + str(lastDigit + 1)
-                # lastLogEndDate = arrayLLET[0] + "T" + timeLast
-                lastLogEndDate = arrayLLET[0] + "T" + arrayLLET[1]
+                # lastLogEndDate = lastLogEndDate + timedelta(milliseconds=1)
+                tempDate = tempDate.strftime("%Y-%m-%d %H:%M:%S.%f")
+                arrayLLET = tempDate.split()
+                tempDateEnd = arrayLLET[0] + "T" + arrayLLET[1]
+                arrayStart = self.newTimeStampRecorded[function].split()
+                NewStartDate = arrayStart[0] + "T" + arrayStart[1]
                 project_list_logs = (
                     "gcloud functions logs read "
                     + function
                     + " --region northamerica-northeast1 --format json "
                     + "--start-time "
-                    + self.lastTimestamp
+                    + NewStartDate
                     + " --end-time "
-                    + lastLogEndDate
+                    + tempDateEnd
                     + " --limit 1000"
                 )
                 project_logs = subprocess.check_output(shlex.split(project_list_logs))
-                project_logs_json = json.loads(project_logs)
-                if len(project_logs_json) == 0:
-                    endFlag = True
-                    break
+                project_logs_json_old = json.loads(project_logs)
+                # if len(project_logs_json) == 0:
+                #     endFlag = True
+                #     break
                 prevData = copy.deepcopy(self.writeLogs[function])
                 project_logs_json = [
-                    x for x in project_logs_json if x not in (self.writeLogs[function])
+                    x for x in project_logs_json_old if x not in (prevData)
                 ]
-                (self.writeLogs[function]) = project_logs_json + (
-                    self.writeLogs[function]
-                )
+                (self.writeLogs[function]) = project_logs_json + (prevData)
                 print("PREVV:::", len(prevData))
                 print("NEWW:::", len(project_logs_json))
                 print("LENN:::", len(self.writeLogs[function]))
@@ -210,15 +216,18 @@ class getNewLogs(GetLog):
                 ]
                 numNewInvocations = len(newInvocations)
                 self.NI += numNewInvocations
-                if len(self.writeLogs[function]) != 0:
-                    self.newTimeStampRecorded[function] = str(
-                        self.writeLogs[function][0]["time_utc"]
-                    )
+                # if len(self.writeLogs[function]) != 0:
+                #     self.newTimeStampRecorded[function] = str(
+                #         self.writeLogs[function][0]["time_utc"]
+                #     )
                 if len(project_logs_json) == 0:
                     # if(len(self.writeLogs[function]) != 0):
                     #     self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
                     endFlag = True
-                with open(
+                if len(project_logs_json_old) != 0:
+                    self.tempTimeStampRecorded[function] = str(project_logs_json_old[-1]["time_utc"])
+            self.newTimeStampRecorded[function] = lastLog_date[0]
+            with open(
                     (
                         (os.path.dirname(os.path.abspath(__file__)))
                         + "/data/"
@@ -229,42 +238,43 @@ class getNewLogs(GetLog):
                     "w",
                 ) as outfile:
                     json.dump(self.newTimeStampRecorded, outfile)
-                self.checkLatestTimeStamp(function)
+                # self.checkLatestTimeStamp(function)
         else:
-            project_list_logs = (
-                "gcloud functions logs read "
-                + function
-                + " --region northamerica-northeast1 --format json --limit 1000"
-            )
-            project_logs = subprocess.check_output(shlex.split(project_list_logs))
-            project_logs_json = json.loads(project_logs)
-            (self.writeLogs[function]).extend(project_logs_json)
-            ids = [
-                idx
-                for idx, element in enumerate(self.writeLogs[function])
-                if ("finished with status" in element["log"])
-            ]
-            newInvocations = [
-                idx
-                for idx, element in enumerate(project_logs_json)
-                if ("finished with status" in element["log"])
-            ]
-            numNewInvocations = len(newInvocations)
-            self.newTimeStampRecorded[function] = str(
-                self.writeLogs[function][0]["time_utc"]
-            )
-            with open(
-                (
-                    (os.path.dirname(os.path.abspath(__file__)))
-                    + "/data/"
-                    + str(self.workflow)
-                    + "/"
-                    + "data.json"
-                ),
-                "w",
-            ) as outfile:
-                json.dump(self.newTimeStampRecorded, outfile)
-            self.NI += numNewInvocations
+            "No data file!"
+            # project_list_logs = (
+            #     "gcloud functions logs read "
+            #     + function
+            #     + " --region northamerica-northeast1 --format json --limit 1000"
+            # )
+            # project_logs = subprocess.check_output(shlex.split(project_list_logs))
+            # project_logs_json = json.loads(project_logs)
+            # (self.writeLogs[function]).extend(project_logs_json)
+            # ids = [
+            #     idx
+            #     for idx, element in enumerate(self.writeLogs[function])
+            #     if ("finished with status" in element["log"])
+            # ]
+            # newInvocations = [
+            #     idx
+            #     for idx, element in enumerate(project_logs_json)
+            #     if ("finished with status" in element["log"])
+            # ]
+            # numNewInvocations = len(newInvocations)
+            # self.newTimeStampRecorded[function] = str(
+            #     self.writeLogs[function][0]["time_utc"]
+            # )
+            # with open(
+            #     (
+            #         (os.path.dirname(os.path.abspath(__file__)))
+            #         + "/data/"
+            #         + str(self.workflow)
+            #         + "/"
+            #         + "data.json"
+            #     ),
+            #     "w",
+            # ) as outfile:
+            #     json.dump(self.newTimeStampRecorded, outfile)
+            # self.NI += numNewInvocations
 
     def addCost(self, mem, dur):
         if mem == 0.125:
@@ -404,11 +414,11 @@ class getNewLogs(GetLog):
                     # del startLogsIndex[startLogs.index(exe)]
                     # del reqLogsIndex[reqLogs.index(exe)]
                     # del finishLogsIndex[finishLogs.index(exe)]
-            for index in sorted(deleteStartList, reverse=True):
+            for index in sorted(list(set(deleteStartList)), reverse=True):
                 del startLogsIndex[index]
-            for index in sorted(deleteFinishList, reverse=True):
+            for index in sorted(list(set(deleteFinishList)), reverse=True):
                 del finishLogsIndex[index]
-            for index in sorted(deleteReqList, reverse=True):
+            for index in sorted(list(set(deleteReqList)), reverse=True):
                 del reqLogsIndex[index]
             self.prevData[func] = (
                 [funcData[i] for i in startLogsIndex]
