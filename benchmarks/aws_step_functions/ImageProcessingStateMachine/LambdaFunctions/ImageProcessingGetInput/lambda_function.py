@@ -3,7 +3,10 @@ import datetime
 
 def lambda_handler(event, context):
     
-    imageName = event['input_image']
+    if event == {}:
+        imageName = 'test.png'
+    else:
+        imageName = event['input_image']
     
     return {
         'statusCode': 200,
