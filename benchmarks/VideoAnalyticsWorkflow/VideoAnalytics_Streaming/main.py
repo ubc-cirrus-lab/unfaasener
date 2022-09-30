@@ -5,6 +5,7 @@ import logging
 import os
 from sys import getsizeof
 import uuid
+import cv2
 
 from google.cloud import storage, pubsub_v1
 
@@ -24,9 +25,10 @@ def streaming(event, context):
     routing = routing_data[2]
     req_id = event['attributes']['reqID']
     filename = json.loads(base64.b64decode(event['data']).decode('utf-8'))['data']['videoName']
+    fanout_num = json.loads(base64.b64decode(event['data']).decode('utf-8'))['data']['fanoutNum']
     video_name = VideoAnalytics_Streaming(filename, req_id)
     message = json.dumps({
-        'data': {'videoName': video_name}
+        'data': {'videoName': video_name, 'fanoutNum': fanout_num}
     }).encode('utf-8')
     msg_id = uuid.uuid4().hex
 
@@ -58,8 +60,7 @@ def streaming(event, context):
     publish_future.result()
     logging.warning(req_id)
 
-# This function pretends to strema a video.
-# All it does is downloading a video from a bucket and uploading to another.
+# This function resized the specified video.
 def VideoAnalytics_Streaming(filename, req_id):
     local_filename = f'/tmp/{filename}'
 
@@ -68,11 +69,29 @@ def VideoAnalytics_Streaming(filename, req_id):
     src_blob = src_bucket.blob(filename)
     src_blob.download_to_filename(local_filename)
 
-    streaming_filename = f'{req_id}-{filename}'
+    resized_local_filename = resize_and_store(local_filename)
 
     dst_bucket = cli.bucket('videoanalyticsworkflow-storage')
+    streaming_filename = f'{req_id}-{filename}'
     dst_blob = dst_bucket.blob(streaming_filename)
-    dst_blob.upload_from_filename(local_filename)
+    dst_blob.upload_from_filename(resized_local_filename)
 
     os.remove(local_filename)
+    os.remove(resized_local_filename)
     return streaming_filename
+
+def resize_and_store(local_filename):
+    cap = cv2.VideoCapture(local_filename)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    resized_local_filename = '/tmp/resized_video.mp4'
+    width, height = 340, 256
+    writer = cv2.VideoWriter(resized_local_filename, fourcc, fps, (width, height))
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame = cv2.resize(frame, (width, height))
+        writer.write(frame)
+    return resized_local_filename

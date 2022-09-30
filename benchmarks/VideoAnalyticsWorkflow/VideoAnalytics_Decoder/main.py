@@ -18,11 +18,12 @@ PROJECT_ID = 'ubc-serverless-ghazal'
 EXT = '.jpg'
 
 class VideoDecoder:
-    def __init__(self, filename, req_id):
+    def __init__(self, filename, req_id, fanout_num):
         client = storage.Client()
         self.bucket = client.bucket('videoanalyticsworkflow-storage')
         self.video_blob = self.bucket.blob(filename)
         self.req_id = req_id
+        self.fanout_num = fanout_num
 
     def decode(self):
         video_bytes = self.video_blob.download_as_bytes()
@@ -31,7 +32,7 @@ class VideoDecoder:
         tmp.seek(0)
         vidcap = cv2.VideoCapture(tmp.name)
         frames = []
-        for i in range(int(os.getenv('NUM_FRAMES', 10))):
+        for i in range(self.fanout_num):
             _, image = vidcap.read()
             frames.append(cv2.imencode(EXT, image)[1].tobytes())
         return frames
@@ -53,7 +54,8 @@ def decode(event, context):
     routing = routing_data[3]
     req_id = event['attributes']['reqID']
     video_name = json.loads(base64.b64decode(event['data']).decode('utf-8'))['data']['videoName']
-    filenames = VideoAnalytics_Decoder(video_name, req_id)
+    fanout_num = json.loads(base64.b64decode(event['data']).decode('utf-8'))['data']['fanoutNum']
+    filenames = VideoAnalytics_Decoder(video_name, req_id, fanout_num)
     for i, filename in enumerate(filenames):
         message = json.dumps({
             'data': {'imageName': filename}
@@ -89,7 +91,7 @@ def decode(event, context):
         logging.warning(f'{req_id} {i}th frame done')
 
 
-def VideoAnalytics_Decoder(filename, req_id):
-    decoder = VideoDecoder(filename, req_id)
+def VideoAnalytics_Decoder(filename, req_id, fanout_num):
+    decoder = VideoDecoder(filename, req_id, fanout_num)
     frames = decoder.decode()
     return [decoder.upload(i, frame) for i, frame in enumerate(frames)]

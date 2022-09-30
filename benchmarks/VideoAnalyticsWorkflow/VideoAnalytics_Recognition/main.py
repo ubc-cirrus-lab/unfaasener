@@ -75,4 +75,9 @@ def recognition(event, context):
 def VideoAnalytics_Recognition(image_name, req_id):
     m = ObjectRecognition()
     result = m.infer(image_name)
-    print(f'{req_id}: obtained labels: {result}')
+
+    cli = storage.Client()
+    dst_bucket = cli.bucket('videoanalyticsworkflow-storage-result')
+    result_filename = f'{req_id}-{image_name}'
+    dst_blob = dst_bucket.blob(result_filename)
+    dst_blob.upload_from_string(result)

@@ -61,7 +61,7 @@ def get(request):
         videoName = request_json['message']
 
     message_json = json.dumps({
-      'data': {'videoName': videoName},
+        'data': {'videoName': videoName, 'fanoutNum': routingEntity['fanout_num'] },
     })
 
     message_bytes = message_json.encode('utf-8')
