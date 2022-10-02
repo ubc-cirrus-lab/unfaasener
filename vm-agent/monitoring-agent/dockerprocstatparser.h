@@ -15,13 +15,13 @@ public:
     {
      size_t a;
     }
-    float get_proc_stat_times() 
+    float get_proc_stat_times(int pid) 
     {
      std::ifstream in;
      std::string line;
      std::string utime;
      std::string ktime;
-     in.open("/proc/1242/stat");
+     in.open("/proc/"+std::to_string(pid)+"/stat");
     if(in.is_open())
     {
         while(std::getline(in, line))
@@ -46,14 +46,14 @@ for (int i = 0; i < 15; ++i)
      return std::stof(utime) + std::stof(ktime);
     }
     
-    float get_proc_stat_memory()
+    float get_proc_stat_memory(int pid)
 {
 
      std::ifstream in;
      std::string line;
      std::string allocatedmem ;
      std::string ktime;
-     in.open("/proc/1242/statm");
+     in.open("/proc/"+std::to_string(pid)+"/statm");
     if(in.is_open())
     {
         while(std::getline(in, line))
