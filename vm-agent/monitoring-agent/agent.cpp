@@ -13,7 +13,9 @@
 #define _GNU_SOURCE
 #include <sched.h>
 #include <cmath>
-
+#include <pstream.h>
+#include <string>
+#include <iostream>
 using namespace std;
 
 void writePrediction(double cpu_pred, double mem_pred)
@@ -63,8 +65,11 @@ int main(int, char *[]) {
     short int softTriggerVote = 0;
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
-    float current_docker_reading =  0 ;
-    float previous_docker_reading =  0 ;
+    float current_docker_reading[100] = { 0} ;
+    int containerd_pids[100] =  {0 };
+    float previous_docker_reading[100] = { 0 };
+    float docker_utilization[100] = { 0} ;
+    float docker_mem_utilization[100] = { 0} ;
     float prev_docker_utilization = 0 ;
     size_t previous_readings[2] = { 0 };
     int monitor_intervals = 100000; // in microseconds
@@ -86,22 +91,40 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	{
      //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
 	 procstat.get_proc_stat_times(current_cpu_readings);
- 	 current_docker_reading = dockerprocstat.get_proc_stat_times();
+	 redi::ipstream proc("ps -C containerd-shim-runc-v2 -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
+	   std::string line;
+	   int processcount=0;
+     while (std::getline(proc.out(), line))
+     {
+
+     std::cout << "stdout: " << line << '\n';
+	   containerd_pids[processcount] = stoi(line);
+     current_docker_reading[processcount] = dockerprocstat.get_proc_stat_times(containerd_pids[processcount]);
+     docker_utilization[processcount]  = (current_docker_reading[processcount] - previous_docker_reading[processcount]);
+     docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
+     processcount++;
+     }
+     if (proc.eof() && proc.fail())
+     proc.clear();
+     // Sum all docker utilization of the containerd processes 
+     float docker_cpusum = 0;
+     float docker_memsum = 0;
+     docker_cpusum = accumulate(docker_utilization, docker_utilization+100, docker_cpusum);
+     docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+100, docker_memsum);
+
+
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
-	 float docker_utilization  = (current_docker_reading - previous_docker_reading);
-	 float docker_mem_utilization = dockerprocstat.get_proc_stat_memory();
-	 //std::cout << docker_mem_utilization << std::endl;
 
-	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_utilization)/total_diff);
-	 previous_docker_reading = current_docker_reading;
+	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_cpusum/total_diff));
+	 previous_docker_reading[0] = current_docker_reading[0];
 	 previous_readings[0] = current_cpu_readings[0];
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
          //std::cout << current_mem_readings[1] << std::endl;
 
-	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_mem_utilization)/ current_mem_readings[0]);
+	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_memsum)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
          //std::cout << mem_utilization << std::endl;
 //fill the utilziation buffers for the ring_size (i.e. 10 predictions in 1 second)
@@ -161,11 +184,11 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
                 // std::cout << "available_num_of_cores:" << availableCores << std::endl;
-                if ( ((docker_utilization/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_utilization - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
+                if ( ((docker_cpusum/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
                         std::cout << "Low Load Sensed"<< std::endl;
                         softTriggerVote -= 1;
                 }
-                else if ( ((docker_utilization/availableCores) > highTriggerThreshold) && ( (fabs(docker_utilization - prev_docker_utilization) )  > docker_utilization_change_threshold) ) {
+                else if ( ((docker_cpusum/availableCores) > highTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ) {
                         std::cout << "High Load Sensed"<< std::endl;
                         softTriggerVote += 1;
                 }
@@ -190,7 +213,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 }
 
                 // update docker utilixation
-                prev_docker_utilization = docker_utilization;
+                prev_docker_utilization = docker_cpusum;
 
                 hardTriggerBufferIndex = (hardTriggerBufferIndex + 1) % hardTriggerBufferSize;
 
