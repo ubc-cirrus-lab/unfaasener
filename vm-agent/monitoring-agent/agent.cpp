@@ -94,11 +94,13 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 redi::ipstream proc("ps -C containerd-shim-runc-v2 -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
 	   std::string line;
 	   int processcount=0;
+	   current_docker_reading[100] = {0};
+
      while (std::getline(proc.out(), line))
      {
 
      std::cout << "stdout: " << line << '\n';
-	   containerd_pids[processcount] = stoi(line);
+     containerd_pids[processcount] = stoi(line);
      current_docker_reading[processcount] = dockerprocstat.get_proc_stat_times(containerd_pids[processcount]);
      docker_utilization[processcount]  = (current_docker_reading[processcount] - previous_docker_reading[processcount]);
      docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
