@@ -477,7 +477,7 @@ class rpsOffloadingSolver:
             # solve
             model.options.SOLVER = 1
             try:
-                model.solve()
+                model.solve(disp = False)
                 offloadingDecisionsFinal = [
                     [
                         (offloadingDecisions[j][i].value)[0]
@@ -813,7 +813,7 @@ class rpsOffloadingSolver:
             model.options.RTOL = 1e-12
 
             try:
-                model.solve()
+                model.solve(disp = False)
                 offloadingDecisionsFinal = [
                     [
                         (offloadingDecisions[j][i].value)[0]
