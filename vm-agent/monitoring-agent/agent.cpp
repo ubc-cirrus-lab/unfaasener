@@ -114,8 +114,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      // Sum all docker utilization of the containerd processes 
      float docker_cpusum = 0;
      float docker_memsum = 0;
-     docker_cpusum = accumulate(docker_utilization, docker_utilization+10, 0);
-     docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+10, 0);
+     docker_cpusum = accumulate(docker_utilization, docker_utilization+100, 0);
+     docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+100, 0);
 
 
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
