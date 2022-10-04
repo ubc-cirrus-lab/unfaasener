@@ -9,7 +9,7 @@ import os
 import pandas as pd
 import numpy as np
 import math
-from monitoring import monitoring
+# from monitoring import monitoring
 from pathlib import Path
 # import rankerConfig
 import configparser
@@ -245,7 +245,7 @@ class Estimator:
         return costB
 
     def getPubsubDF(self):
-        monitoringObj = monitoring()
+        # monitoringObj = monitoring()
         topicMsgSize = pd.read_pickle(
             (os.path.dirname(os.path.abspath(__file__))) + "/data/" + "topicMsgSize.pkl"
         )
@@ -578,7 +578,7 @@ if __name__ == "__main__":
     # workflow = "TestCaseWorkflow"
     x = Estimator(workflow)
     x.getCost()
-    x.getExecutionTime("s")
+    # x.getExecutionTime("s")
     x.getPubSubMessageSize()
     # x.getExecutionTime("vm0")
     # print(x.getFuncExecutionTime("D", "vm0", "worst-case"))
