@@ -26,7 +26,7 @@ def handler(event, context):
          context (google.cloud.functions.Context): Metadata for the event.
     """
     routing_data = event['attributes']['routing']
-    routing = routing_data[1]
+    routing = routing_data[6]
     req_id = event['attributes']['reqID']
 
     data = json.loads(base64.b64decode(event['data']).decode('utf-8'))
