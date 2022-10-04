@@ -99,11 +99,14 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      while (std::getline(proc.out(), line))
      {
 
-     std::cout << "stdout: " << line << '\n';
+//     std::cout << "stdout: " << line << '\n';
      containerd_pids[processcount] = stoi(line);
      current_docker_reading[processcount] = dockerprocstat.get_proc_stat_times(containerd_pids[processcount]);
+  //   std::cout << current_docker_reading[processcount] << std::endl;
+
      docker_utilization[processcount]  = (current_docker_reading[processcount] - previous_docker_reading[processcount]);
      docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
+     previous_docker_reading[processcount] = docker_utilization[processcount];
      processcount++;
      }
      if (proc.eof() && proc.fail())
@@ -111,8 +114,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      // Sum all docker utilization of the containerd processes 
      float docker_cpusum = 0;
      float docker_memsum = 0;
-     docker_cpusum = accumulate(docker_utilization, docker_utilization+100, docker_cpusum);
-     docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+100, docker_memsum);
+     docker_cpusum = accumulate(docker_utilization, docker_utilization+10, 0);
+     docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+10, 0);
 
 
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
@@ -124,7 +127,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-         //std::cout << current_mem_readings[1] << std::endl;
+         std::cout << docker_cpusum << std::endl;
 
 	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_memsum)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
