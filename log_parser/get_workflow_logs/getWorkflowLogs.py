@@ -6,16 +6,30 @@ import os
 import sys
 import logging
 import datetime
-logging.basicConfig(filename=str(Path(os.path.dirname(os.path.abspath(__file__))))+"/logs/logParser.log", level=logging.INFO)
+import configparser
 
-class getWorkflowLogs():
+
+logging.basicConfig(
+    filename=str(Path(os.path.dirname(os.path.abspath(__file__))))
+    + "/logs/logParser.log",
+    level=logging.INFO,
+)
+sys.path.append(
+    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+    + "/scheduler"
+)
+from baselineSlackAnalysis import baselineSlackAnalysis
+from monitoring import monitoring
+
+
+class getWorkflowLogs:
     def __init__(self, workflow):
         serverless = getNewLogs(workflow)
         vm = dataStoreLogParser(workflow)
 
 
 if __name__ == "__main__":
-    interuptTime = 10*10
+    interuptTime = 60 * 10
     initial = int(sys.argv[2])
     if initial == 1:
         start_time = time.time()
@@ -28,14 +42,29 @@ if __name__ == "__main__":
         print("---------getting new logs:---------------")
         time.sleep(interuptTime)
         while True:
-                start_time = time.time()
-                # workflow = "Text2SpeechCensoringWorkflow"
-                # workflow = "ChatBotWorkflow"
-                logging.info("periodic log parser is running......")
-                logging.info(str(datetime.datetime.now()))
-                workflow = sys.argv[1]
-                x = getWorkflowLogs(workflow)
-                print("--- %s seconds ---" % (time.time() - start_time))
-                timeSpent = "time spent: " + str((time.time() - start_time))
-                logging.info(timeSpent)
-                time.sleep(interuptTime)
+            start_time = time.time()
+            workflow = sys.argv[1]
+            # workflow = "Text2SpeechCensoringWorkflow"
+            # workflow = "ChatBotWorkflow"
+            logging.info("periodic log parser is running......")
+            logging.info(str(datetime.datetime.now()))
+            x = getWorkflowLogs(workflow)
+            print("--- %s seconds ---" % (time.time() - start_time))
+            timeSpent = "time spent: " + str((time.time() - start_time))
+            logging.info(timeSpent)
+            path = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[1]
+                )
+                + "/scheduler/rankerConfig.ini"
+            )
+            config = configparser.ConfigParser()
+            config.read(path)
+            rankerConfig = config["settings"]
+            mode = rankerConfig["mode"]
+            if mode == "latency":
+                baselineSlackAnalysis = baselineSlackAnalysis(workflow)
+            monitoringObj = monitoring()
+            time.sleep(interuptTime)

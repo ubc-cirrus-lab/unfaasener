@@ -8,95 +8,91 @@ import pandas as pd
 import datetime
 from pathlib import Path
 from google.cloud import datastore
-from baselineSlackAnalysis import baselineSlackAnalysis
 from rpsMultiVMSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
+
+# import psutil, os
+import logging
+
+logging.basicConfig(
+    filename=str(Path(os.path.dirname(os.path.abspath(__file__))))
+    + "/logs/scheduler.log",
+    level=logging.INFO,
+)
 
 
 class CIScheduler:
     def __init__(self, triggerType):
         self.dateDFData = {}
         self.dateDFData["effected"] = []
+        self.dateDFData["triggerType"] = []
         self.dateDFData["triggered"] = []
         self.dateDFData["triggered"].append(datetime.datetime.now())
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        self.dateDFData["triggerType"].append(triggerType)
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.workflow = self.rankerConfig["workflow"]
-        x = Estimator(self.workflow)
-        self.invocationRate = InvocationRate(self.workflow)
-        # self.rates = invocationRate.getRPS()
-        x.getCost()
-        x.getPubSubMessageSize()
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/key/schedulerKey.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/key/schedulerKey.json"
+        )
         self.datastore_client = datastore.Client()
         kind = "routingDecision"
         name = self.workflow
         routing_key = self.datastore_client.key(kind, name)
         self.routing = self.datastore_client.get(key=routing_key)
-        self.decisionModes = (self.rankerConfig["decisionMode"]).split()
-        self.mode = self.rankerConfig["mode"]
-        self.alpha = float(self.rankerConfig["statisticalParameter"])
-        self.rps = float(self.rankerConfig["rps"])
-        resources = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt", "r")
-        Lines = resources.readlines()
-        cpus = Lines[0].split()
-        memories = Lines[1].split()
-        self.availableResources = []
-        assert len(cpus) == len(
-            memories
-        ), "Both number of cores and memory should be provided for each VM"
-        for i in range(len(cpus)):
-            dict = {}
-            dict["cores"] = float(cpus[i])
-            dict["mem_mb"] = float(memories[i])
-            self.availableResources.append(dict)
-        print("AvailableResources ===", self.availableResources)
-        # self.availableResources = rankerConfig.availResources
-        self.toleranceWindow = int(self.rankerConfig["toleranceWindow"])
         self.suggestBestOffloadingMultiVM(triggerType)
         self.dateDFData = pd.DataFrame.from_dict(self.dateDFData)
         self.dateDF = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"  + self.workflow
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
             + "/dateDate.pkl"
         )
-        if os.path.isfile(
-            self.dateDF
-        ):
-            prevDataframeDate = pd.read_pickle(
-                self.dateDF
-            )
+        if os.path.isfile(self.dateDF):
+            prevDataframeDate = pd.read_pickle(self.dateDF)
             newDataFrame = (
-                pd.concat([prevDataframeDate, self.dateDFData]).drop_duplicates().reset_index(drop=True)
+                pd.concat([prevDataframeDate, self.dateDFData])
+                .drop_duplicates()
+                .reset_index(drop=True)
             )
-            newDataFrame.to_pickle(
-                self.dateDF
-            )
+            newDataFrame.to_pickle(self.dateDF)
             newDataFrame.to_csv(
-            (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"  + self.workflow
-            + "/dateDate.csv"
-            )
+                (
+                    str(
+                        Path(os.path.dirname(os.path.abspath(__file__)))
+                        .resolve()
+                        .parents[0]
+                    )
+                    + "/log_parser/get_workflow_logs/data/"
+                    + self.workflow
+                    + "/dateDate.csv"
+                )
             )
         else:
-            self.dateDFData.to_pickle(
-                self.dateDF
-            )
+            self.dateDFData.to_pickle(self.dateDF)
             self.dateDFData.to_csv(
                 (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"  + self.workflow
-            + "/dateDate.csv"
-            )
+                    str(
+                        Path(os.path.dirname(os.path.abspath(__file__)))
+                        .resolve()
+                        .parents[0]
+                    )
+                    + "/log_parser/get_workflow_logs/data/"
+                    + self.workflow
+                    + "/dateDate.csv"
+                )
             )
 
     def suggestBestOffloadingMultiVM(self, triggerType):
         if triggerType == "highLoad":
+            logging.info("High load trigger type!")
             prevPercentage = self.routing["active"]
             match prevPercentage:
                 case "25":
@@ -113,6 +109,7 @@ class CIScheduler:
                 case other:
                     print("Unknown percentile")
         elif triggerType == "lowLoad":
+            logging.info("Low load trigger type!")
             prevPercentage = self.routing["active"]
             match prevPercentage:
                 case "95":
@@ -129,26 +126,62 @@ class CIScheduler:
                 case other:
                     print("Unknown percentile")
         elif triggerType == "resolve":
+            logging.info("Resolve trigger type!")
             self.resolveOffloadingSolutions()
         else:
             print("Unknown trigger type!")
         self.dateDFData["effected"].append(datetime.datetime.now())
+        logging.info("Changed Decision!!!")
+        logging.info(str(datetime.datetime.now()))
 
     def resolveOffloadingSolutions(self):
-        rates = self.invocationRate.getRPS()
+        x = Estimator(self.workflow)
+        invocationRate = InvocationRate(self.workflow)
+        # self.rates = invocationRate.getRPS()
+        x.getCost()
+        x.getPubSubMessageSize()
+        decisionModes = (self.rankerConfig["decisionMode"]).split()
+        mode = self.rankerConfig["mode"]
+        alpha = float(self.rankerConfig["statisticalParameter"])
+        # self.rps = float(self.rankerConfig["rps"])
+        resources = open(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt",
+            "r",
+        )
+        Lines = resources.readlines()
+        cpus = Lines[0].split()
+        memories = Lines[1].split()
+        availableResources = []
+        assert len(cpus) == len(
+            memories
+        ), "Both number of cores and memory should be provided for each VM"
+        for i in range(len(cpus)):
+            dict = {}
+            dict["cores"] = float(cpus[i])
+            dict["mem_mb"] = float(memories[i])
+            availableResources.append(dict)
+        print("AvailableResources ===", availableResources)
+        logging.info("AvailableResources = {}".format(availableResources))
+        # self.availableResources = rankerConfig.availResources
+        toleranceWindow = int(self.rankerConfig["toleranceWindow"])
+        logging.info("Going to resolve!!!")
+        logging.info(str(datetime.datetime.now()))
+        rates = invocationRate.getRPS()
         decisions = []
         for percent in rates.keys():
             rate = rates[percent]
-            for decisionMode in self.decisionModes:
+            for decisionMode in decisionModes:
                 solver = rpsOffloadingSolver(
-                    self.workflow, self.mode, decisionMode, self.toleranceWindow, rate, False
+                    self.workflow, mode, decisionMode, toleranceWindow, rate, False
                 )
                 x = solver.suggestBestOffloadingMultiVM(
-                    availResources=self.availableResources,
-                    alpha=self.alpha,
+                    availResources=availableResources,
+                    alpha=alpha,
                     verbose=True,
                 )
-                print("Decision for case: {}:{}".format(decisionMode, x))
+                logging.info("Decision for case: {}:{}".format(decisionMode, x))
+                logging.info(str(datetime.datetime.now()))
+                # print("Decision for case: {}:{}".format(decisionMode, x))
                 decisions.append(x)
             finalDecision = np.mean(decisions, axis=0)
             finalDecision = finalDecision / 100
@@ -160,28 +193,49 @@ class CIScheduler:
             for function in range(len(finalDecision)):
                 finalDecision[function] = list(finalDecision[function])
             self.routing["routing" + "_" + str(percent)] = str(finalDecision)
-            print("Final Decision: {}".format(list(finalDecision)))
+            print(
+                "Final Decision: {} for invcation rate: {} ({} percent)".format(
+                    list(finalDecision), rate, percent
+                )
+            )
+            logging.info(
+                "Final Decision: {} for invcation rate: {} ({} percent)".format(
+                    list(finalDecision), rate, percent
+                )
+            )
+            logging.info(str(datetime.datetime.now()))
         self.routing["active"] = "50"
         self.datastore_client.put(self.routing)
 
 
 if __name__ == "__main__":
     start_time = time.time()
-    #Added by mohamed to allow locking
-    if os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'):
+    # Added by mohamed to allow locking
+    if os.path.exists(
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
+    ):
         print("LOCK EXISTSSS!!")
         exit()
-    with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt","w") as f:
+    with open(
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt", "w"
+    ) as f:
         f.write("lock")
         f.close
     print("LOCK CREATED!!!")
+    pid = os.getpid()
+    logging.info(str(pid))
+    logging.info("LOCK CREATED!!!")
+    logging.info(str(datetime.datetime.now()))
     # triggerType = "resolve"
     triggerType = sys.argv[1]
     solver = CIScheduler(triggerType)
-    os.remove(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/lock.txt")
-    print("LOCK removed-> search for lock file:", os.path.exists(str(Path(os.path.dirname(os.path.abspath(__file__))))+'/lock.txt'))
+    os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt")
+    logging.info("Lock released!!!")
+    logging.info(str(datetime.datetime.now()))
+    print(
+        "LOCK removed-> search for lock file:",
+        os.path.exists(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
+        ),
+    )
     print("--- %s seconds ---" % (time.time() - start_time))
-
-
-
-
