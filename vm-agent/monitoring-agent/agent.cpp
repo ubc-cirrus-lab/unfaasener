@@ -128,8 +128,15 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
+         std::cout << total_diff << std::endl;
+         std::cout << idle_diff << std::endl;
 
-	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_cpusum/total_diff));
+	 float cpu_utilization = 100.0 * (1.0 - (idle_diff*100 + docker_cpusum)/(total_diff*100));
+	 if (cpu_utilization < 0)
+	 {
+		 cpu_utilization=0;
+	 }
+
 	 previous_docker_reading[0] = current_docker_reading[0];
 	 previous_readings[0] = current_cpu_readings[0];
 	 previous_readings[1] = current_cpu_readings[1];
