@@ -91,7 +91,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	{
      //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
 	 procstat.get_proc_stat_times(current_cpu_readings);
-	 redi::ipstream proc("ps -C containerd-shim-runc-v2 -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
+	 redi::ipstream proc("ps -u bin -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
 	   std::string line;
 	   int processcount=0;
 	   current_docker_reading[100] = {0};
