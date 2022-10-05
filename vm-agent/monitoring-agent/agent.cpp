@@ -50,7 +50,7 @@ int handle_prediction_violation(double cpu_pred, double memory_pred)
 		    double cores = getTotalSystemCores() * (100 - cpu_pred)/100;
 		    std::cout << "cpu  " << cores << std::endl;
                 writePrediction(cores, mem_pred);
-	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+	    // system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 
 	    return 1;
     }
@@ -65,10 +65,11 @@ int main(int, char *[]) {
     short int softTriggerVote = 0;
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
-    float current_docker_reading[100] = { 0} ;
+
+    //float current_docker_reading[100] = { 0} ;
     int containerd_pids[100] =  {0 };
     float previous_docker_reading[100] = { 0 };
-    float docker_utilization[100] = { 0} ;
+    //float docker_utilization[100] = { 0} ;
     float docker_mem_utilization[100] = { 0} ;
     float prev_docker_utilization = 0 ;
     size_t previous_readings[2] = { 0 };
@@ -91,10 +92,11 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	{
      //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
 	 procstat.get_proc_stat_times(current_cpu_readings);
-	 redi::ipstream proc("ps -C containerd-shim-runc-v2 -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
+	 redi::ipstream proc("ps -u bin -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
 	   std::string line;
 	   int processcount=0;
-	   current_docker_reading[100] = {0};
+	   float current_docker_reading[100] = {0};
+	   float docker_utilization[100] = {0};
 
      while (std::getline(proc.out(), line))
      {
@@ -105,7 +107,14 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
   //   std::cout << current_docker_reading[processcount] << std::endl;
 
      docker_utilization[processcount]  = (current_docker_reading[processcount] - previous_docker_reading[processcount]);
-     docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
+     if (docker_utilization[processcount] < 0)
+     {
+	     docker_utilization[processcount] = 0;
+	     previous_docker_reading[processcount] = 0;
+	     current_docker_reading[processcount] = 0;
+     }
+
+     //docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
      previous_docker_reading[processcount] = docker_utilization[processcount];
      processcount++;
      }
@@ -121,7 +130,15 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 
-	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_cpusum/total_diff));
+         std::cout << total_diff << std::endl;
+         std::cout << idle_diff << std::endl;
+
+	 float cpu_utilization = 100.0 * (1.0 - (idle_diff*100 + docker_cpusum)/(total_diff*100));
+	 if (cpu_utilization < 0)
+	 {
+		 cpu_utilization=0;
+	 }
+
 	 previous_docker_reading[0] = current_docker_reading[0];
 	 previous_readings[0] = current_cpu_readings[0];
 	 previous_readings[1] = current_cpu_readings[1];
@@ -185,6 +202,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 double availableCores = getTotalSystemCores() * (100 - cpu_pred_old)/100;
                 // std::cout << "idle_diff:" << idle_diff << std::endl;
                 // std::cout << "docker_utilization:" << docker_utilization << std::endl;
+                std::cout << "docker_utilization:" << docker_cpusum << std::endl;
+                std::cout << "docker_mem_utilization:" << docker_memsum << std::endl;
                 // std::cout << "total_diff:" << total_diff << std::endl;
                 // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
@@ -200,11 +219,11 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 
                 if (softTriggerVote > 4) {
                     std::cout << "Triggering scheduler with HIGH LOAD option."<< std::endl;
-                    system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
+                    // system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
                     softTriggerVote = 0;
                 } else if (softTriggerVote < -4 ) {
                     std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
-                    system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
+                    // system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
                     softTriggerVote = 0;
                 } else if (recentViols >= int(0.5*hardTriggerBufferSize)) {
                         std::cout << "Triggering scheduler with RESOLVE option."<< std::endl;

@@ -307,6 +307,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 # cpu_quota=1000000,
                 command="tail -f /etc/hosts",
                 detach=False,
+                user='bin',
             )
             # lastexecutiontimestamps[invokedFun] = before
             lastexecutiontimestamps[container.id] = before
