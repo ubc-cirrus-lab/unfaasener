@@ -65,10 +65,10 @@ int main(int, char *[]) {
     short int softTriggerVote = 0;
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
-    float current_docker_reading[100] = { 0} ;
+    //float current_docker_reading[100] = { 0} ;
     int containerd_pids[100] =  {0 };
     float previous_docker_reading[100] = { 0 };
-    float docker_utilization[100] = { 0} ;
+    //float docker_utilization[100] = { 0} ;
     float docker_mem_utilization[100] = { 0} ;
     float prev_docker_utilization = 0 ;
     size_t previous_readings[2] = { 0 };
@@ -94,7 +94,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 redi::ipstream proc("ps -u bin -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
 	   std::string line;
 	   int processcount=0;
-	   current_docker_reading[100] = {0};
+	   float current_docker_reading[100] = {0};
+	   float docker_utilization[100] = {0};
 
      while (std::getline(proc.out(), line))
      {
@@ -105,7 +106,14 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
   //   std::cout << current_docker_reading[processcount] << std::endl;
 
      docker_utilization[processcount]  = (current_docker_reading[processcount] - previous_docker_reading[processcount]);
-     docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
+     if (docker_utilization[processcount] < 0)
+     {
+	     docker_utilization[processcount] = 0;
+	     previous_docker_reading[processcount] = 0;
+	     current_docker_reading[processcount] = 0;
+     }
+
+     //docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
      previous_docker_reading[processcount] = docker_utilization[processcount];
      processcount++;
      }
