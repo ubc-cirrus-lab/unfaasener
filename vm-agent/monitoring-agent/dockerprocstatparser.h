@@ -19,8 +19,8 @@ public:
     {
      std::ifstream in;
      std::string line;
-     std::string utime;
-     std::string ktime;
+     std::string utime= "0";
+     std::string ktime="0";
      in.open("/proc/"+std::to_string(pid)+"/stat");
     if(in.is_open())
     {
@@ -51,8 +51,8 @@ for (int i = 0; i < 15; ++i)
 
      std::ifstream in;
      std::string line;
-     std::string allocatedmem ;
-     std::string ktime;
+     std::string allocatedmem="0" ;
+     std::string ktime="0";
      in.open("/proc/"+std::to_string(pid)+"/statm");
     if(in.is_open())
     {

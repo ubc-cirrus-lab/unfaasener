@@ -104,10 +104,10 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      while (std::getline(proc.out(), line))
      {
 
-     std::cout << "stdout: " << line << '\n';
+//     std::cout << "stdout: " << line << '\n';
      containerd_pids[processcount] = stoi(line);
      current_docker_reading[containerd_pids[processcount]] = dockerprocstat.get_proc_stat_times(containerd_pids[processcount]);
-     std::cout << current_docker_reading[containerd_pids[processcount]] << " - " << previous_docker_reading[containerd_pids[processcount]]<< std::endl;
+  //   std::cout << current_docker_reading[containerd_pids[processcount]] << " - " << previous_docker_reading[containerd_pids[processcount]]<< std::endl;
 
      docker_utilization[processcount]  = (current_docker_reading[containerd_pids[processcount]] - previous_docker_reading[containerd_pids[processcount]]);
      if (docker_utilization[processcount] < 0)
@@ -120,7 +120,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      //docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
      previous_docker_reading[containerd_pids[processcount]] = current_docker_reading[containerd_pids[processcount]];
      processcount++;
-         std::cout << "stdout: " << processcount << '\n';
+         //std::cout << "stdout: " << processcount << '\n';
 
      }
      if (proc.eof() && proc.fail())
@@ -136,9 +136,9 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 
-    std::cout << "##########" << std::endl;
-         std::cout << total_diff << std::endl;
-         std::cout << idle_diff << std::endl;
+    //std::cout << "##########" << std::endl;
+      //   std::cout << total_diff << std::endl;
+        // std::cout << idle_diff << std::endl;
 
 	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_cpusum)/(total_diff));
 	 if (cpu_utilization < 0)
@@ -151,8 +151,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-         std::cout << docker_cpusum << std::endl;
-         std::cout << "##########" << std::endl;
+         //std::cout << docker_cpusum << std::endl;
+         //std::cout << "##########" << std::endl;
 
 	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_memsum)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
