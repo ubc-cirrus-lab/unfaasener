@@ -130,8 +130,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 
-         std::cout << total_diff << std::endl;
-         std::cout << idle_diff << std::endl;
+         //std::cout << total_diff << std::endl;
+         //std::cout << idle_diff << std::endl;
 
 	 float cpu_utilization = 100.0 * (1.0 - (idle_diff*100 + docker_cpusum)/(total_diff*100));
 	 if (cpu_utilization < 0)
@@ -144,7 +144,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-         std::cout << docker_cpusum << std::endl;
+         ///std::cout << docker_cpusum << std::endl;
 
 	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_memsum)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
@@ -208,11 +208,14 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
                 // std::cout << "available_num_of_cores:" << availableCores << std::endl;
-                if ( ((docker_cpusum/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
+                double docker_cores_used =  ((docker_cpusum)/(total_diff*100)) * getTotalSystemCores();
+                std::cout << "docker_number_of_cores:" << docker_cores_used << std::endl;
+
+                if ( ((docker_cores_used/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
                         std::cout << "Low Load Sensed"<< std::endl;
                         softTriggerVote -= 1;
                 }
-                else if ( ((docker_cpusum/availableCores) > highTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ) {
+                else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ) {
                         std::cout << "High Load Sensed"<< std::endl;
                         softTriggerVote += 1;
                 }
