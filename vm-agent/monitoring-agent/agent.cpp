@@ -51,7 +51,7 @@ int handle_prediction_violation(double cpu_pred, double memory_pred)
 		    double cores = getTotalSystemCores() * (100 - cpu_pred)/100;
 		    std::cout << "cpu  " << cores << std::endl;
                 writePrediction(cores, mem_pred);
-	    // system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 
 	    return 1;
     }
@@ -74,6 +74,7 @@ int main(int, char *[]) {
     //float docker_utilization[100] = { 0} ;
     float docker_mem_utilization[1000] = { 0} ;
     float prev_docker_utilization = 0 ;
+    double prev_docker_utilization_cores_used = 0;
     size_t previous_readings[2] = { 0 };
     int monitor_intervals = 100000; // in microseconds
     double cpu_pred_old = 0;
@@ -208,6 +209,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 double highTriggerThreshold = 0.8;
                 double docker_utilization_change_threshold = 1;
                 double availableCores = getTotalSystemCores() * (100 - cpu_pred_old)/100;
+                double docker_cores_used =  ((docker_cpusum)/(total_diff)) * getTotalSystemCores();
                 // std::cout << "idle_diff:" << idle_diff << std::endl;
                 // std::cout << "docker_utilization:" << docker_utilization << std::endl;
                 std::cout << "docker_utilization:" << docker_cpusum << std::endl;
@@ -215,26 +217,26 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 // std::cout << "total_diff:" << total_diff << std::endl;
                 // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
-                // std::cout << "available_num_of_cores:" << availableCores << std::endl;
-                double docker_cores_used =  ((docker_cpusum)/(total_diff)) * getTotalSystemCores();
+                std::cout << "available_num_of_cores:" << availableCores << std::endl;
                 std::cout << "docker_number_of_cores:" << docker_cores_used << std::endl;
+                std::cout << "docker_Prev_number_of_cores:" << prev_docker_utilization_cores_used << std::endl;
 
-                if ( ((docker_cores_used/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
+                if ( ((docker_cores_used/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cores_used - prev_docker_utilization_cores_used) )  > docker_utilization_change_threshold) ){
                         std::cout << "Low Load Sensed"<< std::endl;
                         softTriggerVote -= 1;
                 }
-                else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ) {
+                else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) && ( (fabs(docker_cores_used - prev_docker_utilization_cores_used) )  > docker_utilization_change_threshold) ) {
                         std::cout << "High Load Sensed"<< std::endl;
                         softTriggerVote += 1;
                 }
                 
                 if (softTriggerVote > 4) {
                     std::cout << "Triggering scheduler with HIGH LOAD option."<< std::endl;
-                    // system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
+                    system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
                     softTriggerVote = 0;
                 } else if (softTriggerVote < -4 ) {
                     std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
-                    // system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
+                    system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
                     softTriggerVote = 0;
                 } else if (recentViols >= int(0.5*hardTriggerBufferSize)) {
                         std::cout << "Triggering scheduler with RESOLVE option."<< std::endl;
@@ -248,6 +250,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 }
 
                 // update docker utilixation
+                prev_docker_utilization_cores_used = docker_cores_used;
                 prev_docker_utilization = docker_cpusum;
 
                 hardTriggerBufferIndex = (hardTriggerBufferIndex + 1) % hardTriggerBufferSize;
