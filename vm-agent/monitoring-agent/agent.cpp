@@ -41,7 +41,7 @@ unsigned long long getTotalSystemMemory()
     return (pages * page_size)/1024/1024;
 }
 
-int handle_prediction_violation(double cpu_pred, double memory_pred)
+int handle_prediction_violation(double cpu_pred, double memory_pred, string mode)
     {
 	    //execute the local scheduler
 	    double mem_pred = (100-memory_pred) * getTotalSystemMemory()/100;
@@ -51,7 +51,9 @@ int handle_prediction_violation(double cpu_pred, double memory_pred)
 		    double cores = getTotalSystemCores() * (100 - cpu_pred)/100;
 		    std::cout << "cpu  " << cores << std::endl;
                 writePrediction(cores, mem_pred);
-	    system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
+        string command = "cd ../../scheduler/; python3 rpsCIScheduler.py " + mode + " &";
+        system((command).c_str());
+	    // system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 
 	    return 1;
     }
@@ -180,7 +182,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
                         initialFlag = 0;
-                        handle_prediction_violation(cpu_pred_old, mem_pred_old);
+                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve");
                 }
                 else
                 {
@@ -232,15 +234,17 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 
                 if (softTriggerVote > 4) {
                     std::cout << "Triggering scheduler with HIGH LOAD option."<< std::endl;
-                    system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
+                    handle_prediction_violation(cpu_pred_old, mem_pred_old, "highLoad");
+                    // system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
                     softTriggerVote = 0;
                 } else if (softTriggerVote < -4 ) {
                     std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
-                    system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
+                    handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad");
+                    // system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
                     softTriggerVote = 0;
                 } else if (recentViols >= int(0.5*hardTriggerBufferSize)) {
                         std::cout << "Triggering scheduler with RESOLVE option."<< std::endl;
-                        handle_prediction_violation(cpu_pred_old, mem_pred_old);
+                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve");
                         // reset the buffer
                         for (int i=0; i<hardTriggerBufferSize; i++) {
                             if (hardTriggerBuffer[i]!=0) {
