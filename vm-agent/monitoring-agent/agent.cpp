@@ -16,6 +16,7 @@
 #include <pstream.h>
 #include <string>
 #include <iostream>
+#include <map>
 using namespace std;
 
 void writePrediction(double cpu_pred, double mem_pred)
@@ -68,7 +69,8 @@ int main(int, char *[]) {
 
     //float current_docker_reading[100] = { 0} ;
     int containerd_pids[100] =  {0 };
-    float previous_docker_reading[100] = { 0 };
+    //float previous_docker_reading[100] = { 0 };
+    map <int,float> previous_docker_reading;
     //float docker_utilization[100] = { 0} ;
     float docker_mem_utilization[100] = { 0} ;
     float prev_docker_utilization = 0 ;
@@ -91,31 +93,32 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
     while (true) 
 	{
      //get current CPU readings. CPU readings are incremental , so we need to subtract our last readings to get the absoulte CPU utilization
-	 procstat.get_proc_stat_times(current_cpu_readings);
 	 redi::ipstream proc("ps -u bin -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
 	   std::string line;
 	   int processcount=0;
-	   float current_docker_reading[100] = {0};
+	   //float current_docker_reading[100] = {0};
 	   float docker_utilization[100] = {0};
+    map <int,float> current_docker_reading;
+//    map <int,float> docker_utilization;
 
      while (std::getline(proc.out(), line))
      {
 
 //     std::cout << "stdout: " << line << '\n';
      containerd_pids[processcount] = stoi(line);
-     current_docker_reading[processcount] = dockerprocstat.get_proc_stat_times(containerd_pids[processcount]);
-  //   std::cout << current_docker_reading[processcount] << std::endl;
+     current_docker_reading[containerd_pids[processcount]] = dockerprocstat.get_proc_stat_times(containerd_pids[processcount]);
+     //std::cout << current_docker_reading[containerd_pids[processcount]] << " - " << previous_docker_reading[containerd_pids[processcount]]<< std::endl;
 
-     docker_utilization[processcount]  = (current_docker_reading[processcount] - previous_docker_reading[processcount]);
+     docker_utilization[processcount]  = (current_docker_reading[containerd_pids[processcount]] - previous_docker_reading[containerd_pids[processcount]]);
      if (docker_utilization[processcount] < 0)
      {
 	     docker_utilization[processcount] = 0;
-	     previous_docker_reading[processcount] = 0;
-	     current_docker_reading[processcount] = 0;
+	     previous_docker_reading[containerd_pids[processcount]] = 0;
+	     current_docker_reading[containerd_pids[processcount]] = 0;
      }
 
      //docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
-     previous_docker_reading[processcount] = docker_utilization[processcount];
+     previous_docker_reading[containerd_pids[processcount]] = current_docker_reading[containerd_pids[processcount]];
      processcount++;
      }
      if (proc.eof() && proc.fail())
@@ -126,14 +129,16 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      docker_cpusum = accumulate(docker_utilization, docker_utilization+100, 0);
      docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+100, 0);
 
+	 procstat.get_proc_stat_times(current_cpu_readings);
 
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 
-         //std::cout << total_diff << std::endl;
-         //std::cout << idle_diff << std::endl;
+    std::cout << "##########" << std::endl;
+         std::cout << total_diff << std::endl;
+         std::cout << idle_diff << std::endl;
 
-	 float cpu_utilization = 100.0 * (1.0 - (idle_diff*100 + docker_cpusum)/(total_diff*100));
+	 float cpu_utilization = 100.0 * (1.0 - (idle_diff + docker_cpusum)/(total_diff));
 	 if (cpu_utilization < 0)
 	 {
 		 cpu_utilization=0;
@@ -144,7 +149,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 previous_readings[1] = current_cpu_readings[1];
 //get current memory readings and generate free memory utilization as percentage
          memstat.get_meminfo(current_mem_readings);
-         ///std::cout << docker_cpusum << std::endl;
+         std::cout << docker_cpusum << std::endl;
+         std::cout << "##########" << std::endl;
 
 	 float mem_utilization = 100 * ( (float)(current_mem_readings[0]-current_mem_readings[1] - docker_memsum)/ current_mem_readings[0]);
          //std::cout << cpu_utilization << std::endl;
@@ -208,7 +214,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 // std::cout << "cpu_utilization:" << cpu_utilization << std::endl;
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
                 // std::cout << "available_num_of_cores:" << availableCores << std::endl;
-                double docker_cores_used =  ((docker_cpusum)/(total_diff*100)) * getTotalSystemCores();
+                double docker_cores_used =  ((docker_cpusum)/(total_diff)) * getTotalSystemCores();
                 std::cout << "docker_number_of_cores:" << docker_cores_used << std::endl;
 
                 if ( ((docker_cores_used/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cpusum - prev_docker_utilization) )  > docker_utilization_change_threshold) ){
