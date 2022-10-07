@@ -80,8 +80,12 @@ class InvocationRate:
         # print(diff)
         percentiles = [25, 50, 75, 95]
         results = {}
-        for percent in percentiles:
-            results[percent] = np.percentile(diff, percent)
+        results[50] = np.percentile(diff, 50)
+        results[25] = min((0.75*results[50]), (np.percentile(diff, 25)))
+        results[75] = max((1.25*results[50]), (np.percentile(diff, 75)))
+        results[95] = max((1.45*results[50]), (np.percentile(diff, 95)))
+        # for percent in percentiles:
+        #     results[percent] = np.percentile(diff, percent)
         print("Invocation Rates: ", results)
         return results
 
