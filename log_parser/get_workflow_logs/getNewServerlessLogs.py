@@ -28,6 +28,8 @@ class getNewLogs(GetLog):
         super().__init__(workflow)
         self.exeData = {}
         self.dictData = {}
+        self.dataStoreCount = 0
+        self.readDecisionCount = 0
         path = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
             + "/scheduler/rankerConfig.ini"
@@ -103,18 +105,20 @@ class getNewLogs(GetLog):
         self.getDict()
         self.saveCost()
 
+    
     def saveCost(self):
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
             + "/scheduler/data/"
-            + self.workflow
-            + "-prevCost.json"
+            + "prevCost.json"
         )
         with open(jsonPath, "r") as json_file:
             prevCost_json = json.load(json_file)
         prevCost_json["GB-Sec"] = prevCost_json["GB-Sec"] + self.GBSec
         prevCost_json["GHz-Sec"] = prevCost_json["GHz-Sec"] + self.GHzSec
         prevCost_json["NI"] = prevCost_json["NI"] + self.NI
+        prevCost_json["DSread"] = prevCost_json["DSread"] + self.dataStoreCount + self.readDecisionCount
+        prevCost_json["DSwrite"] = prevCost_json["DSwrite"] + self.dataStoreCount
         with open(jsonPath, "w") as json_file:
             json.dump(prevCost_json, json_file)
 
@@ -411,6 +415,7 @@ class getNewLogs(GetLog):
                     else:
                         mergingBranch = ((mergeData[reqLogs.index(exe)]).split("*"))[1]
                         self.dictData["mergingPoint"].append(mergingBranch)
+                        self.dataStoreCount = self.dataStoreCount + 1
                     # del startLogsIndex[startLogs.index(exe)]
                     # del reqLogsIndex[reqLogs.index(exe)]
                     # del finishLogsIndex[finishLogs.index(exe)]
@@ -482,6 +487,7 @@ class getNewLogs(GetLog):
             )
             initRecords = df.loc[(df["function"] == self.initFunc)]
             initRecords = initRecords["start"]
+            self.readDecisionCount = self.readDecisionCount + len(initRecords)
 
             newInvocations = (
                 pd.concat([prevInvocations, initRecords])

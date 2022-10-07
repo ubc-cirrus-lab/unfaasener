@@ -181,9 +181,11 @@ class CIScheduler:
                 )
                 logging.info("Decision for case: {}:{}".format(decisionMode, x))
                 logging.info(str(datetime.datetime.now()))
-                # print("Decision for case: {}:{}".format(decisionMode, x))
+                print("Decision for case: {}:{}".format(decisionMode, x))
                 decisions.append(x)
+            print("decisions::", decisions)
             finalDecision = np.mean(decisions, axis=0)
+            print("Average for case:", finalDecision)
             finalDecision = finalDecision / 100
             capArray = np.zeros(len(finalDecision))
             for i in range(len(capArray)):
@@ -204,6 +206,7 @@ class CIScheduler:
                 )
             )
             logging.info(str(datetime.datetime.now()))
+            decisions = []
         self.routing["active"] = "50"
         self.datastore_client.put(self.routing)
 

@@ -51,6 +51,20 @@ class dataStoreLogParser(GetLog):
         self.getNewLogs()
         self.saveNewLogs()
 
+    def updateDataStoreCost(self, count):
+        jsonPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+            + "/scheduler/data/"
+            + "prevCost.json"
+        )
+        with open(jsonPath, "r") as json_file:
+            prevCost_json = json.load(json_file)
+        prevCost_json["DSdelete"] = prevCost_json["DSdelete"] + count
+        prevCost_json["DSread"] = prevCost_json["DSread"] + count
+        prevCost_json["DSwrite"] = prevCost_json["DSwrite"] + count
+        with open(jsonPath, "w") as json_file:
+            json.dump(prevCost_json, json_file)
+            
     def getNewLogs(self):
         results = []
         for func in self.workflowFunctions:
@@ -58,6 +72,7 @@ class dataStoreLogParser(GetLog):
             query.add_filter("function", "=", func)
             results = results + list(query.fetch())
         print("num of new res:::", len(results))
+        self.updateDataStoreCost(len(results))
         logInsrt = "num of new res:::" +  str(len(results))
         logging.info(logInsrt)
         for res in results:
@@ -98,7 +113,8 @@ class dataStoreLogParser(GetLog):
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
             )
-            newDF = self.keepWindowSize(newDataFrame)
+            # newDF = self.keepWindowSize(newDataFrame)
+            newDF = newDataFrame
             newDF.to_pickle(
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
             )

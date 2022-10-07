@@ -97,8 +97,7 @@ class Estimator:
         with open(
             (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
-            + self.workflow
-            + "-prevCost.json",
+            + "prevCost.json",
             "r",
         ) as json_file:
             workflow_json = json.load(json_file)
@@ -228,6 +227,47 @@ class Estimator:
             json.dump(exeTimes, outfile)
 
     
+    def getPrevDS(self, mode):
+        prev_Json = self.prev_cost()
+        if mode == "r":
+            return prev_Json["DSread"]
+        elif mode =="w":
+            return prev_Json["DSwrite"]
+        elif mode == "d":
+            return prev_Json["DSdelete"]
+        else:
+            print("unknown mode!")
+
+        prev_Json
+    def getUnitCost_Datastore(self, mode):
+        free_tier_read = 50000
+        free_tier_write = 20000
+        free_tier_delete = 20000
+        unitRead = (0.06 / 100000)
+        unitWrite = (0.18 / 100000)
+        unitDelete = (0.02 / 100000)
+        prev = self.getPrevDS(mode)
+        if mode == "r":
+            if prev > free_tier_read:
+                free_tier_read = 0
+            else:
+                free_tier_read = free_tier_read - prev
+            cost = max(0,(1 - free_tier_read))*unitRead
+        elif mode == "w":
+            if prev > free_tier_write:
+                free_tier_write = 0
+            else:
+                free_tier_write = free_tier_write - prev
+            cost = max(0,(1 - free_tier_write))*unitWrite
+        elif mode == "d":
+            if prev > free_tier_delete:
+                free_tier_delete = 0
+            else:
+                free_tier_delete = free_tier_delete - prev
+            cost = max(0,(1 - free_tier_delete))*unitDelete
+        else:
+            return "Unknown operation"
+        return cost
 
     def cost_estimator_pubsub(self, bytes):
         free_tier_Bytes = 1024 * 1024 * 1024

@@ -267,6 +267,10 @@ class rpsOffloadingSolver:
             parentIndexes.append(self.offloadingCandidates.index(parent))
         return parentIndexes
 
+    def GetDatastoreCost(self, mode):
+        cost = self.estimator.getUnitCost_Datastore(mode)
+        return cost
+
     def getCommunicationLatency(self, child, parent, childHost, parentHost, mode):
         addedLat = self.estimator.getComLatency(
             child, parent, childHost, parentHost, mode
@@ -409,49 +413,72 @@ class rpsOffloadingSolver:
                                 / 100
                             )
                         )
+                        +
+                        (
+                            
+                             (1 - alphaConst)
+                            * self.rps
+                            *
+                                self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                            * ( self.GetDatastoreCost("w") + self.GetDatastoreCost("d") +  self.GetDatastoreCost("r") )
+                            * (
+                                (
+                                     (
+                                        model.sum(
+                                            [
+                                                (offloadingDecisions[i][vm])
+                                                for vm in range(len(availResources))
+                                            ]
+                                        )
+                                    )
+                                )
+                                / 100
+                            )
+                        )
                         + model.sum(
                             [
                                 (
+                                    # (
+                                    #     ((10**5) * 2)
+                                    #     * (1 - alphaConst)
+                                    #     * (
+                                    #         model.sum(
+                                    #             [
+                                    #                 (
+                                    #                     1
+                                    #                     - (
+                                    #                         (
+                                    #                             offloadingDecisions[i][
+                                    #                                 vm
+                                    #                             ]
+                                    #                             / 100
+                                    #                         )
+                                    #                         * (
+                                    #                             offloadingDecisions[j][
+                                    #                                 vm
+                                    #                             ]
+                                    #                             / 100
+                                    #                         )
+                                    #                     )
+                                    #                 )
+                                    #                 * self.rps
+                                    #                 *
+                                    #                 self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                                    #                 *
+                                    #                 self.estimator.get_num_per_req(offloadingCandidates[j], False)
+                                    #                 * self.GetPubsubCost(
+                                    #                     (offloadingCandidates[i]),
+                                    #                     (offloadingCandidates[j]),
+                                    #                 )
+                                    #                 for j in self.getChildIndexes(
+                                    #                     offloadingCandidates[i]
+                                    #                 )
+                                    #             ]
+                                    #         )
+                                    #     )
+                                    # )
+                                    # + 
                                     (
-                                        ((10**5) * 2)
-                                        * (1 - alphaConst)
-                                        * (
-                                            model.sum(
-                                                [
-                                                    (
-                                                        1
-                                                        - (
-                                                            (
-                                                                offloadingDecisions[i][
-                                                                    vm
-                                                                ]
-                                                                / 100
-                                                            )
-                                                            * (
-                                                                offloadingDecisions[j][
-                                                                    vm
-                                                                ]
-                                                                / 100
-                                                            )
-                                                        )
-                                                    )
-                                                    * self.rps
-                                                    *
-                                                    self.estimator.get_num_per_req(offloadingCandidates[i], False)
-                                                    *
-                                                    self.estimator.get_num_per_req(offloadingCandidates[j], False)
-                                                    * self.GetPubsubCost(
-                                                        (offloadingCandidates[i]),
-                                                        (offloadingCandidates[j]),
-                                                    )
-                                                    for j in self.getChildIndexes(
-                                                        offloadingCandidates[i]
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    )
-                                    + (
                                         (10**3)
                                         * (alphaConst)
                                         * (
@@ -476,6 +503,7 @@ class rpsOffloadingSolver:
 
             # solve
             model.options.SOLVER = 1
+
             try:
                 model.solve(disp = False)
                 offloadingDecisionsFinal = [
@@ -485,6 +513,48 @@ class rpsOffloadingSolver:
                     ]
                     for j in range(len(offloadingCandidates))
                 ]
+
+                usedResources = sum(
+                        [
+                            (
+                                self.rps
+                                *
+                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
+                                * (
+                                    self.getVMexecution(
+                                        offloadingCandidates[function + 1], 0
+                                    )
+                                    * 0.001
+                                )
+                                * (offloadingDecisionsFinal[function + 1][0] / 100)
+                                * (
+                                    self.getCPU(
+                                        self.getMem(offloadingCandidates[function + 1])
+                                    )
+                                )
+                            )
+                            for function in range(len(offloadingDecisions) - 1)
+                        ]
+                    )
+                # for function in range(len(offloadingDecisions) - 1):
+                    # print("-------")
+                    # print("funct::", offloadingCandidates[function + 1])
+                    # print("CPU:", (
+                    #                 self.getCPU(
+                    #                     self.getMem(offloadingCandidates[function + 1])
+                    #                 )
+                    #             ))
+                    # print("DECISION:", (offloadingDecisionsFinal[function + 1][0] / 100))
+                    # print("VM exe time:", (
+                    #                 self.getVMexecution(
+                    #                     offloadingCandidates[function + 1], 0
+                    #                 )
+                    #                 * 0.001
+                    #             ))
+                    # print("num per req:", self.estimator.get_num_per_req(offloadingCandidates[function + 1], False))
+                    # print("rps:", self.rps)
+                    # print("-------")
+                # print("Used resources: ", usedResources)
 
 
                 self.saveNewDecision(offloadingDecisionsFinal)
@@ -748,43 +818,65 @@ class rpsOffloadingSolver:
                                 )
                                 # / 100
                             )
+                        +
+                        (
+                             (1 - alphaConst)
+                            * self.rps
+                            *
+                                self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                            * ( self.GetDatastoreCost("w") + self.GetDatastoreCost("d") +  self.GetDatastoreCost("r") )
+                            * (
+                                (
+                                     (
+                                        model.sum(
+                                            [
+                                                (offloadingDecisions[i][vm])
+                                                for vm in range(len(availResources))
+                                            ]
+                                        )
+                                    )
+                                )
+                                / 100
+                            )
+                        )
                         )
                         + model.sum(
                             [
                                 (
+                                    # (
+                                    #     ((10**5) * 2)
+                                    #     * (1 - alphaConst)
+                                    #     * (
+                                    #         model.sum(
+                                    #             [
+                                    #                 (
+                                    #                     100
+                                    #                     - (
+                                    #                         (offloadingDecisions[i][vm])
+                                    #                         * (
+                                    #                             offloadingDecisions[j][
+                                    #                                 vm
+                                    #                             ]
+                                    #                         )
+                                    #                         * (0.01)
+                                    #                     )
+                                    #                 )
+                                    #                 * self.rps
+                                    #                 *self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                                    #                 *self.estimator.get_num_per_req(offloadingCandidates[j], False)
+                                    #                 * self.GetPubsubCost(
+                                    #                     (offloadingCandidates[i]),
+                                    #                     (offloadingCandidates[j]),
+                                    #                 )
+                                    #                 for j in self.getChildIndexes(
+                                    #                     offloadingCandidates[i]
+                                    #                 )
+                                    #             ]
+                                    #         )
+                                    #     )
+                                    # )
+                                    # + 
                                     (
-                                        ((10**5) * 2)
-                                        * (1 - alphaConst)
-                                        * (
-                                            model.sum(
-                                                [
-                                                    (
-                                                        100
-                                                        - (
-                                                            (offloadingDecisions[i][vm])
-                                                            * (
-                                                                offloadingDecisions[j][
-                                                                    vm
-                                                                ]
-                                                            )
-                                                            * (0.01)
-                                                        )
-                                                    )
-                                                    * self.rps
-                                                    *self.estimator.get_num_per_req(offloadingCandidates[i], False)
-                                                    *self.estimator.get_num_per_req(offloadingCandidates[j], False)
-                                                    * self.GetPubsubCost(
-                                                        (offloadingCandidates[i]),
-                                                        (offloadingCandidates[j]),
-                                                    )
-                                                    for j in self.getChildIndexes(
-                                                        offloadingCandidates[i]
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    )
-                                    + (
                                         (10**3)
                                         * (alphaConst)
                                         * (
@@ -1144,13 +1236,13 @@ class rpsOffloadingSolver:
 
 if __name__ == "__main__":
     # workflow = "ImageProcessingWorkflow"
-    workflow = "TestCase2Workflow"
-    # workflow = "Text2SpeechCensoringWorkflow"
-    mode = "latency"
-    toleranceWindow = 260
-    solver = rpsOffloadingSolver(workflow, mode, None, toleranceWindow)
+    # workflow = "TestCase2Workflow"
+    workflow = "Text2SpeechCensoringWorkflow"
+    mode = "cost"
+    toleranceWindow = 0
+    solver = rpsOffloadingSolver(workflow, mode, "default", toleranceWindow, 1.4, 0)
     # availResources =  [{'cores':100, 'mem_mb':10000}]
-    availResources = [{"cores": 20, "mem_mb": 2000}]
+    availResources = [{"cores": 3, "mem_mb": 2000}]
     verbose = True
     alpha = 0
     # x, cost, latency = solver.suggestBestOffloadingSingleVM(availResources, alpha, verbose)
