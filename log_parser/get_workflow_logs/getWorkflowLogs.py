@@ -29,7 +29,7 @@ class getWorkflowLogs:
 
 
 if __name__ == "__main__":
-    interuptTime = 60 * 10
+    interuptTime = 40
     initial = int(sys.argv[2])
     if initial == 1:
         start_time = time.time()
@@ -37,6 +37,22 @@ if __name__ == "__main__":
         # workflow = "ChatBotWorkflow"
         workflow = sys.argv[1]
         x = getWorkflowLogs(workflow)
+        path = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[1]
+                )
+                + "/scheduler/rankerConfig.ini"
+            )
+        config = configparser.ConfigParser()
+        config.read(path)
+        rankerConfig = config["settings"]
+        mode = rankerConfig["mode"]
+        if mode == "latency":
+            baselineSlackAnalysis = baselineSlackAnalysis(workflow)
+            # rankerConfig["tolerancewindow"] = str(2* (baselineSlackAnalysis.getCriticalPathDuration()))
+        monitoringObj = monitoring()
         print("--- %s seconds ---" % (time.time() - start_time))
     else:
         print("---------getting new logs:---------------")
@@ -52,19 +68,4 @@ if __name__ == "__main__":
             print("--- %s seconds ---" % (time.time() - start_time))
             timeSpent = "time spent: " + str((time.time() - start_time))
             logging.info(timeSpent)
-            path = (
-                str(
-                    Path(os.path.dirname(os.path.abspath(__file__)))
-                    .resolve()
-                    .parents[1]
-                )
-                + "/scheduler/rankerConfig.ini"
-            )
-            config = configparser.ConfigParser()
-            config.read(path)
-            rankerConfig = config["settings"]
-            mode = rankerConfig["mode"]
-            if mode == "latency":
-                baselineSlackAnalysis = baselineSlackAnalysis(workflow)
-            monitoringObj = monitoring()
             time.sleep(interuptTime)

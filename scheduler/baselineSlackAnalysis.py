@@ -92,7 +92,11 @@ class baselineSlackAnalysis:
         self.selectedIDs = self.selectRecords()
         self.observations = self.getObservations()
         self.slackCalculations()
+        with open(path, "w") as configfile:
+                self.config.write(configfile)
 
+    # def getCriticalPathDuration(self):
+    #     return self.duration
     def selectRecords(self):
         selectedInits = self.dataframe.loc[self.dataframe["function"] == self.initFunc]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
@@ -222,9 +226,9 @@ class baselineSlackAnalysis:
         crit_path = [str(n) for n in workflow.get_critical_path()]
         workflow_duration = workflow.duration
 
-        # print(f"The current critical path is: {crit_path}")
-        # print("." * 50)
-        # print(f"The current workflow duration is: {workflow_duration} milliseconds")
+        print(f"The current critical path is: {crit_path}")
+        print("." * 50)
+        print(f"The current workflow duration is: {workflow_duration} milliseconds")
         return workflow_duration, crit_path
 
     def completeESEF(self, initial):
@@ -309,6 +313,8 @@ class baselineSlackAnalysis:
             self.duration, self.crPath = self.findCriticalPath(
                 self.tasks, self.dependencies
             )
+            if decisionMode == "default":
+                self.rankerConfig["tolerancewindow"] = str(2* (int(self.duration)))
             self.completeESEF(self.initFunc)
             self.completeLSLF(self.duration, self.crPath)
             for col in self.slackData.keys():
