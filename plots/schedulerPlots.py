@@ -68,8 +68,8 @@ class getPlots:
             return np.nan
 
     def exePlot(self):
-        self.dateDF['effected'] = pd.to_datetime(self.dateDF['effected'], utc=True)
-        self.dateDF['triggered'] = pd.to_datetime(self.dateDF['triggered'], utc=True)
+        self.dateDF["effected"] = pd.to_datetime(self.dateDF["effected"], utc=True)
+        self.dateDF["triggered"] = pd.to_datetime(self.dateDF["triggered"], utc=True)
         Temps = copy.deepcopy(self.dataframe)
         Temps = Temps[["host", "start", "finish"]]
         Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
@@ -82,9 +82,7 @@ class getPlots:
         dfStartT = pd.DataFrame(dictStartT)
         dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
         minDate = dfStartT["startTest"].min()
-        minDateData = (
-            (Temps.loc[(Temps["start"] >= minDate)])["start"]
-        ).min()
+        minDateData = ((Temps.loc[(Temps["start"] >= minDate)])["start"]).min()
 
         print("min:::", minDate)
         print("min Data:::", minDateData)
@@ -95,7 +93,7 @@ class getPlots:
         dateDFChanged = self.dateDF[
             (self.dateDF.triggered >= minDateData)
             & (self.dateDF.triggered <= maxDate)
-            &(self.dateDF.effected >= minDateData)
+            & (self.dateDF.effected >= minDateData)
             & (self.dateDF.effected <= maxDate)
         ]
         Temps2 = copy.deepcopy(self.dataframe)
@@ -156,12 +154,31 @@ class getPlots:
         triggered = dateDFChanged["triggered"]
         effected = dateDFChanged["effected"]
         plt.figure(figsize=(50, 10), linewidth=3)
-        plt.plot([],[],color='#d2e69c', label='serverless', linewidth=6)
-        plt.plot([],[],color='#B5179E', label='vm0', linewidth=6)
-        plt.stackplot(finalFrame["index"], finalFrame["serverless"], finalFrame["vm0"],
-              colors =['#d2e69c', '#B5179E'])
-        plt.vlines(x=triggered, ymin=0, ymax=max(finalFrame["serverless"] + finalFrame["vm0"]), color='salmon', label='scheduler-triggered', ls='--', lw=5)
-        plt.vlines(x=effected, ymin=0, ymax=max(finalFrame["serverless"] + finalFrame["vm0"]), color='teal', label='scheduler-effected', lw=5)
+        plt.plot([], [], color="#d2e69c", label="serverless", linewidth=6)
+        plt.plot([], [], color="#B5179E", label="vm0", linewidth=6)
+        plt.stackplot(
+            finalFrame["index"],
+            finalFrame["serverless"],
+            finalFrame["vm0"],
+            colors=["#d2e69c", "#B5179E"],
+        )
+        plt.vlines(
+            x=triggered,
+            ymin=0,
+            ymax=max(finalFrame["serverless"] + finalFrame["vm0"]),
+            color="salmon",
+            label="scheduler-triggered",
+            ls="--",
+            lw=5,
+        )
+        plt.vlines(
+            x=effected,
+            ymin=0,
+            ymax=max(finalFrame["serverless"] + finalFrame["vm0"]),
+            color="teal",
+            label="scheduler-effected",
+            lw=5,
+        )
         plt.xlabel("Time(Seconds)")
         plt.ylabel("Concurrency")
         plt.legend()
@@ -176,7 +193,7 @@ class getPlots:
         terminals = self.findTerminals()
         plt.figure()
         ttTemp = copy.deepcopy(self.dataframe)
-        df2 = ttTemp.groupby(['reqID'])['reqID'].count().to_dict()
+        df2 = ttTemp.groupby(["reqID"])["reqID"].count().to_dict()
         # print(df2)
         for x in df2:
             if df2[x] != 8:
@@ -208,14 +225,33 @@ class getPlots:
         memories = self.workflow_json["memory"]
         workflowFunctions = self.workflow_json["workflowFunctions"]
         Temps = copy.deepcopy(self.dataframe)
-        Temps = Temps[["host", "function", "reqID", "duration"]]
+        Temps = Temps[["host", "function", "reqID", "duration", "mergingPoint"]]
         Temps["cost"] = Temps.apply(
             lambda row: self.cost_estimator(
                 row.duration, memories[workflowFunctions.index(row.function)], row.host
             ),
             axis=1,
         )
-        TotalCost = Temps['cost'].sum()
+        Temps["dsDecision"] = Temps.apply(
+            lambda row: self.VMDSDecisions(row.host),
+            axis=1,
+        )
+        Temps["isMerging"] = Temps.apply(
+            lambda row: self.isMergingPoint(row.mergingPoint),
+            axis=1,
+        )
+        Temps["isInit"] = Temps.apply(
+            lambda row: self.functionsCount(row.function),
+            axis=1,
+        )
+        TotalCostFunctions = Temps["cost"].sum()
+        TotalVMexe = Temps["dsDecision"].sum()
+        TotalMergings = Temps["isMerging"].sum()
+        TotalInits = Temps["isInit"].sum()
+        decisionInitCost = self.getDecisionInitCost(TotalInits)
+        dsCost = self.DScost(TotalVMexe)
+        mergingCost = self.mergingPointCost(TotalMergings)
+        TotalCost = TotalCostFunctions + dsCost + mergingCost + decisionInitCost
         return TotalCost
 
     def getArrivalDict(self):
@@ -225,6 +261,84 @@ class getPlots:
         startByReq = Temps.loc[(Temps["function"] == self.workflow_json["initFunc"])]
         startByReq = startByReq.set_index("reqID").to_dict()["start"]
         return startByReq
+
+    def getPrevDS(self):
+        prevPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/scheduler/data/"
+            + "prevCost.json"
+        )
+        with open(prevPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        return workflow_json
+
+    def functionsCount(self, function):
+        if function == self.workflow_json["initFunc"]:
+            return 1
+        else:
+            return 0
+
+    def VMDSDecisions(self, host):
+        if host != "s":
+            return 1
+        else:
+            return 0
+
+    def isMergingPoint(self, merging):
+        if merging != None:
+            return 1
+        else:
+            return 0
+
+    def DSCost(self, current, mode):
+        free_tier_read = 50000
+        free_tier_write = 20000
+        free_tier_delete = 20000
+        unitRead = 0.06 / 100000
+        unitWrite = 0.18 / 100000
+        unitDelete = 0.02 / 100000
+        prev = self.getPrevDS()
+        if mode == "r":
+            # if prev["DSread"] > free_tier_read:
+            #     free_tier_read = 0
+            # else:
+            #     free_tier_read = free_tier_read - prev["DSread"]
+            cost = max(0, (current - free_tier_read)) * unitRead
+        elif mode == "w":
+            # if prev["DSwrite"] > free_tier_write:
+            #     free_tier_write = 0
+            # else:
+            #     free_tier_write = free_tier_write - prev["DSwrite"]
+            cost = max(0, (current - free_tier_write)) * unitWrite
+        elif mode == "d":
+            # if prev["DSdelete"] > free_tier_delete:
+            #     free_tier_delete = 0
+            # else:
+            #     free_tier_delete = free_tier_delete - prev["DSdelete"]
+            cost = max(0, (current - free_tier_delete)) * unitDelete
+        else:
+            print("unknown mode!")
+        return cost
+
+    def mergingPointCost(self, mergingPoint):
+        costRead = self.DSCost(mergingPoint, "r")
+        costWrite = self.DSCost(mergingPoint + 1, "w")
+        # ??????
+        # costDelete = self.DSCost(mergingPoint, "d")
+        totDScost = costWrite + costRead
+        return totDScost
+
+    def DScost(self, vmCount):
+        costRead = self.DSCost(vmCount, "r")
+        costWrite = self.DSCost(vmCount, "w")
+        costDelete = self.DSCost(vmCount, "d")
+        totDScost = costDelete + costWrite + costRead
+        return totDScost
+
+    def getDecisionInitCost(self, num):
+        costRead = self.DSCost(num, "r")
+        totDScost = costRead
+        return totDScost
 
     def cost_estimator(self, ET, GB, host):
         if host != "s":
