@@ -29,7 +29,7 @@ class getWorkflowLogs:
 
 
 if __name__ == "__main__":
-    interuptTime = 40
+    interuptTime = 60
     initial = int(sys.argv[2])
     if initial == 1:
         start_time = time.time()

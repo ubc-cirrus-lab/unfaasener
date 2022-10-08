@@ -22,6 +22,9 @@ class dataStoreLogParser(GetLog):
             + self.workflow
             + ".json"
         )
+        cachePath = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])+ "/vm-agent/execution-agent/data/cachedVMData.json")
+        if os.path.isfile(cachePath):
+            os.remove(cachePath)
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
         self.workflowFunctions = workflow_json["workflowFunctions"]

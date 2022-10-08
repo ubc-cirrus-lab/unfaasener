@@ -52,7 +52,7 @@ public:
     {
      size_t violation = 0;
      alpha = 0.8;
-     margin = 0.1;
+     margin = 0.15;
      max = 0;
      size=utilization_records->size();
      int i = 0;

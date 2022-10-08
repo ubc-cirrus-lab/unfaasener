@@ -179,8 +179,13 @@ class rpsOffloadingSolver:
         vm = self.estimator.getFuncExecutionTime(
             offloadingCandidate, ("vm" + str(vm)), self.decisionMode
         )
+        if vm == 0:
+            vm = self.estimator.getFuncExecutionTime(
+            offloadingCandidate, "s", self.decisionMode
+        )
         diff = vm - serverless
-        # print("DIFF:::", diff)
+        if diff != 0:
+            print("EXECUTION DIFF:::",offloadingCandidate, "::::", diff)
         return diff
 
     # Function for added end-to-end latency by offloading a function to VM

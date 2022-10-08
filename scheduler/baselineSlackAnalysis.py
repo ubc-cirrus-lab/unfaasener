@@ -314,7 +314,8 @@ class baselineSlackAnalysis:
                 self.tasks, self.dependencies
             )
             if decisionMode == "default":
-                self.rankerConfig["tolerancewindow"] = str(2* (int(self.duration)))
+                multipliedParam = 1
+                self.rankerConfig["tolerancewindow"] = str(multipliedParam* (int(self.duration)))
             self.completeESEF(self.initFunc)
             self.completeLSLF(self.duration, self.crPath)
             for col in self.slackData.keys():

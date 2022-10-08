@@ -227,7 +227,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                         std::cout << "Low Load Sensed"<< std::endl;
                         softTriggerVote -= 1;
                 }
-                else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) && ( (fabs(docker_cores_used - prev_docker_utilization_cores_used) )  > docker_utilization_change_threshold) ) {
+                else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) ) {
                         std::cout << "High Load Sensed"<< std::endl;
                         softTriggerVote += 1;
                 }
@@ -242,7 +242,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                     handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad");
                     // system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
                     softTriggerVote = 0;
-                } else if (recentViols >= int(0.5*hardTriggerBufferSize)) {
+                } else if (recentViols > int(0.5*hardTriggerBufferSize)) {
                         std::cout << "Triggering scheduler with RESOLVE option."<< std::endl;
                         handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve");
                         // reset the buffer

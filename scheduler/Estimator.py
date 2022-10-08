@@ -335,23 +335,33 @@ class Estimator:
     def getFuncExecutionTime(self, func, host, mode):
         exeTime = 0
         durations = []
+        if "vm" in host:
+            # print("reading cache!!!!")
+            cachePath = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.json")
+            if os.path.isfile(cachePath):
+                print("Found Cache file!!!!")
+                with open(cachePath, "r") as json_file:
+                    cach_json = json.load(json_file)
+                    if func in cach_json.keys():
+                        durations = durations + cach_json[func]
         selectedInits = self.dataframe.loc[
             (self.dataframe["function"] == func) & (self.dataframe["host"] == host)
         ]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
         # Needs to be implemented!!!!!!
-        if len(selectedInits) == 0:
+        if ((len(selectedInits) == 0) and (len(durations) == 0)):
             return 0 
-        # newMergingPatternChanges
-        g = selectedInits.groupby(selectedInits["reqID"], sort=False)
-        selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
-        # grouped = selectedInits.groupby('reqID')
-        # selectedInits = pd.concat([grouped.get_group(group) for i, group in enumerate(grouped.groups) if i>=len(grouped)-self.windowSize])
-        # if (selectedInits.shape[0]) >= self.windowSize:
-        #     selectedInits = selectedInits.head(self.windowSize)
-        for i, record in selectedInits.iterrows():
-            durations.append(record["duration"])
+        if (len(selectedInits) != 0):
+            # newMergingPatternChanges
+            g = selectedInits.groupby(selectedInits["reqID"], sort=False)
+            selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+            # grouped = selectedInits.groupby('reqID')
+            # selectedInits = pd.concat([grouped.get_group(group) for i, group in enumerate(grouped.groups) if i>=len(grouped)-self.windowSize])
+            # if (selectedInits.shape[0]) >= self.windowSize:
+            #     selectedInits = selectedInits.head(self.windowSize)
+            for i, record in selectedInits.iterrows():
+                durations.append(record["duration"])
         if mode == "best-case":
             if host == "s":
                 exeTime = self.getUpperBound(durations)
@@ -365,6 +375,8 @@ class Estimator:
                 exeTime = self.getUpperBound(durations)
         elif mode == "default":
             exeTime = self.getMedian(durations)
+        if host != "s":
+            print("INFOOO!:", func, ":::", exeTime)
         return exeTime
     # newMergingPatternChanges
     def get_num_per_req(self, func, test):

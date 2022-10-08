@@ -41,6 +41,19 @@ class resetLastDicision:
                     ] = finalDecision
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
+        # reset datastore costs
+        # prevDecisionPath = (
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))))+"/data/"
+        #     + "prevCost.json"
+        # )
+        # with open(prevDecisionPath, "r") as json_file:
+        #     prevCost_json = json.load(json_file)
+        # prevCost_json["DSread"] = 0
+        # prevCost_json["DSwrite"] = 0
+        # prevCost_json["DSdelete"] = 0
+        # with open(prevDecisionPath, "w") as json_file:
+        #     json.dump(prevCost_json, json_file)
+
         dfPickel = (
                     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                     + "/log_parser/get_workflow_logs/data/"+workflow+"/generatedDataFrame.pkl"
@@ -81,7 +94,8 @@ class resetLastDicision:
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
         #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
         #         )
-        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson]
+        cachePath = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.json")
+        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson, cachePath]
         for filePath in filePaths:
             if os.path.isfile(filePath):
                 os.remove(filePath)

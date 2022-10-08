@@ -43,6 +43,7 @@ publisher = pubsub_v1.PublisherClient()
 client = docker.from_env()
 writtenData = {}
 executionDurations = {}
+cacheDurations = {}
 memoryLimits = {}
 cpuLimits = {}
 lastexecutiontimestamps = {}
@@ -52,6 +53,20 @@ info = client_api.df()
 
 def flushExecutionDurations():
     global executionDurations
+    global cacheDurations
+    
+    cachePath = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/data/cachedVMData.json"
+    if os.path.isfile(cachePath):
+        with open(cachePath, "r") as json_file:
+            cach_json = json.load(json_file)
+            newCachJSon = { key:cach_json.get(key,[])+cacheDurations.get(key,[]) for key in set(list(cach_json.keys())+list(cacheDurations.keys())) }
+            cacheDurations = {}
+    else:
+        newCachJSon = cacheDurations
+        cacheDurations = {}
+    with open(cachePath, mode="w") as f:
+        print("Data written in cache")
+        json.dump(newCachJSon, f)
     tempexecutionDurations = copy.deepcopy(executionDurations)
     kind = "vmLogs"
     for key in tempexecutionDurations.keys():
@@ -208,9 +223,10 @@ def containerize(functionname):
 
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
-
+    before = datetime.datetime.now()
     global writtenData
     global executionDurations
+    global cacheDurations
     global cpulimit
     # Initalize cpuLimits
     n_cores = cpu_count()
@@ -231,6 +247,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     routingData = message.attributes.get("routing")
     reqID = message.attributes.get("reqID")
     invokedFun = message.attributes.get("invokedFunction")
+    tmpInvokedFun = message.attributes.get("invokedFunction")
     notfound = 1
     for image in client.images.list():
         if invokedFun in str(image.tags):
@@ -258,7 +275,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
     ) as output:
-        before = datetime.datetime.now()
+        # before = datetime.datetime.now()
         conts = client.containers.list(
             all=True, filters={"ancestor": "name:" + invokedFun}
         )
@@ -341,6 +358,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         executionDurations[invokedFun + str(reqID)]["duration"] = str(
             delta.microseconds / 1000
         )
+        if tmpInvokedFun not in cacheDurations.keys():
+            cacheDurations[tmpInvokedFun] = []
+            cacheDurations[tmpInvokedFun].append(float(delta.microseconds / 1000))
+        else:
+            cacheDurations[tmpInvokedFun].append(float(delta.microseconds / 1000))
         executionDurations[invokedFun + str(reqID)]["reqID"] = reqID
         executionDurations[invokedFun + str(reqID)]["start"] = str(before)
         executionDurations[invokedFun + str(reqID)]["finish"] = str(after)

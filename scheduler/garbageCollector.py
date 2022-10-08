@@ -17,11 +17,11 @@ class dataGarbageCollector:
         self.rankerConfig = self.config["settings"]
         workflow = self.rankerConfig["workflow"]
         serverless = mergingDataGarbageCollector()
-        gc = garbageCollector(workflow)
+        # gc = garbageCollector(workflow)
 
 
 if __name__ == "__main__":
-    interuptTime = 10*60
+    interuptTime = 60*60
     time.sleep(interuptTime)
     while True:
         logging.info("GC is running......")
