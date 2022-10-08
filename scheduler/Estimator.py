@@ -9,8 +9,10 @@ import os
 import pandas as pd
 import numpy as np
 import math
+
 # from monitoring import monitoring
 from pathlib import Path
+
 # import rankerConfig
 import configparser
 import statistics
@@ -22,7 +24,9 @@ pd.options.mode.chained_assignment = None
 
 class Estimator:
     def __init__(self, workflow):
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
@@ -95,9 +99,7 @@ class Estimator:
     def prev_cost(self):
 
         with open(
-            (os.path.dirname(os.path.abspath(__file__)))
-            + "/data/"
-            + "prevCost.json",
+            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + "prevCost.json",
             "r",
         ) as json_file:
             workflow_json = json.load(json_file)
@@ -195,7 +197,11 @@ class Estimator:
                 selectedInits["start"] = pd.to_datetime(selectedInits["start"])
                 selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
                 g = selectedInits.groupby(selectedInits["reqID"], sort=False)
-                selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+                selectedInits = pd.concat(
+                    islice(
+                        map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None
+                    )
+                )
                 # if (selectedInits.shape[0]) >= self.windowSize:
                 #     selectedInits = selectedInits.head(self.windowSize)
                 for i, record in selectedInits.iterrows():
@@ -226,12 +232,11 @@ class Estimator:
         ) as outfile:
             json.dump(exeTimes, outfile)
 
-    
     def getPrevDS(self, mode):
         prev_Json = self.prev_cost()
         if mode == "r":
             return prev_Json["DSread"]
-        elif mode =="w":
+        elif mode == "w":
             return prev_Json["DSwrite"]
         elif mode == "d":
             return prev_Json["DSdelete"]
@@ -239,32 +244,33 @@ class Estimator:
             print("unknown mode!")
 
         prev_Json
+
     def getUnitCost_Datastore(self, mode):
         free_tier_read = 50000
         free_tier_write = 20000
         free_tier_delete = 20000
-        unitRead = (0.06 / 100000)
-        unitWrite = (0.18 / 100000)
-        unitDelete = (0.02 / 100000)
+        unitRead = 0.06 / 100000
+        unitWrite = 0.18 / 100000
+        unitDelete = 0.02 / 100000
         prev = self.getPrevDS(mode)
         if mode == "r":
             if prev > free_tier_read:
                 free_tier_read = 0
             else:
                 free_tier_read = free_tier_read - prev
-            cost = max(0,(1 - free_tier_read))*unitRead
+            cost = max(0, (1 - free_tier_read)) * unitRead
         elif mode == "w":
             if prev > free_tier_write:
                 free_tier_write = 0
             else:
                 free_tier_write = free_tier_write - prev
-            cost = max(0,(1 - free_tier_write))*unitWrite
+            cost = max(0, (1 - free_tier_write)) * unitWrite
         elif mode == "d":
             if prev > free_tier_delete:
                 free_tier_delete = 0
             else:
                 free_tier_delete = free_tier_delete - prev
-            cost = max(0,(1 - free_tier_delete))*unitDelete
+            cost = max(0, (1 - free_tier_delete)) * unitDelete
         else:
             return "Unknown operation"
         return cost
@@ -337,25 +343,37 @@ class Estimator:
         durations = []
         if "vm" in host:
             # print("reading cache!!!!")
-            cachePath = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.json")
+            cachePath = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
+                + "/vm-agent/execution-agent/data/cachedVMData.json"
+            )
             if os.path.isfile(cachePath):
                 print("Found Cache file!!!!")
                 with open(cachePath, "r") as json_file:
-                    cach_json = json.load(json_file)
-                    if func in cach_json.keys():
-                        durations = durations + cach_json[func]
+                    try:
+                        cach_json = json.load(json_file)
+                        if func in cach_json.keys():
+                            durations = durations + cach_json[func]
+                    except json.JSONDecodeError:
+                        print("Empty Cache File")
         selectedInits = self.dataframe.loc[
             (self.dataframe["function"] == func) & (self.dataframe["host"] == host)
         ]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
         # Needs to be implemented!!!!!!
-        if ((len(selectedInits) == 0) and (len(durations) == 0)):
-            return 0 
-        if (len(selectedInits) != 0):
+        if (len(selectedInits) == 0) and (len(durations) == 0):
+            return 0
+        if len(selectedInits) != 0:
             # newMergingPatternChanges
             g = selectedInits.groupby(selectedInits["reqID"], sort=False)
-            selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+            selectedInits = pd.concat(
+                islice(map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None)
+            )
             # grouped = selectedInits.groupby('reqID')
             # selectedInits = pd.concat([grouped.get_group(group) for i, group in enumerate(grouped.groups) if i>=len(grouped)-self.windowSize])
             # if (selectedInits.shape[0]) >= self.windowSize:
@@ -378,17 +396,19 @@ class Estimator:
         if host != "s":
             print("INFOOO!:", func, ":::", exeTime)
         return exeTime
+
     # newMergingPatternChanges
     def get_num_per_req(self, func, test):
         if test == True:
             return 1
-        selectedInits = self.dataframe.loc[
-            (self.dataframe["function"] == func)
-        ]
-        counts = (selectedInits.groupby(['reqID']).size().reset_index(name='counts'))['counts'].to_numpy()
+        selectedInits = self.dataframe.loc[(self.dataframe["function"] == func)]
+        counts = (selectedInits.groupby(["reqID"]).size().reset_index(name="counts"))[
+            "counts"
+        ].to_numpy()
         numPerReq = self.getMedian(counts)
         return numPerReq
-    # Check Here!!!!    
+
+    # Check Here!!!!
     def getComLatency(self, child, parent, childHost, parentHost, mode):
         if childHost != "s":
             childHost = "vm" + str(childHost)
@@ -423,22 +443,20 @@ class Estimator:
             return "NotFound"
         # newMergingPatternChanges
         selectedInitsParentFinish = (
-                selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))]
-            )[["reqID", "finish"]]
+            selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))]
+        )[["reqID", "finish"]]
         selectedInitsParentFinish["finish"] = pd.to_datetime(
-                selectedInitsParentFinish["finish"]
-            )
+            selectedInitsParentFinish["finish"]
+        )
         selectedInitsParentFinish = (
-                (
-                    selectedInitsParentFinish[
-                        selectedInitsParentFinish.groupby("reqID").finish.transform(
-                            "max"
-                        )
-                        == selectedInitsParentFinish["finish"]
-                    ]
-                )
-                .set_index("reqID")
-                .to_dict()["finish"]
+            (
+                selectedInitsParentFinish[
+                    selectedInitsParentFinish.groupby("reqID").finish.transform("max")
+                    == selectedInitsParentFinish["finish"]
+                ]
+            )
+            .set_index("reqID")
+            .to_dict()["finish"]
         )
         # if len(self.predecessors[self.workflowFunctions.index(parent)]) > 1:
         #     selectedInitsParentFinish = (
@@ -499,22 +517,20 @@ class Estimator:
             # selectedInitsChildStart = (selectedInitsChildStart.groupby(['reqID'])['start'].min()).to_frame()
             # selectedInitsChildStart = selectedInitsChildStart.to_dict()["start"]
             selectedInitsChildStart = (
-                    selectedInitsChild[(selectedInitsChild.reqID.isin(reqs))]
-                )[["reqID", "start"]]
+                selectedInitsChild[(selectedInitsChild.reqID.isin(reqs))]
+            )[["reqID", "start"]]
             selectedInitsChildStart["start"] = pd.to_datetime(
-                    selectedInitsChildStart["start"]
-                )
+                selectedInitsChildStart["start"]
+            )
             selectedInitsChildStart = (
-                    (
-                        selectedInitsChildStart[
-                            selectedInitsChildStart.groupby("reqID").start.transform(
-                                "min"
-                            )
-                            == selectedInitsChildStart["start"]
-                        ]
-                    )
-                    .set_index("reqID")
-                    .to_dict()["start"]
+                (
+                    selectedInitsChildStart[
+                        selectedInitsChildStart.groupby("reqID").start.transform("min")
+                        == selectedInitsChildStart["start"]
+                    ]
+                )
+                .set_index("reqID")
+                .to_dict()["start"]
             )
         newDF = pd.DataFrame(
             {
@@ -570,7 +586,11 @@ class Estimator:
                 selectedInits["start"] = pd.to_datetime(selectedInits["start"])
                 selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
                 g = selectedInits.groupby(selectedInits["reqID"], sort=False)
-                selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+                selectedInits = pd.concat(
+                    islice(
+                        map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None
+                    )
+                )
                 # if (selectedInits.shape[0]) >= self.windowSize:
                 #     selectedInits = selectedInits.head(self.windowSize)
                 for i, record in selectedInits.iterrows():
@@ -607,7 +627,9 @@ class Estimator:
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
         g = selectedInits.groupby(selectedInits["reqID"], sort=False)
-        selectedInits = pd.concat(islice(map(itemgetter(1), g), max(0, g.ngroups-self.windowSize), None))
+        selectedInits = pd.concat(
+            islice(map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None)
+        )
         # if (selectedInits.shape[0]) >= self.windowSize:
         #     selectedInits = selectedInits.head(self.windowSize)
         for i, record in selectedInits.iterrows():
