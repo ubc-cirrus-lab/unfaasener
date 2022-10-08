@@ -17,4 +17,4 @@ Then, run the following script to build those components that need to be compile
 ## Acknowledgments
 
 This work was supported in part by the Natural Sciences and Engineering Research Council of Canada (NSERC).
-We are also thankful for cloud resources made available to us by the Digital Research Alliance of Canada and the Google Cloud Research Credits program.
+We are also thankful for cloud resources made available to us by the Digital Research Alliance of Canada, the Google Cloud Research Credits program, and the AWS Cloud Credit for Research program.
