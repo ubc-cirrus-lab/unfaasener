@@ -263,8 +263,9 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             all=True, filters={"ancestor": "name:" + invokedFun}
         )
         print(len(conts))
-        while psutil.cpu_percent() > 80:
-            print ("CPU is "+str(psutil.cpu_percent()))
+        cpuutil=psutil.cpu_percent()
+        while cpuutil > 80:
+            print ("CPU is "+str(cpuutil))
             time.sleep(0.01)
         # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
         # It is disabled to enable the system to create more containers as more requests arrive
