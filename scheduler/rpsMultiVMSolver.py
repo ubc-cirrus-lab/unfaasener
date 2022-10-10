@@ -184,8 +184,8 @@ class rpsOffloadingSolver:
             offloadingCandidate, "s", self.decisionMode
         )
         diff = vm - serverless
-        if diff != 0:
-            print("EXECUTION DIFF:::",offloadingCandidate, "::::", diff)
+        # if diff != 0:
+        #     print("EXECUTION DIFF:::",offloadingCandidate, "::::", diff)
         return diff
 
     # Function for added end-to-end latency by offloading a function to VM
