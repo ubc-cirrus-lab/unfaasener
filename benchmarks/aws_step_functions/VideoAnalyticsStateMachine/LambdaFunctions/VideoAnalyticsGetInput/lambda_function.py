@@ -8,6 +8,7 @@ def lambda_handler(event, context):
     
     if event:
         videoName = event['videoName']
+        fanoutNum = event['fanoutNum']
         reqID = uuid.uuid4().hex
     
     # Return
@@ -15,6 +16,6 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'timestamp': datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         'body': json.dumps({
-            'data': {'videoName': videoName, 'reqID': reqID},
+            'data': {'videoName': videoName, 'reqID': reqID, 'fanoutNum': fanoutNum},
         })
     }

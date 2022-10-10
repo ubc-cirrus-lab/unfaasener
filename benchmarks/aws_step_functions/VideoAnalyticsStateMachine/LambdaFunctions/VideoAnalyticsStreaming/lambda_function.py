@@ -2,7 +2,8 @@ import json
 from datetime import datetime
 import boto3
 import cv2
-
+import sys 
+import os
 
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('videoanalyticsbenchmark')
@@ -10,19 +11,20 @@ bucket = s3.Bucket('videoanalyticsbenchmark')
 def lambda_handler(event, context):
     
     if event == {}:
-        filename = 'sample.mp4'
+        videoName = 'sample.mp4'
     else:
-        filename = json.loads(event['body'])['data']['videoName']
+        videoName = json.loads(event['body'])['data']['videoName']
+        fanoutNum = json.loads(event['body'])['data']['fanoutNum']
         req_id = json.loads(event['body'])['data']['reqID']
         
-        video_name = VideoAnalytics_Streaming(filename, req_id)
+        video_name = VideoAnalytics_Streaming(videoName, req_id)
         
     # Return
     return {
         'statusCode': 200,
         'timestamp': datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         'body': json.dumps({
-            'data': {'videoName': video_name},
+            'data': {'videoName': video_name, 'reqID': req_id, 'fanoutNum': fanoutNum},
         })
     }
     
@@ -30,7 +32,7 @@ def lambda_handler(event, context):
 def VideoAnalytics_Streaming(filename, req_id):
     
     local_filename = f'/tmp/{filename}'
-    bucket.download_file(fileName, local_filename)
+    bucket.download_file(filename, local_filename)
  
     resized_local_filename = resize_and_store(local_filename)
     streaming_filename = f'{req_id}-{filename}'
