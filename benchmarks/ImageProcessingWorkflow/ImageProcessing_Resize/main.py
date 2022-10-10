@@ -49,6 +49,6 @@ def garbage(reqID):
     bucket = storage_client.bucket("imageprocessingworkflowstorage")
 
     for blob in blobsNames:
-        if not ((blob).startswith("Final")):
+        if not ((blob).startswith("resized-")):
             deletedBlob = bucket.blob(blob)
             deletedBlob.delete()

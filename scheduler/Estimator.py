@@ -158,7 +158,7 @@ class Estimator:
         n = len(array)
         if n <= 30:
             # upperBound = 90
-            upperBound = np.percentile(array, 75)
+            upperBound = np.percentile(array, 90)
         else:
             sortedArray = np.sort(array)
             z = 1.96
@@ -167,13 +167,18 @@ class Estimator:
         return upperBound
 
     def getMedian(self, array):
-        median = statistics.median(array)
-        return median
+        # median = statistics.median(array)
+        # return median
+        avg = np.mean(array)
+        return avg
+
+    # def getAverage(self, array):
+    #     avg = array.mean()
+    #     return avg
 
     def getLowerBound(self, array):
         n = len(array)
         if n <= 30:
-            # lowerBound = 90
             lowerBound = np.percentile(array, 25)
         else:
             sortedArray = np.sort(array)
@@ -352,7 +357,7 @@ class Estimator:
                 + "/vm-agent/execution-agent/data/cachedVMData.json"
             )
             if os.path.isfile(cachePath):
-                print("Found Cache file!!!!")
+                # print("Found Cache file!!!!")
                 with open(cachePath, "r") as json_file:
                     try:
                         cach_json = json.load(json_file)
@@ -393,8 +398,8 @@ class Estimator:
                 exeTime = self.getUpperBound(durations)
         elif mode == "default":
             exeTime = self.getMedian(durations)
-        if host != "s":
-            print("INFOOO!:", func, ":::", exeTime)
+        # if host != "s":
+            # print("INFOOO!:", func, ":::", exeTime)
         return exeTime
 
     # newMergingPatternChanges
@@ -437,9 +442,9 @@ class Estimator:
         if len(reqs) >= self.windowSize:
             reqs = reqs[: self.windowSize]
         if len(reqs) == 0:
-            print(
-                "NOTFOUND:::", parent, "::", parentHost, "-->", child, ":::", childHost
-            )
+            # print(
+            #     "NOTFOUND:::", parent, "::", parentHost, "-->", child, ":::", childHost
+            # )
             return "NotFound"
         # newMergingPatternChanges
         selectedInitsParentFinish = (

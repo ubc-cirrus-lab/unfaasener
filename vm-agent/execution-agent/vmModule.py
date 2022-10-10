@@ -1,5 +1,6 @@
 from concurrent.futures import TimeoutError
 from google.cloud import pubsub_v1
+from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
 from google.cloud import datastore
 import datetime
 from pathlib import Path
@@ -17,7 +18,7 @@ from zipfile import ZipFile
 import subprocess
 import sys
 import uuid
-from threading import Thread
+from threading import Thread, Lock
 from time import sleep
 import docker
 import sys
@@ -41,7 +42,8 @@ subscription_path = subscriber.subscription_path(project_id, subscription_id)
 datastore_client = datastore.Client()
 publisher = pubsub_v1.PublisherClient()
 client = docker.from_env()
-writtenData = {}
+# writtenData = {}
+# reqQueue = []
 executionDurations = {}
 cacheDurations = {}
 memoryLimits = {}
@@ -50,22 +52,36 @@ lastexecutiontimestamps = {}
 client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
 
+# concurrency configs and locking variables
+CONCURRENCY_LIMIT = 20
+msgQueue = []  # queue of msgIDs used to enforce execution order
+activeThreads = []
+activeThreadCheckLock = Lock()
+contExecRunLock = Lock()
+activeContainerSearchList = {}  # function -> list of container
+
 
 def flushExecutionDurations():
     global executionDurations
     global cacheDurations
-    
-    cachePath = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/data/cachedVMData.json"
+
+    cachePath = (
+        str(Path(os.path.dirname(os.path.abspath(__file__))))
+        + "/data/cachedVMData.json"
+    )
     if os.path.isfile(cachePath):
         with open(cachePath, "r") as json_file:
             cach_json = json.load(json_file)
-            newCachJSon = { key:cach_json.get(key,[])+cacheDurations.get(key,[]) for key in set(list(cach_json.keys())+list(cacheDurations.keys())) }
+            newCachJSon = {
+                key: cach_json.get(key, []) + cacheDurations.get(key, [])
+                for key in set(list(cach_json.keys()) + list(cacheDurations.keys()))
+            }
             cacheDurations = {}
     else:
         newCachJSon = cacheDurations
         cacheDurations = {}
     with open(cachePath, mode="w") as f:
-        print("Data written in cache")
+        # print("Data written in cache")
         json.dump(newCachJSon, f)
     tempexecutionDurations = copy.deepcopy(executionDurations)
     kind = "vmLogs"
@@ -93,11 +109,11 @@ def flushExecutionDurations():
 def threaded_function(arg, lastexectimestamps):
     global executionDurations
     while True:
-        print("running")
+        # print("running")
         staticlastexectimestamps = lastexectimestamps
         for key in list(staticlastexectimestamps):
-            print(key)
-            print(lastexectimestamps[key])
+            # print(key)
+            # print(lastexectimestamps[key])
             if (
                 lastexectimestamps[key] + timedelta(seconds=6000)
             ) < datetime.datetime.now():
@@ -108,7 +124,7 @@ def threaded_function(arg, lastexectimestamps):
                 )
                 for container_single in cont:
                     container_single.stop(timeout=2)
-                print("Stopped Old Container " + key)
+                # print("Stopped Old Container " + key)
         # staticexecutionDurations = executionDurations
         if executionDurations != {}:
             # try:
@@ -126,10 +142,10 @@ def getFunctionParameters(functionname):
         name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
         + functionname,
     )
-    print(
-        "Function Parameters"
-        + str(client.get_function(request=request).available_memory_mb)
-    )
+    # print(
+    #     "Function Parameters"
+    #     + str(client.get_function(request=request).available_memory_mb)
+    # )
     memoryLimits[functionname] = (
         str(client.get_function(request=request).available_memory_mb) + "MB"
     )
@@ -149,7 +165,7 @@ def containerize(functionname):
     response = client.generate_download_url(request=request)
     downloadlink = str(response).split(" ")[1].split('"')[1]
     # Download the function
-    print("\nDownloading the function")
+    # print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
     request = functions_v1.GetFunctionRequest(
         name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
@@ -161,13 +177,13 @@ def containerize(functionname):
     entrypoint = response.entry_point
 
     # Unzip the function
-    print("\nUnzipping the function")
+    # print("\nUnzipping the function")
     with ZipFile(functionname + ".zip", "r") as zipObj:
         zipObj.extractall(functionname)
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
     ) as output:
-        print("\nCreating the Docker container \n")
+        # print("\nCreating the Docker container \n")
         # Copy the Docker file to the unzipped folder
         subprocess.call(
             "cp Dockerfile " + functionname, shell=True, stdout=output, stderr=output
@@ -224,10 +240,103 @@ def containerize(functionname):
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     before = datetime.datetime.now()
-    global writtenData
+    global activeThreads
+    global activeThreadCheckLock
+    # global reqQueue
+    # global writtenData
+    # global executionDurations
+    # global cacheDurations
+    # global cpulimit
+    # global lockList
+    # # Initalize cpuLimits
+    # n_cores = cpu_count()
+    # cpuLimits["128MB"] = 83000
+    # cpuLimits["256MB"] = 167000
+    # cpuLimits["512MB"] = 333000
+    # cpuLimits["1024MB"] = 583000
+    # cpuLimits["2048MB"] = 1000000
+    # cpuLimits["4096MB"] = 2000000
+    # cpuLimits["8192MB"] = 2000000
+    # cpuLimits["16384MB"] = 4000000
+
+    receivedDateObj = datetime.datetime.utcnow()
+    decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
+    print(f"received data:{decodedMessage}")
+    print(f"Received Date:{receivedDateObj}")
+
+    # msgID = message.attributes.get("identifier")
+    # reqID = message.attributes.get("reqID")
+    # invokedFun = message.attributes.get("invokedFunction")
+    # tmpInvokedFun = message.attributes.get("invokedFunction")
+    # notfound = 1
+    # for image in client.images.list():
+    #     if invokedFun in str(image.tags):
+    #         # print("Image found")
+    #         notfound = 0
+    # if notfound == 1:
+    #     containerize(invokedFun)
+
+    # writtenData[msgID] = {}
+    # writtenData[msgID]["receivedDate"] = str(receivedDateObj)
+    # if message.attributes:
+    #     # print("Attributes:")
+    #     for key in message.attributes:
+    #         value = message.attributes.get(key)
+    #         # print(f"{key}: {value}")
+    #         (writtenData[msgID])[key] = value
+    # message.ack()
+    ack_future = message.ack_with_response()  # block to prevent race condition
+    try:
+        # Block on result of acknowledge call.
+        # When `timeout` is not set, result() will block indefinitely,
+        # unless an exception is encountered first.
+        ack_future.result(timeout=10)
+        print(f"Ack for message {message.message_id} successful.")
+    except sub_exceptions.AcknowledgeError as e:
+        print(f"Ack for message {message.message_id} failed with error: {e.error_code}")
+    ## We want something like '{"data": {"message": "testing"}}'
+    jsonfile = {
+        "data": json.loads(message.data.decode("utf-8")),
+        "attributes": message.attributes,
+    }
+    # reqInfo = {}
+    # reqInfo["jsonfile"] = jsonfile
+    # reqInfo["before"] = before
+    # reqQueue.append(reqInfo)
+    checkedForAvailableThread = False
+    while len(activeThreads) >= CONCURRENCY_LIMIT:
+        threadsRemoved = False
+        checkedForAvailableThread = True
+        activeThreadCheckLock.acquire()
+        for thread in activeThreads:
+            if thread.is_alive() is False:
+                activeThreads.remove(thread)
+                threadsRemoved = True
+                print("garbage collected the dead thread")
+        print("active request processing threads: " + str(len(activeThreads)))
+        if threadsRemoved:
+            thread2 = Thread(target=processReqs, args=(jsonfile, before))
+            activeThreads.append(thread2)
+            thread2.start()
+            activeThreadCheckLock.release()
+            break
+        activeThreadCheckLock.release()
+        time.sleep(0.02)
+
+    if checkedForAvailableThread is False:
+        thread2 = Thread(target=processReqs, args=(jsonfile, before))
+        activeThreads.append(thread2)
+        thread2.start()
+
+
+def processReqs(jsonfile, before):
+    # global reqQueue
     global executionDurations
     global cacheDurations
     global cpulimit
+    global msgQueue
+    global activeContainerSearchList
+    global contExecRunLock
     # Initalize cpuLimits
     n_cores = cpu_count()
     cpuLimits["128MB"] = 83000
@@ -238,52 +347,40 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     cpuLimits["4096MB"] = 2000000
     cpuLimits["8192MB"] = 2000000
     cpuLimits["16384MB"] = 4000000
-
-    receivedDateObj = datetime.datetime.utcnow()
-    decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
-    print(f"received data:{decodedMessage}")
-    print(f"Received Date:{receivedDateObj}")
-    msgID = message.attributes.get("identifier")
-    routingData = message.attributes.get("routing")
-    reqID = message.attributes.get("reqID")
-    invokedFun = message.attributes.get("invokedFunction")
-    tmpInvokedFun = message.attributes.get("invokedFunction")
+    msgID = jsonfile["attributes"].get("identifier")
+    reqID = jsonfile["attributes"].get("reqID")
+    invokedFun = jsonfile["attributes"].get("invokedFunction")
+    tmpInvokedFun = jsonfile["attributes"].get("invokedFunction")
     notfound = 1
     for image in client.images.list():
         if invokedFun in str(image.tags):
-            print("Image found")
+            # print("Image found")
             notfound = 0
     if notfound == 1:
         containerize(invokedFun)
-    writtenData[msgID] = {}
-    writtenData[msgID]["receivedDate"] = str(receivedDateObj)
-    if message.attributes:
-        print("Attributes:")
-        for key in message.attributes:
-            value = message.attributes.get(key)
-            print(f"{key}: {value}")
-            (writtenData[msgID])[key] = value
-    message.ack()
-    ## We want something like '{"data": {"message": "testing"}}'
-    jsonfile = {
-        "data": json.loads(message.data.decode("utf-8")),
-        "attributes": message.attributes,
-    }
-    print(str(jsonfile).replace("'", '"'))
+
     if invokedFun not in memoryLimits:
         getFunctionParameters(invokedFun)
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
     ) as output:
-        # before = datetime.datetime.now()
+        # TODO: try/except error handling
         conts = client.containers.list(
             all=True, filters={"ancestor": "name:" + invokedFun}
         )
-        print(len(conts))
-        cpuutil=psutil.cpu_percent()
-        while cpuutil > 80:
-            print ("CPU is "+str(cpuutil))
-            cpuutil=psutil.cpu_percent()
+        cpuutil = psutil.cpu_percent()
+        locked = False
+        if cpuutil > 80:
+            msgQueue.append(msgID)
+            locked = True
+        while locked:
+            cpuutil = psutil.cpu_percent()
+            if (cpuutil < 80) and (msgQueue.index(msgID) < 3):
+                msgQueue.remove(msgID)
+                break
+            print(
+                "CPU is " + str(cpuutil) + " and queue length is " + str(len(msgQueue))
+            )
             time.sleep(0.01)
         # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
         # It is disabled to enable the system to create more containers as more requests arrive
@@ -293,19 +390,28 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         execution_complete = 0
         if len(conts) != 0:
             for cont in conts:
+                if tmpInvokedFun in activeContainerSearchList.keys():
+                    if cont in activeContainerSearchList[tmpInvokedFun]:
+                        continue
                 # cont = next(iter(conts))
                 cont.start()
                 statistics = cont.stats(stream=False)
                 if int(statistics["pids_stats"]["current"]) > 1:
-                    print(
-                        "##########################container already in use   "
-                        + str(statistics["pids_stats"]["current"])
-                    )
+                    # print(
+                    #     "##########################container already in use   "
+                    #     + str(statistics["pids_stats"]["current"])
+                    # )
                     execution_complete = 0
                     # conts = {} # reset the container list
                 # for stat in stats:
                 #    print ((stats[stat]))
                 else:
+                    contExecRunLock.acquire()
+                    if tmpInvokedFun in activeContainerSearchList.keys():
+                        activeContainerSearchList[tmpInvokedFun].append(cont)
+                    else:
+                        activeContainerSearchList[tmpInvokedFun] = [cont]
+                    contExecRunLock.release()
                     cont.exec_run(
                         "python3 /app/main.py '"
                         + str(jsonfile).replace("'", '"')
@@ -315,6 +421,9 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                     )
                     lastexecutiontimestamps[invokedFun] = before
                     execution_complete = 1
+                    contExecRunLock.acquire()
+                    activeContainerSearchList[tmpInvokedFun].remove(cont)
+                    contExecRunLock.release()
                     break
 
         if execution_complete == 0:
@@ -322,11 +431,11 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 "name:" + invokedFun,
                 mem_limit=str(memoryLimits[invokedFun]),
                 cpu_period=1000000,
-                               cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
+                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
                 # cpu_quota=1000000,
                 command="tail -f /etc/hosts",
                 detach=False,
-                user='bin',
+                user="bin",
             )
             # lastexecutiontimestamps[invokedFun] = before
             lastexecutiontimestamps[container.id] = before
@@ -337,15 +446,14 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 + "' "
                 + reqID
             )
-            print(cmd)
             container.exec_run(cmd, detach=False)
 
         after = datetime.datetime.now()
         delta = after - before
-        if message.attributes.get("branch") != None:
+        if jsonfile["attributes"].get("branch") != None:
             # Cover the Merging functions
             invokedFun = (
-                str(invokedFun) + str(message.attributes.get("branch")) + str(reqID)
+                str(invokedFun) + str(jsonfile["attributes"].get("branch")) + str(reqID)
             )
             executionDurations[invokedFun] = {}
 
@@ -354,38 +462,40 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             invokedFun = str(invokedFun) + ":fanout:" + str(newHash) + str(reqID)
             executionDurations[invokedFun] = {}
         else:
-            executionDurations[invokedFun + str(reqID)] = {}
+            invokedFun = invokedFun + str(reqID)
+            executionDurations[invokedFun] = {}
 
-        executionDurations[invokedFun + str(reqID)]["duration"] = str(
-            delta.microseconds / 1000
-        )
+        executionDurations[invokedFun]["duration"] = str(delta.microseconds / 1000)
         if tmpInvokedFun not in cacheDurations.keys():
             cacheDurations[tmpInvokedFun] = []
             cacheDurations[tmpInvokedFun].append(float(delta.microseconds / 1000))
         else:
             cacheDurations[tmpInvokedFun].append(float(delta.microseconds / 1000))
-        executionDurations[invokedFun + str(reqID)]["reqID"] = reqID
-        executionDurations[invokedFun + str(reqID)]["start"] = str(before)
-        executionDurations[invokedFun + str(reqID)]["finish"] = str(after)
-        executionDurations[invokedFun + str(reqID)]["host"] = sys.argv[2]
-        executionDurations[invokedFun + str(reqID)]["function"] = str(invokedFun)
-        executionDurations[invokedFun + str(reqID)]["mergingPoint"] = ""
-        if message.attributes.get("branch") != None:
-            executionDurations[invokedFun + str(reqID)]["mergingPoint"] = str(
-                message.attributes.get("branch")
+        executionDurations[invokedFun]["reqID"] = reqID
+        executionDurations[invokedFun]["start"] = str(before)
+        executionDurations[invokedFun]["finish"] = str(after)
+        executionDurations[invokedFun]["host"] = sys.argv[2]
+        executionDurations[invokedFun]["function"] = str(invokedFun)
+        executionDurations[invokedFun]["mergingPoint"] = ""
+        if jsonfile["attributes"].get("branch") != None:
+            executionDurations[invokedFun]["mergingPoint"] = str(
+                jsonfile["attributes"].get("branch")
             )
         elif ":fanout:" in invokedFun:
-            executionDurations[invokedFun + str(reqID)][
-                "mergingPoint"
-            ] = ":fanout:" + str(newHash)
+            executionDurations[invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
 
 
-with open("data.json", mode="w") as f:
-    json.dump(writtenData, f)
-streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
+# with open("data.json", mode="w") as f:
+#     json.dump(writtenData, f)
+flow_control = pubsub_v1.types.FlowControl(max_messages=20)
+streaming_pull_future = subscriber.subscribe(
+    subscription_path, callback=callback, flow_control=flow_control
+)
 print(f"Listening for messages on {subscription_path}..\n")
 thread = Thread(target=threaded_function, args=(1000000, lastexecutiontimestamps))
 thread.start()
+# processReqstThread = Thread(target=processReqs, args=())
+# processReqstThread.start()
 # thread.join()
 
 
