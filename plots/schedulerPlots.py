@@ -57,9 +57,9 @@ class getPlots:
             self.workflow_json = json.load(json_file)
         self.exePlot()
         self.latencyPlot()
-        totalCost = self.costPlot()
-        loggingTxt = "Total Cost = " + str(totalCost)
-        logging.info(loggingTxt)
+        # totalCost = self.costPlot()
+        # loggingTxt = "Total Cost = " + str(totalCost)
+        # logging.info(loggingTxt)
 
     def getArrivalTime(self, startByReq, reqID):
         if reqID in startByReq.keys():
@@ -162,6 +162,7 @@ class getPlots:
             finalFrame["vm0"],
             colors=["#d2e69c", "#B5179E"],
         )
+
         plt.vlines(
             x=triggered,
             ymin=0,
@@ -193,6 +194,7 @@ class getPlots:
         terminals = self.findTerminals()
         plt.figure()
         ttTemp = copy.deepcopy(self.dataframe)
+        # ttTemp = ttTemp[ttTemp["function"] == "Text2SpeechCensoringWorkflow_MergedFunction"]
         df2 = ttTemp.groupby(["reqID"])["reqID"].count().to_dict()
         # print(df2)
         for x in df2:
@@ -215,6 +217,14 @@ class getPlots:
         plt.figure(figsize=(12, 10), dpi=80)
         arrival_time, duration = zip(*sorted(finalDict.items()))
         plt.plot(arrival_time, duration)
+        # print("ArrivalTimes:", arrival_time)
+        print("Durations", duration)
+        median = np.percentile(duration, 50)
+        tail = np.percentile(duration, 75)
+        twentyFive = np.percentile(duration, 25)
+        print("median: ", median)
+        print("75 percentile:", tail)
+        print("25 percentile:", twentyFive)
         plt.xlabel("Invocation Arrival Time")
         plt.ylabel("End-to-end Latency (milliseconds)")
         plt.show()
@@ -305,6 +315,7 @@ class getPlots:
             #     free_tier_read = free_tier_read - prev["DSread"]
             cost = max(0, (current - free_tier_read)) * unitRead
         elif mode == "w":
+            
             # if prev["DSwrite"] > free_tier_write:
             #     free_tier_write = 0
             # else:
