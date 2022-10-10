@@ -37,16 +37,18 @@ def resize(event, context):
     resblob.upload_from_filename(path)
     os.remove(path)
     os.remove("/tmp/"+fileName)
-    message2send = "delete"
-    topic_path = publisher.topic_path(PROJECT_ID, 'imageprocessing_GC')
-    message_json = json.dumps({
-      'data': {'message': message2send},
-    })
-    message_bytes = message_json.encode('utf-8')
-    publish_future = publisher.publish(topic_path, data=message_bytes, reqID = (event['attributes'])['reqID'],  publishTime = str(datetime.datetime.utcnow()), msgSize = str(getsizeof(message2send)))
-    publish_future.result()
+    garbage((event['attributes'])['reqID'])
     logging.warning((event['attributes'])['reqID'])
 
 
 
+def garbage(reqID):
+    storage_client = storage.Client()
+    blobs = storage_client.list_blobs("imageprocessingworkflowstorage")
+    blobsNames = [blob.name for blob in blobs if reqID in blob.name ]
+    bucket = storage_client.bucket("imageprocessingworkflowstorage")
 
+    for blob in blobsNames:
+        if not ((blob).startswith("Final")):
+            deletedBlob = bucket.blob(blob)
+            deletedBlob.delete()
