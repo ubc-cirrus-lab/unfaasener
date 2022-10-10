@@ -14,9 +14,11 @@ def lambda_handler(event, context):
     # Get input
     print("GrayScale function")
     if event == {}:
-        fileName = 'test.png'
+        fileName = 'sample_2.png'
+        reqID = '111'
     else:
         fileName = json.loads(event['body'])['data']['imageName']
+        reqID = json.loads(event['body'])['data']['reqID']
     
     bucket = s3.Bucket('imageprocessingbenchmark')
     bucket.download_file(fileName, '/tmp/' + fileName)
@@ -25,7 +27,7 @@ def lambda_handler(event, context):
     # Perform filter
     img = image.convert('L')
     path = "/tmp/" + "gray-scale-" + fileName
-    upPath = "gray-scale-" + fileName
+    upPath = reqID + "gray-scale-" + fileName
     img.save(path)
 
     # Upload results
@@ -40,6 +42,6 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'timestamp': datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         'body': json.dumps({
-            'data': {'imageName': upPath,},
+            'data': {'imageName': upPath, 'reqID':reqID}
         })
     }

@@ -14,9 +14,11 @@ def lambda_handler(event, context):
     # Get input
     print("Filter function")
     if event == {}:
-        fileName = 'test.png'
+        fileName = 'sample_2.png'
+        reqID = '111'
     else:
         fileName = json.loads(event['body'])['data']['imageName']
+        reqID = json.loads(event['body'])['data']['reqID']
     
     bucket = s3.Bucket('imageprocessingbenchmark')
     bucket.download_file(fileName, '/tmp/' + fileName)
@@ -25,11 +27,11 @@ def lambda_handler(event, context):
     # Perform filter
     img = image.filter(ImageFilter.BLUR)
     path = "/tmp/" + "blur-" + fileName
-    upPath = "blur-" + fileName
+    upPath = reqID + "blur-" + fileName
     img.save(path)
 
     # Upload results
-    bucket.upload_file("/tmp/blur-" + fileName, "blur-" + fileName)
+    bucket.upload_file(path, upPath)
     
     # Clean up
     os.remove("/tmp/blur-" + fileName)
@@ -40,6 +42,6 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'timestamp': datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         'body': json.dumps({
-            'data': {'imageName': upPath},
+            'data': {'imageName': upPath, 'reqID': reqID},
         })
     }

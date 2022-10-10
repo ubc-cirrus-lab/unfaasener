@@ -13,9 +13,11 @@ def lambda_handler(event, context):
     print("Flip function")
     
     if event == {}:
-        fileName = 'test.png'
+        fileName = 'sample_3.jpg'
+        reqID = '111'
     else: 
         fileName = json.loads(event['body'])['data']['imageName']
+        reqID = json.loads(event['body'])['data']['reqID']
     
     
     bucket = s3.Bucket('imageprocessingbenchmark')
@@ -24,7 +26,7 @@ def lambda_handler(event, context):
    
     # Perform flip
     path = "/tmp/flip-left-right-" + fileName
-    upPath = "flip-left-right-" + fileName
+    upPath = reqID + "flip-left-right-" + fileName
     img = image.transpose(Image.FLIP_LEFT_RIGHT)
     img = image.transpose(Image.FLIP_LEFT_RIGHT)
     img.save(path)
@@ -41,6 +43,6 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'timestamp': datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
         'body': json.dumps({
-            'data': {'imageName': upPath},
+            'data': {'imageName': upPath, 'reqID': reqID},
         })
     }
