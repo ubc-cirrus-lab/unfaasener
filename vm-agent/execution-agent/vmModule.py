@@ -3,11 +3,11 @@ from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
 from google.cloud import datastore
 import datetime
+import time
 from pathlib import Path
 import copy
 import os
 import psutil
-import time
 import json
 import uuid
 import subprocess
@@ -27,10 +27,7 @@ from multiprocessing import cpu_count
 
 
 project_id = "ubc-serverless-ghazal"
-# subscription_id = "vmSubscriber1"
 subscription_id = sys.argv[1]
-
-# publish_topic_id = "vm-subscribe"
 # timeout = 22.0
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
     str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/vmExeModule.json"
@@ -42,7 +39,6 @@ subscription_path = subscriber.subscription_path(project_id, subscription_id)
 datastore_client = datastore.Client()
 publisher = pubsub_v1.PublisherClient()
 client = docker.from_env()
-# writtenData = {}
 # reqQueue = []
 executionDurations = {}
 cacheDurations = {}
@@ -242,49 +238,10 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     before = datetime.datetime.now()
     global activeThreads
     global activeThreadCheckLock
-    # global reqQueue
-    # global writtenData
-    # global executionDurations
-    # global cacheDurations
-    # global cpulimit
-    # global lockList
-    # # Initalize cpuLimits
-    # n_cores = cpu_count()
-    # cpuLimits["128MB"] = 83000
-    # cpuLimits["256MB"] = 167000
-    # cpuLimits["512MB"] = 333000
-    # cpuLimits["1024MB"] = 583000
-    # cpuLimits["2048MB"] = 1000000
-    # cpuLimits["4096MB"] = 2000000
-    # cpuLimits["8192MB"] = 2000000
-    # cpuLimits["16384MB"] = 4000000
-
     receivedDateObj = datetime.datetime.utcnow()
     decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
     print(f"received data:{decodedMessage}")
     print(f"Received Date:{receivedDateObj}")
-
-    # msgID = message.attributes.get("identifier")
-    # reqID = message.attributes.get("reqID")
-    # invokedFun = message.attributes.get("invokedFunction")
-    # tmpInvokedFun = message.attributes.get("invokedFunction")
-    # notfound = 1
-    # for image in client.images.list():
-    #     if invokedFun in str(image.tags):
-    #         # print("Image found")
-    #         notfound = 0
-    # if notfound == 1:
-    #     containerize(invokedFun)
-
-    # writtenData[msgID] = {}
-    # writtenData[msgID]["receivedDate"] = str(receivedDateObj)
-    # if message.attributes:
-    #     # print("Attributes:")
-    #     for key in message.attributes:
-    #         value = message.attributes.get(key)
-    #         # print(f"{key}: {value}")
-    #         (writtenData[msgID])[key] = value
-    # message.ack()
     ack_future = message.ack_with_response()  # block to prevent race condition
     try:
         # Block on result of acknowledge call.
@@ -299,10 +256,6 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
         "data": json.loads(message.data.decode("utf-8")),
         "attributes": message.attributes,
     }
-    # reqInfo = {}
-    # reqInfo["jsonfile"] = jsonfile
-    # reqInfo["before"] = before
-    # reqQueue.append(reqInfo)
     checkedForAvailableThread = False
     while len(activeThreads) >= CONCURRENCY_LIMIT:
         threadsRemoved = False
@@ -313,6 +266,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
                 activeThreads.remove(thread)
                 threadsRemoved = True
                 print("garbage collected the dead thread")
+                break
         print("active request processing threads: " + str(len(activeThreads)))
         if threadsRemoved:
             thread2 = Thread(target=processReqs, args=(jsonfile, before))
@@ -330,7 +284,6 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
 
 def processReqs(jsonfile, before):
-    # global reqQueue
     global executionDurations
     global cacheDurations
     global cpulimit
@@ -397,14 +350,7 @@ def processReqs(jsonfile, before):
                 cont.start()
                 statistics = cont.stats(stream=False)
                 if int(statistics["pids_stats"]["current"]) > 1:
-                    # print(
-                    #     "##########################container already in use   "
-                    #     + str(statistics["pids_stats"]["current"])
-                    # )
                     execution_complete = 0
-                    # conts = {} # reset the container list
-                # for stat in stats:
-                #    print ((stats[stat]))
                 else:
                     contExecRunLock.acquire()
                     if tmpInvokedFun in activeContainerSearchList.keys():
@@ -437,7 +383,6 @@ def processReqs(jsonfile, before):
                 detach=False,
                 user="bin",
             )
-            # lastexecutiontimestamps[invokedFun] = before
             lastexecutiontimestamps[container.id] = before
             container.start()
             cmd = (
@@ -465,12 +410,18 @@ def processReqs(jsonfile, before):
             invokedFun = invokedFun + str(reqID)
             executionDurations[invokedFun] = {}
 
-        executionDurations[invokedFun]["duration"] = str(delta.microseconds / 1000)
+        executionDurations[invokedFun]["duration"] = str(
+            ((delta).total_seconds()) * 1000
+        )
         if tmpInvokedFun not in cacheDurations.keys():
             cacheDurations[tmpInvokedFun] = []
-            cacheDurations[tmpInvokedFun].append(float(delta.microseconds / 1000))
+            cacheDurations[tmpInvokedFun].append(
+                float(((delta).total_seconds()) * 1000)
+            )
         else:
-            cacheDurations[tmpInvokedFun].append(float(delta.microseconds / 1000))
+            cacheDurations[tmpInvokedFun].append(
+                float(((delta).total_seconds()) * 1000)
+            )
         executionDurations[invokedFun]["reqID"] = reqID
         executionDurations[invokedFun]["start"] = str(before)
         executionDurations[invokedFun]["finish"] = str(after)
@@ -485,8 +436,6 @@ def processReqs(jsonfile, before):
             executionDurations[invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
 
 
-# with open("data.json", mode="w") as f:
-#     json.dump(writtenData, f)
 flow_control = pubsub_v1.types.FlowControl(max_messages=20)
 streaming_pull_future = subscriber.subscribe(
     subscription_path, callback=callback, flow_control=flow_control
@@ -494,9 +443,6 @@ streaming_pull_future = subscriber.subscribe(
 print(f"Listening for messages on {subscription_path}..\n")
 thread = Thread(target=threaded_function, args=(1000000, lastexecutiontimestamps))
 thread.start()
-# processReqstThread = Thread(target=processReqs, args=())
-# processReqstThread.start()
-# thread.join()
 
 
 with subscriber:
