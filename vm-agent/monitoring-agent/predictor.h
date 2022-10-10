@@ -51,8 +51,8 @@ public:
     auto compute_predicton_ExponentialMovingAverage(double x,int type, int initialFlag)
     {
      size_t violation = 0;
-     alpha = 0.8;
-     margin = 0.15;
+     alpha = 0.85;
+     margin = 0.2;
      max = 0;
      size=utilization_records->size();
      int i = 0;

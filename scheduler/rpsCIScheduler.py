@@ -29,7 +29,9 @@ class CIScheduler:
         self.dateDFData["effected"] = []
         self.dateDFData["triggerType"] = []
         self.dateDFData["triggered"] = []
-        self.dateDFData["triggered"].append(datetime.datetime.now())
+        triggerTime = datetime.datetime.now()
+        self.dateDFData["triggered"].append(triggerTime)
+        print(str(triggerTime)+ " Scheduler triggered with: "+ triggerType)
         self.dateDFData["triggerType"].append(triggerType)
         path = (
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"

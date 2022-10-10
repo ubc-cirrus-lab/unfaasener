@@ -6,7 +6,7 @@ mode="resolve"
 
 # making sure that by default are functions run on serverless
 # python3 ~/de-serverlessization/scheduler/resetRoutingDecisions.py $workflow $numvm
-
+docker container stop $(docker container ls -aq)
 # clean all privious metadata, logs, and caches for that workflow
 python3 ~/de-serverlessization/scheduler/resetLastDecisions.py $workflow $numvm $solvingMode
 
@@ -19,6 +19,11 @@ python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py $
 # running the scheduler
 # python3 ~/de-serverlessization/scheduler/rpsCIScheduler.py $mode 
 
+# running the monitoring scripts and the predictor agent in the background
+cd ~/de-serverlessization/vm-agent/monitoring-agent
+./monitoringAgent &
+pidFour=$!
+sleep 10
 # running the vm execution agent in the background
 python3 ~/de-serverlessization/vm-agent/execution-agent/vmModule.py vmSubscriber1 vm0 &
 pidOne=$!
@@ -31,10 +36,7 @@ pidTwo=$!
 python3 ~/de-serverlessization/scheduler/garbageCollector.py &
 pidThree=$!
 
-# running the monitoring scripts and the predictor agent in the background
-cd ~/de-serverlessization/vm-agent/monitoring-agent
-./monitoringAgent &
-pidFour=$!
+
 
 # terminating background processes upon termination of this script
 trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py ${workflow} 1; exit 1" INT SIGINT SIGTERM EXIT
