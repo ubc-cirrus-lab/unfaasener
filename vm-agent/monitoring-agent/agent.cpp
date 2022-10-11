@@ -79,7 +79,8 @@ int main(int, char *[]) {
     //float previous_docker_reading[100] = { 0 };
     map <int,float> previous_docker_reading;
     //float docker_utilization[100] = { 0} ;
-    float docker_mem_utilization[1000] = { 0} ;
+//float docker_mem_utilization[1000] = { 0} ;
+    map <int,float> docker_mem_utilization  ;
     float prev_docker_utilization = 0 ;
     double prev_docker_utilization_cores_used = 0;
     size_t previous_readings[2] = { 0 };
@@ -106,6 +107,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	   int processcount=0;
 	   //float current_docker_reading[100] = {0};
 	   float docker_utilization[1000] = {0};
+	   float docker_mem[1000] = {0};
     map <int,float> current_docker_reading;
 //    map <int,float> docker_utilization;
 
@@ -125,7 +127,8 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	     current_docker_reading[containerd_pids[processcount]] = 0;
      }
 
-     //docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
+     docker_mem_utilization[containerd_pids[processcount]] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
+     docker_mem[processcount] = docker_mem_utilization[containerd_pids[processcount]];
      previous_docker_reading[containerd_pids[processcount]] = current_docker_reading[containerd_pids[processcount]];
      processcount++;
          //std::cout << "stdout: " << processcount << '\n';
@@ -137,7 +140,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      float docker_cpusum = 0;
      float docker_memsum = 0;
      docker_cpusum = accumulate(docker_utilization, docker_utilization+1000, 0);
-     docker_memsum = accumulate(docker_mem_utilization, docker_mem_utilization+1000, 0);
+     docker_memsum = accumulate(docker_mem, docker_mem+1000, 0);
      avg_docker_cpusum += docker_cpusum;
 
 	 procstat.get_proc_stat_times(current_cpu_readings);
@@ -145,7 +148,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 float idle_diff = current_cpu_readings[0] - previous_readings[0];
 	 float total_diff = current_cpu_readings[1] - previous_readings[1];
 
-    //std::cout << "##########" << std::endl;
+//    std::cout << "########## " << docker_memsum << " ######## "<<current_mem_readings[0]<<" #### "<<current_mem_readings[1] <<std::endl;
       //   std::cout << total_diff << std::endl;
         // std::cout << idle_diff << std::endl;
 
