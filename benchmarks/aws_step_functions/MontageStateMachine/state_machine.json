@@ -1,0 +1,166 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Get Input",
+    "States": {
+        "Get Input": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageGetInput:$LATEST"
+            },
+            "Retry": [{
+                "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+            }],
+            "Next": "Map"
+        },
+        "Map": {
+            "Type": "Map",
+            "Iterator": {
+                "StartAt": "Fanout",
+                "States": {
+                    "Fanout": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "OutputPath": "$.Payload",
+                        "Parameters": {
+                            "Payload.$": "$",
+                            "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageFanout:$LATEST"
+                        },
+                        "Retry": [{
+                            "ErrorEquals": [
+                                "Lambda.ServiceException",
+                                "Lambda.AWSLambdaException",
+                                "Lambda.SdkClientException"
+                            ],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                        }],
+                        "Next": "Map (1)"
+                    },
+                    "Map (1)": {
+                        "Type": "Map",
+                        "Iterator": {
+                            "StartAt": "Project",
+                            "States": {
+                                "Project": {
+                                    "Type": "Task",
+                                    "Resource": "arn:aws:states:::lambda:invoke",
+                                    "OutputPath": "$.Payload",
+                                    "Parameters": {
+                                        "Payload.$": "$",
+                                        "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageProject:$LATEST"
+                                    },
+                                    "Retry": [{
+                                        "ErrorEquals": [
+                                            "Lambda.ServiceException",
+                                            "Lambda.AWSLambdaException",
+                                            "Lambda.SdkClientException"
+                                        ],
+                                        "IntervalSeconds": 2,
+                                        "MaxAttempts": 6,
+                                        "BackoffRate": 2
+                                    }],
+                                    "End": true
+                                }
+                            }
+                        },
+                        "ItemsPath": "$.body.data.messages",
+                        "Next": "Overlaps"
+                    },
+                    "Overlaps": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "OutputPath": "$.Payload",
+                        "Parameters": {
+                            "Payload.$": "$",
+                            "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageOverlaps:$LATEST"
+                        },
+                        "Retry": [{
+                            "ErrorEquals": [
+                                "Lambda.ServiceException",
+                                "Lambda.AWSLambdaException",
+                                "Lambda.SdkClientException"
+                            ],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                        }],
+                        "Next": "Background"
+                    },
+                    "Background": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "OutputPath": "$.Payload",
+                        "Parameters": {
+                            "Payload.$": "$",
+                            "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageBackground:$LATEST"
+                        },
+                        "Retry": [{
+                            "ErrorEquals": [
+                                "Lambda.ServiceException",
+                                "Lambda.AWSLambdaException",
+                                "Lambda.SdkClientException"
+                            ],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                        }],
+                        "Next": "Add"
+                    },
+                    "Add": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "OutputPath": "$.Payload",
+                        "Parameters": {
+                            "Payload.$": "$",
+                            "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageAdd:$LATEST"
+                        },
+                        "Retry": [{
+                            "ErrorEquals": [
+                                "Lambda.ServiceException",
+                                "Lambda.AWSLambdaException",
+                                "Lambda.SdkClientException"
+                            ],
+                            "IntervalSeconds": 2,
+                            "MaxAttempts": 6,
+                            "BackoffRate": 2
+                        }],
+                        "End": true
+                    }
+                }
+            },
+            "ItemsPath": "$.body.data.messages",
+            "Next": "Gen Png"
+        },
+        "Gen Png": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-2:417140135939:function:MontageGenPng:$LATEST"
+            },
+            "Retry": [{
+                "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+            }],
+            "End": true
+        }
+    }
+}
