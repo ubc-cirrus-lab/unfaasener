@@ -1,59 +1,71 @@
 main:
-    params: [fileName]
+    params: [message]
     steps:
     - init:
         assign:
         - project: ${sys.get_env("ubc-serverless-ghazal")}
         - location: "us-central1"
+        - getinput_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/BenchMark_IP_GetInput"
         - flip_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/BenchMark-IP-Flip"
         - rotate_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/BenchMark_IP_Rotate"
         - filter_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_IP_Filter"
         - gray_scale_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_IP_Gray_Scale"
         - resize_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_IP_Resize"
+        - upload_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_IP_Upload_To_Blob"
+    - getInput:
+        call: http.post
+        args:
+          url: ${getinput_url}
+          body:
+              message: ${message.fileName}
+          auth:
+              type: OIDC    
+        result: flipInput 
     - flip:
         call: http.post
         args:
           url: ${flip_url}
           body:
-              message: ${fileName.fileName}
+              message: ${flipInput.body}
           auth:
               type: OIDC    
-        result: pathlist_flip_resp
+        result: rotateInput 
     - rotate:
         call: http.post
         args:
           url: ${rotate_url}
           body:
-              message: ${fileName.fileName}
+              message: ${rotateInput.body}
           auth:
               type: OIDC    
-        result: pathlist_rotate_resp
+        result: filterInput
     - filter:
         call: http.post
         args:
           url: ${filter_url}
           body:
-              message: ${fileName.fileName}
+              message: ${filterInput.body}
           auth:
               type: OIDC    
-        result: pathlist_filter_resp        
+        result: grayscaleInput 
     - gray_scale:
         call: http.post
         args:
           url: ${gray_scale_url}
           body:
-              message: ${fileName.fileName}
+              message: ${grayscaleInput.body}
           auth:
               type: OIDC    
-        result: pathlist_gray_scale_resp
+        result: resizeInput
     - resize:
         call: http.post
         args:
           url: ${resize_url}
-          body: 
-              message: ${fileName.fileName}
+          body:
+              message: ${resizeInput.body}
           auth:
               type: OIDC    
-        result: pathlist_resize_resp    
+        result: finalImage       
     - end_process:
-        return: ${pathlist_resize_resp}
+        return: 
+          - ${finalImage.body}

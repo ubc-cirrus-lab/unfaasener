@@ -11,12 +11,13 @@ from time import time
 
 def ImageProcessing_Filter(request):
     request_json = request.get_json()
-    fileName = request_json['message']
-    if not fileName: 
-        print("An error happened while extracting the file name")
+    fileName = json.loads(request_json['message'])['body']['data']['imageName']
+    reqID = json.loads(request_json['message'])['body']['data']['reqID']
+
+    if not fileName or not reqID: 
+        print("An error happened while extracting the inputs")
         return json.dumps([])
     
-    path_list = []
     storage_client = storage.Client()
     bucket = storage_client.bucket("imageprocessingworkflowstorage")
     blob = bucket.blob(fileName)
@@ -25,16 +26,16 @@ def ImageProcessing_Filter(request):
     img = image.filter(ImageFilter.BLUR)
     path = "/tmp/" + "blur-" + fileName
     img.save(path)
-    path_list.append(path)
+    upPath = "-blur-" + fileName
+    resblob = bucket.blob(upPath)
+    resblob.upload_from_filename(path)
+    os.remove(path)
+    os.remove("/tmp/"+fileName)
 
-    img = image.filter(ImageFilter.CONTOUR)
-    path = "/tmp/" + "contour-" + fileName
-    img.save(path)
-    path_list.append(path)
-
-    img = image.filter(ImageFilter.SHARPEN)
-    path = "/tmp/" + "sharpen-" + fileName
-    img.save(path)
-    path_list.append(path)
-
-    return json.dumps(path_list)
+    return json.dumps({
+        'statusCode': 200,
+        'timestamp': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+        'body': {
+            'data': {'imageName': upPath, 'reqID': reqID},
+        }
+    })
