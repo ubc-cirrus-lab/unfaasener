@@ -1,29 +1,22 @@
 from concurrent.futures import TimeoutError
-from google.cloud import pubsub_v1
-from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
-from google.cloud import datastore
-import datetime
-import time
-from pathlib import Path
 import copy
-import os
-import psutil
-import json
-import uuid
-import subprocess
+import datetime
+from datetime import timedelta
 import docker
-from google.cloud import functions_v1
-import wget
-from zipfile import ZipFile
+from google.cloud import datastore, functions_v1, pubsub_v1
+from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
+import json
+from multiprocessing import cpu_count
+import os
+from pathlib import Path
+import psutil
 import subprocess
 import sys
-import uuid
 from threading import Thread, Lock
 from time import sleep
-import docker
-import sys
-from datetime import timedelta
-from multiprocessing import cpu_count
+import uuid
+import wget
+from zipfile import ZipFile
 
 
 project_id = "ubc-serverless-ghazal"
@@ -43,7 +36,16 @@ client = docker.from_env()
 executionDurations = {}
 cacheDurations = {}
 memoryLimits = {}
-cpuLimits = {}
+# Initalize cpuLimits
+cpuLimits = {
+    "128MB": 83000,
+    "256MB": 167000,
+    "512MB": 333000,
+    "1024MB": 583000,
+    "2048MB": 1000000,
+    "4096MB": 2000000,
+    "8192MB": 4000000,
+}
 lastexecutiontimestamps = {}
 client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
@@ -105,13 +107,10 @@ def flushExecutionDurations():
 def threaded_function(arg, lastexectimestamps):
     global executionDurations
     while True:
-        # print("running")
         staticlastexectimestamps = lastexectimestamps
         for key in list(staticlastexectimestamps):
-            # print(key)
-            # print(lastexectimestamps[key])
             if (
-                lastexectimestamps[key] + timedelta(seconds=6000)
+                lastexectimestamps[key] + timedelta(seconds=600)
             ) < datetime.datetime.now():
                 cont = client.containers.list(
                     # all=True, filters={"ancestor": "name:" + key}
@@ -160,6 +159,7 @@ def containerize(functionname):
     # Make the request
     response = client.generate_download_url(request=request)
     downloadlink = str(response).split(" ")[1].split('"')[1]
+
     # Download the function
     # print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
@@ -275,7 +275,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
             activeThreadCheckLock.release()
             break
         activeThreadCheckLock.release()
-        time.sleep(0.02)
+        sleep(0.02)
 
     if checkedForAvailableThread is False:
         thread2 = Thread(target=processReqs, args=(jsonfile, before))
@@ -290,26 +290,17 @@ def processReqs(jsonfile, before):
     global msgQueue
     global activeContainerSearchList
     global contExecRunLock
-    # Initalize cpuLimits
-    n_cores = cpu_count()
-    cpuLimits["128MB"] = 83000
-    cpuLimits["256MB"] = 167000
-    cpuLimits["512MB"] = 333000
-    cpuLimits["1024MB"] = 583000
-    cpuLimits["2048MB"] = 1000000
-    cpuLimits["4096MB"] = 2000000
-    cpuLimits["8192MB"] = 2000000
-    cpuLimits["16384MB"] = 4000000
+    # n_cores = cpu_count()
     msgID = jsonfile["attributes"].get("identifier")
     reqID = jsonfile["attributes"].get("reqID")
     invokedFun = jsonfile["attributes"].get("invokedFunction")
     tmpInvokedFun = jsonfile["attributes"].get("invokedFunction")
-    notfound = 1
+    imageNotFound = True
     for image in client.images.list():
         if invokedFun in str(image.tags):
             # print("Image found")
-            notfound = 0
-    if notfound == 1:
+            imageNotFound = False
+    if imageNotFound:
         containerize(invokedFun)
 
     if invokedFun not in memoryLimits:
@@ -334,7 +325,7 @@ def processReqs(jsonfile, before):
             print(
                 "CPU is " + str(cpuutil) + " and queue length is " + str(len(msgQueue))
             )
-            time.sleep(0.01)
+            sleep(0.01)
         # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
         # It is disabled to enable the system to create more containers as more requests arrive
         # These containers are then stopped by the thread
@@ -346,7 +337,6 @@ def processReqs(jsonfile, before):
                 if tmpInvokedFun in activeContainerSearchList.keys():
                     if cont in activeContainerSearchList[tmpInvokedFun]:
                         continue
-                # cont = next(iter(conts))
                 cont.start()
                 statistics = cont.stats(stream=False)
                 if int(statistics["pids_stats"]["current"]) > 1:
