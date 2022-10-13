@@ -52,6 +52,7 @@ for (int i = 0; i < 15; ++i)
      std::ifstream in;
      std::string line;
      std::string allocatedmem="0" ;
+     float residentmem = 0;
      std::string ktime="0";
      in.open("/proc/"+std::to_string(pid)+"/statm");
     if(in.is_open())
@@ -59,15 +60,14 @@ for (int i = 0; i < 15; ++i)
         while(std::getline(in, line))
         {
             std::istringstream iss(line);
-            std::string tokens;
-            std::string parsed;
-
-        iss>>allocatedmem;
+            iss >> allocatedmem;
+            iss >> residentmem;
   }
 }
-float memkb=stof(allocatedmem);
-memkb = (memkb)*4;
-return memkb  ;
+// float memkb=stof(allocatedmem);
+// memkb = (memkb)*4;
+float memkb = (residentmem)*4;
+return memkb ;
 }
 
 
