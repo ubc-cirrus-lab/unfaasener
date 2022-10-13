@@ -23,7 +23,9 @@ public:
      if (times.size() < 4)
         return false;
      results[0] = times[3];
-     results[1] = accumulate(times.begin(), times.end(), 0);
+    //  std::cout << "total_diff_array_size" << times.size() << std::endl;
+    //  results[1] = accumulate(times.begin(), times.end(), 0);
+     results[1] = times[0] + times[1] + times[2]+ times[3];
      return true;
     }
     

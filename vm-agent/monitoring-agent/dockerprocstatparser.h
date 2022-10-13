@@ -27,7 +27,6 @@ public:
         while(std::getline(in, line))
         {
             std::istringstream iss(line); 
-	    std::string tokens;
 	    std::string parsed;
 
 for (int i = 0; i < 15; ++i)
@@ -37,6 +36,7 @@ for (int i = 0; i < 15; ++i)
   {
 	iss >> utime;
 	iss>>ktime;
+  break;
   }
 }
 //  std::cout << utime << std::endl;
