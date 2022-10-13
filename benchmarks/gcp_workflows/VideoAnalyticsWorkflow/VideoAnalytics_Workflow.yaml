@@ -1,0 +1,57 @@
+main:
+    params: [input]
+    steps:
+    - init:
+        assign:
+        - project: ${sys.get_env("ubc-serverless-ghazal")}
+        - location: "us-central1"
+        - getinput_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_GetInput"
+        - streaming_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_Streaming"
+        - decoder_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_Decoder"
+        - recognition_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_Recognition"
+    - getInput:
+        call: http.post
+        args:
+          url: ${getinput_url}
+          body:
+              videoName: ${input.videoName}
+              fanoutNum: ${input.fanoutNum}
+          auth:
+              type: OIDC    
+        result: streamingInput
+    - streaming:
+        call: http.post
+        args:
+          url: ${streaming_url}
+          body:
+              message: ${streamingInput.body}
+          auth:
+              type: OIDC    
+        result: decoderInput 
+    - decoder:
+        call: http.post
+        args:
+          url: ${decoder_url}
+          body:
+              message: ${decoderInput.body}
+          auth:
+              type: OIDC    
+        result: recognitionInput
+    - parallel_loop:
+        parallel:
+          for:
+            value: imageName
+            in: ${recognitionInput.body.body.data.imageNames}
+            steps:
+              - recognition:
+                  call: http.post
+                  args:
+                    url: ${recognition_url}
+                    body:
+                      imageName: ${imageName}
+                      reqID: ${recognitionInput.body.body.data.reqID}
+                    auth: 
+                      type: OIDC
+    - end_process:
+        return: 
+          - ${recognitionInput.body}

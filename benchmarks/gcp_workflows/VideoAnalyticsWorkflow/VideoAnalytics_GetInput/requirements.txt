@@ -1,0 +1,5 @@
+Flask==2.1.0
+itsdangerous==2.0.1
+google-cloud-datastore==1.13.2
+google-cloud-pubsub>=0.28.1
+numpy
