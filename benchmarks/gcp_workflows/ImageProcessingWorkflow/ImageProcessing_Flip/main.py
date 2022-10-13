@@ -11,26 +11,32 @@ from time import time
 
 def ImageProcessing_Flip(request):
     request_json = request.get_json()
-    print(request_json['message'])
-    fileName = request_json['message']
-    if not fileName: 
-        print("An error happened while extracting the file name")
+    fileName = json.loads(request_json['message'])['body']['data']['imageName']
+    reqID = json.loads(request_json['message'])['body']['data']['reqID']
+    if not fileName or not reqID: 
+        print("An error happened while extracting the inputs")
         return json.dumps([])
-    print(fileName)
-    path_list = []
+    
     storage_client = storage.Client()
     bucket = storage_client.bucket("imageprocessingworkflowstorage")
     blob = bucket.blob(fileName)
     blob.download_to_filename("/tmp/"+ fileName)
+    
     image = Image.open("/tmp/"+fileName)
     img = image.transpose(Image.FLIP_LEFT_RIGHT)
     path = "/tmp/" + "flip-left-right-" + fileName
+    img = image.transpose(Image.FLIP_LEFT_RIGHT)
     img.save(path)
-    path_list.append(path)
+    upPath = str(reqID) + "-flip-left-right-" + fileName
+    resblob = bucket.blob(upPath)
+    resblob.upload_from_filename(path)
+    os.remove(path)
+    os.remove("/tmp/"+fileName)
 
-    img = image.transpose(Image.FLIP_TOP_BOTTOM)
-    path = "/tmp/" + "flip-top-bottom-" + fileName
-    img.save(path)
-    path_list.append(path)
-
-    return json.dumps(path_list)
+    return json.dumps({
+        'statusCode': 200,
+        'timestamp': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+        'body': {
+            'data': {'imageName': upPath, 'reqID': reqID},
+        }
+    })

@@ -11,12 +11,13 @@ from time import time
 
 def ImageProcessing_GrayScale(request):
     request_json = request.get_json()
-    fileName = request_json['message']
-    if not fileName: 
-        print("An error happened while extracting the file name")
+    fileName = json.loads(request_json['message'])['body']['data']['imageName']
+    reqID = json.loads(request_json['message'])['body']['data']['reqID']
+
+    if not fileName or not reqID: 
+        print("An error happened while extracting the inputs")
         return json.dumps([])
         
-    path_list = []
     storage_client = storage.Client()
     bucket = storage_client.bucket("imageprocessingworkflowstorage")
     blob = bucket.blob(fileName)
@@ -25,6 +26,16 @@ def ImageProcessing_GrayScale(request):
     img = image.convert('L')
     path = "/tmp/" + "gray-scale-" + fileName
     img.save(path)
-    path_list.append(path)
+    upPath = "-gray-scale-" + fileName
+    resblob = bucket.blob(upPath)
+    resblob.upload_from_filename(path)
+    os.remove(path)
+    os.remove("/tmp/"+fileName)
 
-    return json.dumps(path_list)
+    return json.dumps({
+        'statusCode': 200,
+        'timestamp': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+        'body': {
+            'data': {'imageName': upPath, 'reqID': reqID},
+        }
+    })
