@@ -14,10 +14,10 @@ This is the summary of the lambda memory size values after power tuning.
 | Function Name            | Memory Size (MB) |
 |--------------------------|------------------|
 | ImageProcessingGetInput  | 128              |
-| ImageProcessingFlip      | 256              |
-| ImageProcessingRotate    | 211              |
-| ImageProcessingFilter    |                  |
-| ImageProcessingGrayscale |                  |
-| ImageProcessingResize    |                  |
+| ImageProcessingFlip      | 216              |
+| ImageProcessingRotate    | 148              |
+| ImageProcessingFilter    | 232              |
+| ImageProcessingGrayscale | 144              |
+| ImageProcessingResize    | 206              |
 
 

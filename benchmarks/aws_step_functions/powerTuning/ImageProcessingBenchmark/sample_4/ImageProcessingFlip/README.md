@@ -14,18 +14,18 @@ Result of it is as below:
 ```
 {
   "power": 256,
-  "cost": 0.0000040488,
-  "duration": 963.3116666666666,
+  "cost": 0.000003948,
+  "duration": 939.6525,
   "stateMachine": {
     "executionCost": 0.0003,
-    "lambdaCost": 0.0018475359000000003,
-    "visualization": "https://lambda-power-tuning.show/#gAAAAQACAAQACMAL;nUT0RPLTcETyuyFE2vjSQ0sWs0M6lb9D;+sGJNu3ahzaUXLY2M+PtNp1fSjet9543"
+    "lambdaCost": 0.0015614896500000001,
+    "visualization": "https://lambda-power-tuning.show/#gAAAAQACAAQACMAL;9jbsRMPpakTo1PBDVRWIQ+j02UOTj8BD;cy2FNhB5hDbt2oc24OSZNo7HdTehy583"
   }
 }
 
 ```
 
-<img src="first_run.png"
+<img src="graphs/first_run.png"
      style="float: center;" />
 
 ## Second Run 
@@ -43,26 +43,25 @@ Result of it is as below:
 
 ```
 {
-  "power": 224,
-  "cost": 0.0000042189,
-  "duration": 1147.9291666666668,
+  "power": 368,
+  "cost": 0.00000393645,
+  "duration": 651.6383333333332,
   "stateMachine": {
     "executionCost": 0.00057,
-    "lambdaCost": 0.0026677775249999997,
-    "visualization": "https://lambda-power-tuning.show/#gACYALAAyADgAPgAEAEoAUABWAFwAYgBoAG4AdAB6AEAAg==;EZkYRSYV3kRZDs9EGPMLRbx9j0QDKYdEVa+DRII4okSgLYhE77SSROiwekQ61VxEhaudRDPvUkR0+mpEgkpvRKTwRUQ=;5xKsNmKxlDZLi6A2BaD2NhOQjTY4uJM2i9KdNueB0zbnA8A23lLeNlExyza2w742M4EQN0BvzDZtG/A2WK4ANx473zY="
+    "lambdaCost": 0.0021882393750000005,
+    "visualization": "https://lambda-power-tuning.show/#gACYALAAyADgAPgAEAEoAUABWAFwAYgBoAG4AdAB6AEAAg==;gr0CRaf91kTUpM1E4VSlRP081ETlS3hE2gR6RDDehUR+eWhEzeQuRNroIkRt8DtEVU02RHeLeER3QzZEqyYwRN617kM=;TWmTNmDsjzZ1ep82tqmRNnti0TaYtIc26uKVNqCErjZb1KM2nI+ENtkVhDaAR6I2NC2nNowC8TZXd7o2FWW9Nk66hjY="
   }
 }
-
 ```
 
-<img src="second_run.png"
+<img src="graphs/second_run.png"
      style="float: center;" />
 
 ## Third Run 
 ```
 {
     "lambdaARN": "arn:aws:lambda:us-east-2:**********:function:ImageProcessingFlip",
-    "powerValues": [192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 252, 256],
+    "powerValues": [256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512],
     "num": 20,
     "payload": "{}",
     "parallelInvocation": true,
@@ -71,60 +70,25 @@ Result of it is as below:
 ```
 Result of it is as below: 
 
-```
-
-
-```
-
-<img src="third_run.png"
-     style="float: center;" />
-
-## Fourth Run 
 ```
 {
-    "lambdaARN": "arn:aws:lambda:us-east-2:**********:function:ImageProcessingFlip",
-    "powerValues": [136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180],
-    "num": 20,
-    "payload": "{}",
-    "parallelInvocation": true,
-    "strategy": "cost"
+  "power": 288,
+  "cost": 0.000003954825,
+  "duration": 836.0466666666667,
+  "stateMachine": {
+    "executionCost": 0.00057,
+    "lambdaCost": 0.0021568015875000003,
+    "visualization": "https://lambda-power-tuning.show/#AAEQASABMAFAAVABYAFwAYABkAGgAbABwAHQAeAB8AEAAg==;0EuhRCyBjkT9AlFECu9wRFxPRET5QTlE6FhMRLWtPUQb7FNEsRQcRL8cUkSChhJEKfgcRNeDDkRcywNEq3IPRCxBF0Q=;WPC1NnrZqjaws4Q2+lOhNl12ijYyP4k2bIKeNg7DmTbeQrM2J6CJNrmYwDY+mYs2bOGaNjHakTbzhIs28bqcNjTOqjY="
+  }
 }
-```
-Result of it is as below: 
 
 ```
-
-
-```
-
-<img src="fourth_run.png"
-     style="float: center;" />
-
-## Fifth Run 
-```
-{
-    "lambdaARN": "arn:aws:lambda:us-east-2:**********:function:ImageProcessingFlip",
-    "powerValues": [175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185],
-    "num": 20,
-    "payload": "{}",
-    "parallelInvocation": true,
-    "strategy": "cost"
-}
-```
-Result of it is as below: 
-
-```
-
-```
-
-<img src="fifth_run.png"
-     style="float: center;" />
 
 
 ---
 **Result**
 
-The best size taken for this lambda function is 175.
+The best size taken for this lambda function is 288.
 
 ---
 
