@@ -29,6 +29,24 @@ void writePrediction(double cpu_pred, double mem_pred)
   myfile.close();
 }
 
+void writeTriggerType(string triggerType)
+{
+        std::ofstream triggerFile;
+        triggerFile.open("triggers.txt");
+        triggerFile << triggerType;
+        triggerFile.close();
+}
+
+string readTriggerType()
+{
+        std::fstream triggerFile;
+        std::string trigger;
+        triggerFile.open ("triggers.txt");
+        getline(triggerFile,trigger);
+        triggerFile.close();
+        return trigger;
+}
+
 unsigned int getTotalSystemCores()
 {
 	return  sysconf(_SC_NPROCESSORS_ONLN);
@@ -55,8 +73,10 @@ int handle_prediction_violation(double cpu_pred, double memory_pred, string mode
                         mem_pred = mem_pred/4;
                 }
                 writePrediction(cores, mem_pred);
+                writeTriggerType(mode);
         string command = "cd ../../scheduler/; python3 rpsCIScheduler.py " + mode + " &";
         system((command).c_str());
+
 	    // system("cd ../../scheduler/; python3 rpsCIScheduler.py resolve &");
 
 	    return 1;
@@ -71,6 +91,7 @@ int main(int, char *[]) {
     size_t hardTriggerBuffer[hardTriggerBufferSize] = {0};
     size_t hardTriggerBufferIndex = 0;
     short int softTriggerVote = 0;
+    short int lowLoadTrigger = 0;
     size_t current_cpu_readings[2]= { 0 };
     size_t current_mem_readings[2]= { 0 };
 
@@ -79,7 +100,7 @@ int main(int, char *[]) {
     //float previous_docker_reading[100] = { 0 };
     map <int,float> previous_docker_reading;
     //float docker_utilization[100] = { 0} ;
-//float docker_mem_utilization[1000] = { 0} ;
+//     float docker_mem_utilization[1000] = { 0} ;
     map <int,float> docker_mem_utilization  ;
     float prev_docker_utilization = 0 ;
     double prev_docker_utilization_cores_used = 0;
@@ -126,7 +147,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	     previous_docker_reading[containerd_pids[processcount]] = 0;
 	     current_docker_reading[containerd_pids[processcount]] = 0;
      }
-
+        //docker_mem_utilization[processcount] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
      docker_mem_utilization[containerd_pids[processcount]] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
      docker_mem[processcount] = docker_mem_utilization[containerd_pids[processcount]];
      previous_docker_reading[containerd_pids[processcount]] = current_docker_reading[containerd_pids[processcount]];
@@ -217,7 +238,9 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                                 recentViols ++;
                 }
                 double lowTriggerThreshold = 0.2;
-                double highTriggerThreshold = 0.8;
+                double hardlowTriggerThreshold = 0.05;
+                double highTriggerThreshold = 0.85;
+                string prevTrigger;
                 double docker_utilization_change_threshold = 1;
                 double availableCores = getTotalSystemCores() * (100 - cpu_pred_old)/100;
                 avg_docker_cpusum = (avg_docker_cpusum / ring_size);
@@ -234,13 +257,20 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 std::cout << "docker_number_of_cores:" << docker_cores_used << std::endl;
                 std::cout << "docker_Prev_number_of_cores:" << prev_docker_utilization_cores_used << std::endl;
 
-                if ( ((docker_cores_used/availableCores)  < lowTriggerThreshold) && ( (fabs(docker_cores_used - prev_docker_utilization_cores_used) )  > docker_utilization_change_threshold) ){
-                        std::cout << "Low Load Sensed"<< std::endl;
-                        softTriggerVote -= 1;
-                }
-                else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) ) {
-                        std::cout << "High Load Sensed"<< std::endl;
-                        softTriggerVote += 1;
+                if (availableCores == 0){
+                        if (docker_cores_used > 0){
+                                std::cout << "High Load Sensed"<< std::endl;
+                                softTriggerVote += 1;
+                        }
+                } else {
+                        if ( ((docker_cores_used/availableCores)  < lowTriggerThreshold) ){
+                                std::cout << "Low Load Sensed"<< std::endl;
+                                softTriggerVote -= 1;
+                        }
+                        else if ( ((docker_cores_used/availableCores) > highTriggerThreshold) ) {
+                                std::cout << "High Load Sensed"<< std::endl;
+                                softTriggerVote += 1;
+                        }
                 }
                 
                 if (softTriggerVote > 4) {
@@ -249,8 +279,44 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                     // system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
                     softTriggerVote = 0;
                 } else if (softTriggerVote < -4 ) {
-                    std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
-                    handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                        prevTrigger = readTriggerType();
+                        lowLoadTrigger = lowLoadTrigger + 1;
+                        if (prevTrigger == "lowLoad"){
+                                if ((lowLoadTrigger <= 4) || ((docker_cores_used/availableCores)  >= hardlowTriggerThreshold )){
+                                std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
+                                // handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                                if (docker_cores_used == 0){
+                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", true);
+                                }
+                                else{
+                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                                }
+                                }
+                        }
+                        else{
+                                lowLoadTrigger = 1;  
+                                std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
+                                if (docker_cores_used == 0){
+                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", true);
+                                }
+                                else{
+                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                                }
+                        }
+                //     prevTrigger = readTriggerType();
+                //     if (prevTrigger != "lowLoad"){
+                //         std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
+                //         if (docker_cores_used == 0){
+                //                 handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", true);
+                //         }
+                //         else{
+                //                 handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                //         }
+                //     }
+                //     else if(((docker_cores_used/availableCores)  >= hardlowTriggerThreshold)){
+                //         std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
+                //         handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                //     }
                     // system("cd ../../scheduler/; python3 rpsCIScheduler.py lowLoad &");
                     softTriggerVote = 0;
                 } else if (recentViols > int(0.5*hardTriggerBufferSize)) {
