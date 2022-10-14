@@ -68,7 +68,7 @@ def flushExecutionDurations():
         + "/data/cachedVMData.json"
     )
     if os.path.isfile(cachePath):
-        with open(cachePath, "r") as json_file:
+        with open(cachePath, "r", os.O_NONBLOCK) as json_file:
             cach_json = json.load(json_file)
             newCachJSon = {
                 key: cach_json.get(key, []) + cacheDurations.get(key, [])
@@ -78,7 +78,7 @@ def flushExecutionDurations():
     else:
         newCachJSon = cacheDurations
         cacheDurations = {}
-    with open(cachePath, mode="w") as f:
+    with open(cachePath, "w", os.O_NONBLOCK) as f:
         # print("Data written in cache")
         json.dump(newCachJSon, f)
     tempexecutionDurations = copy.deepcopy(executionDurations)
@@ -334,33 +334,51 @@ def processReqs(jsonfile, before):
         execution_complete = 0
         if len(conts) != 0:
             for cont in conts:
+                contExecRunLock.acquire()
                 if tmpInvokedFun in activeContainerSearchList.keys():
-                    if cont in activeContainerSearchList[tmpInvokedFun]:
-                        continue
-                cont.start()
-                statistics = cont.stats(stream=False)
-                if int(statistics["pids_stats"]["current"]) > 1:
-                    execution_complete = 0
-                else:
-                    contExecRunLock.acquire()
-                    if tmpInvokedFun in activeContainerSearchList.keys():
+                    if cont not in activeContainerSearchList[tmpInvokedFun]:
                         activeContainerSearchList[tmpInvokedFun].append(cont)
+                        contExecRunLock.release()
                     else:
-                        activeContainerSearchList[tmpInvokedFun] = [cont]
+                        contExecRunLock.release()
+                        continue
+                else:
+                    activeContainerSearchList[tmpInvokedFun] = [cont]
                     contExecRunLock.release()
-                    cont.exec_run(
-                        "python3 /app/main.py '"
-                        + str(jsonfile).replace("'", '"')
-                        + "' "
-                        + reqID,
-                        detach=True,
-                    )
-                    lastexecutiontimestamps[invokedFun] = before
-                    execution_complete = 1
-                    contExecRunLock.acquire()
-                    activeContainerSearchList[tmpInvokedFun].remove(cont)
-                    contExecRunLock.release()
-                    break
+                # if tmpInvokedFun in activeContainerSearchList.keys():
+                #     if cont in activeContainerSearchList[tmpInvokedFun]:
+                #         continue
+                if (cont.attrs['State']['Running']):
+                    statistics = cont.stats(stream=False)
+                    if int(statistics["pids_stats"]["current"]) > 1:
+                        contExecRunLock.acquire()
+                        activeContainerSearchList[tmpInvokedFun].remove(cont)
+                        contExecRunLock.release()
+                        continue
+                else:
+                    cont.start()
+                # statistics = cont.stats(stream=False)
+                # if int(statistics["pids_stats"]["current"]) > 1:
+                #     execution_complete = 0
+                # contExecRunLock.acquire()
+                # if tmpInvokedFun in activeContainerSearchList.keys():
+                #     activeContainerSearchList[tmpInvokedFun].append(cont)
+                # else:
+                #     activeContainerSearchList[tmpInvokedFun] = [cont]
+                # contExecRunLock.release()
+                cont.exec_run(
+                    "python3 /app/main.py '"
+                    + str(jsonfile).replace("'", '"')
+                    + "' "
+                    + reqID,
+                    detach=True,
+                )
+                lastexecutiontimestamps[invokedFun] = before
+                execution_complete = 1
+                contExecRunLock.acquire()
+                activeContainerSearchList[tmpInvokedFun].remove(cont)
+                contExecRunLock.release()
+                break
 
         if execution_complete == 0:
             container = client.containers.create(
