@@ -232,6 +232,10 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
+        subprocess.call("rm -rf "+ functionname)
+        subprocess.call("rm -rf "+ functionname+".zip")
+
+
 
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
