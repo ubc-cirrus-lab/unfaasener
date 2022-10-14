@@ -106,12 +106,21 @@ class dataStoreLogParser(GetLog):
 
     def saveNewLogs(self):
         df = pd.DataFrame(self.dictData)
-        if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
-        ):
-
+        dfDir = Path((os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + self.workflow
+            + "/")
+        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+        # if os.path.isfile(
+        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+        # ):
+        if len(dfFilesNames) != 0 :
+            dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+            versions = [int((a.split(","))[1]) for a in dfFilesNames]
+            lastVersion = max(versions)
+            newVersion = lastVersion + 1
             prevDataframe = pd.read_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame,"+str(lastVersion)+".pkl"
             )
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
@@ -119,25 +128,32 @@ class dataStoreLogParser(GetLog):
             # newDF = self.keepWindowSize(newDataFrame)
             newDF = newDataFrame
             newDF.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame,"+str(newVersion)+".pkl"
             )
             newDF.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow +"/generatedDataFrame,"+str(newVersion)+".csv"
             )
 
         else:
+            newVersion = 1
             newDF = self.keepWindowSize(df)
             newDF.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow +  "/generatedDataFrame,"+str(newVersion)+".pkl"
             )
             newDF.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow +  "/generatedDataFrame,"+str(newVersion)+".csv"
             )
-        if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
-        ):
+        invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')) and (file.name.endswith('.pkl')))]
+        # if os.path.isfile(
+        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+        # ):
+        if len(invocationFilesNames) != 0 :
+            invocationFilesNames = [a.replace(".pkl", "") for a in invocationFilesNames]
+            versions = [int((a.split(","))[1]) for a in invocationFilesNames]
+            lastVersion = max(versions)
+            newVersion = lastVersion + 1
             prevInvocations = pd.read_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates,"+str(lastVersion)+".pkl"
             )
             initRecords = df.loc[
                     (df["function"] == self.initFunc)
@@ -149,10 +165,10 @@ class dataStoreLogParser(GetLog):
             )
             print(newInvocations)
             newInvocations.to_pickle(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates,"+str(newVersion)+".pkl"
             )
             newInvocations.to_csv(
-                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.csv"
+                (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates,"+str(newVersion)+".csv"
             )
 
         else:

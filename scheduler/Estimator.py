@@ -37,12 +37,21 @@ class Estimator:
             + self.workflow
             + ".json"
         )
-        if os.path.isfile(
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        dfDir = Path(str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/generatedDataFrame.pkl"
-        ):
+            + "/")
+        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+        # if os.path.isfile(
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/generatedDataFrame.pkl"
+        # ):
+        if len(dfFilesNames) != 0 :
+            dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+            versions = [int((a.split(","))[1]) for a in dfFilesNames]
+            lastVersion = max(versions)
             dataframePath = (
                 str(
                     Path(os.path.dirname(os.path.abspath(__file__)))
@@ -51,7 +60,7 @@ class Estimator:
                 )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
-                + "/generatedDataFrame.pkl"
+                + "/generatedDataFrame,"+str(lastVersion)+".pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
@@ -92,7 +101,7 @@ class Estimator:
                 + "/"
                 + "slackDurations.json"
             ),
-            "r",
+            "r", os.O_NONBLOCK
         ) as outfile:
             self.slackDurationsDF = json.load(outfile)
 
@@ -100,7 +109,7 @@ class Estimator:
 
         with open(
             (os.path.dirname(os.path.abspath(__file__))) + "/data/" + "prevCost.json",
-            "r",
+            "r"
         ) as json_file:
             workflow_json = json.load(json_file)
         return workflow_json
@@ -158,7 +167,7 @@ class Estimator:
         n = len(array)
         if n <= 30:
             # upperBound = 90
-            upperBound = np.percentile(array, 90)
+            upperBound = np.percentile(array, 75)
         else:
             sortedArray = np.sort(array)
             z = 1.96
@@ -233,7 +242,7 @@ class Estimator:
                 + host
                 + ", exeTime.json"
             ),
-            "w",
+            "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(exeTimes, outfile)
 
@@ -335,7 +344,7 @@ class Estimator:
                 + "/"
                 + "pubSubSize.json"
             ),
-            "w",
+            "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(pubSubSize, outfile)
 
@@ -358,7 +367,7 @@ class Estimator:
             )
             if os.path.isfile(cachePath):
                 # print("Found Cache file!!!!")
-                with open(cachePath, "r") as json_file:
+                with open(cachePath, "r", os.O_NONBLOCK) as json_file:
                     try:
                         cach_json = json.load(json_file)
                         if func in cach_json.keys():
@@ -618,7 +627,7 @@ class Estimator:
                 + "/"
                 + "Costs.json"
             ),
-            "w",
+            "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(costs, outfile)
 

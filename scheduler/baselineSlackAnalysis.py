@@ -19,7 +19,7 @@ import operator
 pd.options.mode.chained_assignment = None
 
 
-class baselineSlackAnalysis:
+class baselineSlackAnalysisClass:
     def __init__(self, workflow):
         self.workflow = workflow
         # jsonPath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
@@ -31,17 +31,26 @@ class baselineSlackAnalysis:
             + ".json"
         )
         # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
-        if os.path.isfile(
-            str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+        dfDir = Path(str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/generatedDataFrame.pkl"
-        ):
+            + "/")
+        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+        # if os.path.isfile(
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/generatedDataFrame.pkl"
+        # ):
+        if len(dfFilesNames) != 0 :
+            dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+            versions = [int((a.split(","))[1]) for a in dfFilesNames]
+            lastVersion = max(versions)
             dataframePath = (
                 str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
-                + "/generatedDataFrame.pkl"
+                + "/generatedDataFrame,"+str(lastVersion)+".pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
@@ -226,9 +235,9 @@ class baselineSlackAnalysis:
         crit_path = [str(n) for n in workflow.get_critical_path()]
         workflow_duration = workflow.duration
 
-        print(f"The current critical path is: {crit_path}")
-        print("." * 50)
-        print(f"The current workflow duration is: {workflow_duration} milliseconds")
+        # print(f"The current critical path is: {crit_path}")
+        # print("." * 50)
+        # print(f"The current workflow duration is: {workflow_duration} milliseconds")
         return workflow_duration, crit_path
 
     def completeESEF(self, initial):
@@ -323,12 +332,12 @@ class baselineSlackAnalysis:
                 slackResults[col][decisionMode] = slack
         # print(slackResults)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackData.json"), "w"
+            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackData.json"), "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(slackResults, outfile)
         with open(
             ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackDurations.json"),
-            "w",
+            "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(slackDurations, outfile)
 
@@ -337,4 +346,4 @@ if __name__ == "__main__":
     workflow = "Text2SpeechCensoringWorkflow"
     # workflow = "TestCaseWorkflow"
 
-    x = baselineSlackAnalysis(workflow)
+    x = baselineSlackAnalysisClass(workflow)

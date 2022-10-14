@@ -53,7 +53,19 @@ class resetLastDicision:
         # prevCost_json["DSdelete"] = 0
         # with open(prevDecisionPath, "w") as json_file:
         #     json.dump(prevCost_json, json_file)
-
+        pathDF = (str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + workflow
+            + "/")
+        dfDir = Path(pathDF)
+        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')))]
+        invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')))]
+        irPaths = []
+        dfPaths = []
+        for dfName in dfFilesNames:
+            dfPaths.append(pathDF + dfName)
+        for irName in invocationFilesNames:
+            irPaths.append(pathDF + irName)
         dfPickel = (
                     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                     + "/log_parser/get_workflow_logs/data/"+workflow+"/generatedDataFrame.pkl"
@@ -90,13 +102,19 @@ class resetLastDicision:
                     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                     + "/log_parser/get_workflow_logs/data/"+workflow+"/prevData.json"
                 )
+        triggersFile = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/vm-agent/monitoring-agent/triggers.txt"
+                )
+        
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
         #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
         #         )
         cachePath = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.json")
-        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson, cachePath]
-        for filePath in filePaths:
+        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson, cachePath, triggersFile]
+        finalPaths = filePaths + dfPaths + irPaths
+        for filePath in finalPaths:
             if os.path.isfile(filePath):
                 os.remove(filePath)
                 print(filePath, "has been deleted")

@@ -18,7 +18,7 @@ sys.path.append(
     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
     + "/scheduler"
 )
-from baselineSlackAnalysis import baselineSlackAnalysis
+from baselineSlackAnalysis import baselineSlackAnalysisClass
 from monitoring import monitoring
 
 
@@ -31,13 +31,7 @@ class getWorkflowLogs:
 if __name__ == "__main__":
     interuptTime = 60
     initial = int(sys.argv[2])
-    if initial == 1:
-        start_time = time.time()
-        # workflow = "Text2SpeechCensoringWorkflow"
-        # workflow = "ChatBotWorkflow"
-        workflow = sys.argv[1]
-        x = getWorkflowLogs(workflow)
-        path = (
+    path = (
                 str(
                     Path(os.path.dirname(os.path.abspath(__file__)))
                     .resolve()
@@ -45,12 +39,18 @@ if __name__ == "__main__":
                 )
                 + "/scheduler/rankerConfig.ini"
             )
-        config = configparser.ConfigParser()
-        config.read(path)
-        rankerConfig = config["settings"]
-        mode = rankerConfig["mode"]
+    config = configparser.ConfigParser()
+    config.read(path)
+    rankerConfig = config["settings"]
+    mode = rankerConfig["mode"]
+    if initial == 1:
+        start_time = time.time()
+        # workflow = "Text2SpeechCensoringWorkflow"
+        # workflow = "ChatBotWorkflow"
+        workflow = sys.argv[1]
+        x = getWorkflowLogs(workflow)
         if mode == "latency":
-            baselineSlackAnalysis = baselineSlackAnalysis(workflow)
+            baselineSlackAnalysisObj = baselineSlackAnalysisClass(workflow)
             # rankerConfig["tolerancewindow"] = str(2* (baselineSlackAnalysis.getCriticalPathDuration()))
         monitoringObj = monitoring()
         print("--- %s seconds ---" % (time.time() - start_time))
@@ -65,6 +65,10 @@ if __name__ == "__main__":
             logging.info("periodic log parser is running......")
             logging.info(str(datetime.datetime.now()))
             x = getWorkflowLogs(workflow)
+            if mode == "latency":
+                baselineSlackAnalysisObj = baselineSlackAnalysisClass(workflow)
+                # rankerConfig["tolerancewindow"] = str(2* (baselineSlackAnalysis.getCriticalPathDuration()))
+            monitoringObj = monitoring()
             print("--- %s seconds ---" % (time.time() - start_time))
             timeSpent = "time spent: " + str((time.time() - start_time))
             logging.info(timeSpent)

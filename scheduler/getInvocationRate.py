@@ -19,12 +19,22 @@ class InvocationRate:
             + self.workflow
             + ".json"
         )
-        if os.path.isfile(
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        dfDir = Path(str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/invocationRates.pkl"
-        ):
+            + "/")
+        invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')) and (file.name.endswith('.pkl')))]
+        # if os.path.isfile(
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/invocationRates.pkl"
+        # ):
+        if len(invocationFilesNames) != 0 :
+            invocationFilesNames = [a.replace(".pkl", "") for a in invocationFilesNames]
+            versions = [int((a.split(","))[1]) for a in invocationFilesNames]
+            lastVersion = max(versions)
+            newVersion = lastVersion + 1
             dataframePath = (
                 str(
                     Path(os.path.dirname(os.path.abspath(__file__)))
@@ -33,7 +43,7 @@ class InvocationRate:
                 )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
-                + "/invocationRates.pkl"
+                + "/invocationRates,"+str(lastVersion)+".pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(

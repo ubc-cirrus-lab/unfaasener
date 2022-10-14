@@ -148,7 +148,7 @@ class CIScheduler:
         # self.rps = float(self.rankerConfig["rps"])
         resources = open(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt",
-            "r",
+            "r", os.O_NONBLOCK
         )
         Lines = resources.readlines()
         cpus = Lines[0].split()

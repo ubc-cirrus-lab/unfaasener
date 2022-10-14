@@ -80,7 +80,7 @@ class getNewLogs(GetLog):
                 + str(self.workflow)
                 + "/"
                 + "prevData.json",
-                "r",
+                "r", os.O_NONBLOCK
             ) as outfile:
                 self.prevData = json.load(outfile)
         else:
@@ -99,7 +99,7 @@ class getNewLogs(GetLog):
                 + "/"
                 + "data.json"
             ),
-            "w",
+            "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(self.newTimeStampRecorded, outfile)
         self.getDict()
@@ -136,7 +136,7 @@ class getNewLogs(GetLog):
                 + str(self.workflow)
                 + "/"
                 + "data.json",
-                "r",
+                "r", os.O_NONBLOCK
             ) as outfile:
                 workflow_json = json.load(outfile)
                 self.newTimeStampRecorded = copy.deepcopy(workflow_json)
@@ -239,7 +239,7 @@ class getNewLogs(GetLog):
                         + "/"
                         + "data.json"
                     ),
-                    "w",
+                    "w", os.O_NONBLOCK
                 ) as outfile:
                     json.dump(self.newTimeStampRecorded, outfile)
                 # self.checkLatestTimeStamp(function)
@@ -431,17 +431,27 @@ class getNewLogs(GetLog):
                 + [funcData[i] for i in finishLogsIndex]
             )
         df = pd.DataFrame(self.dictData)
-        if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__)))
+        dfDir = Path((os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + self.workflow
-            + "/generatedDataFrame.pkl"
-        ):
+            + "/")
+        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+        # if os.path.isfile(
+        #     (os.path.dirname(os.path.abspath(__file__)))
+        #     + "/data/"
+        #     + self.workflow
+        #     + "/generatedDataFrame,"+str(lastVersion)+".pkl"
+        # ):
+        if len(dfFilesNames) != 0 :
+            dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+            versions = [int((a.split(","))[1]) for a in dfFilesNames]
+            lastVersion = max(versions)
+            newVersion = lastVersion + 1
             prevDataframe = pd.read_pickle(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame.pkl"
+                + "/generatedDataFrame,"+str(lastVersion)+".pkl"
             )
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
@@ -450,40 +460,47 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame.pkl"
+                + "/generatedDataFrame,"+str(newVersion)+".pkl"
             )
             newDataFrame.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame.csv"
+                +  "/generatedDataFrame,"+str(newVersion)+".csv"
             )
 
         else:
+            newVersion = 1
             print(df.shape[0])
             df.to_pickle(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame.pkl"
+                + "/generatedDataFrame,"+str(newVersion)+".pkl"
             )
             df.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame.csv"
+                +"/generatedDataFrame,"+str(newVersion)+".csv"
             )
-        if os.path.isfile(
-            (os.path.dirname(os.path.abspath(__file__)))
-            + "/data/"
-            + self.workflow
-            + "/invocationRates.pkl"
-        ):
+        invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')) and (file.name.endswith('.pkl')))]
+        # if os.path.isfile(
+        #     (os.path.dirname(os.path.abspath(__file__)))
+        #     + "/data/"
+        #     + self.workflow
+        #     + "/invocationRates.pkl"
+        # ):
+        if len(invocationFilesNames) != 0 :
+            invocationFilesNames = [a.replace(".pkl", "") for a in invocationFilesNames]
+            versions = [int((a.split(","))[1]) for a in invocationFilesNames]
+            lastVersion = max(versions)
+            newVersion = lastVersion + 1
             prevInvocations = pd.read_pickle(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates.pkl"
+                +"/invocationRates,"+str(lastVersion)+".pkl"
             )
             initRecords = df.loc[(df["function"] == self.initFunc)]
             initRecords = initRecords["start"]
@@ -499,16 +516,17 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates.pkl"
+                +"/invocationRates,"+str(newVersion)+".pkl"
             )
             newInvocations.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates.csv"
+                + "/invocationRates,"+str(newVersion)+".csv"
             )
 
         else:
+            newVersion = 1
             initRecords = df.loc[(df["function"] == self.initFunc)]
             initRecords = initRecords["start"]
             print(initRecords)
@@ -516,13 +534,13 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates.pkl"
+                + "/invocationRates,"+str(newVersion)+".pkl"
             )
             initRecords.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates.csv"
+                + "/invocationRates,"+str(newVersion)+".csv"
             )
         with open(
             (
@@ -532,7 +550,7 @@ class getNewLogs(GetLog):
                 + "/"
                 + "prevData.json"
             ),
-            "w",
+            "w", os.O_NONBLOCK
         ) as outfile:
             json.dump(self.prevData, outfile)
 

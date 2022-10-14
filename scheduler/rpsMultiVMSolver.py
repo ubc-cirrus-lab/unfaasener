@@ -26,7 +26,7 @@ class rpsOffloadingSolver:
                 + "/"
                 + "slackData.json"
             ),
-            "r",
+            "r", os.O_NONBLOCK
         ) as outfile:
             self.slacksDF = json.load(outfile)
         with open(
@@ -37,7 +37,7 @@ class rpsOffloadingSolver:
                 + "/"
                 + "slackDurations.json"
             ),
-            "r",
+            "r", os.O_NONBLOCK
         ) as outfile:
             self.slackDurationsDF = json.load(outfile)
         with open(
@@ -48,7 +48,7 @@ class rpsOffloadingSolver:
                 + "/"
                 + "pubSubSize.json"
             ),
-            "r",
+            "r", os.O_NONBLOCK
         ) as outfile:
             self.pubSubSize = json.load(outfile)
         with open(
@@ -59,7 +59,7 @@ class rpsOffloadingSolver:
                 + "/"
                 + "Costs.json"
             ),
-            "r",
+            "r", os.O_NONBLOCK
         ) as outfile:
             self.serverlessCosts = json.load(outfile)
         self.estimator = Estimator(workflow)
