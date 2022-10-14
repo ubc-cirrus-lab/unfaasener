@@ -26,27 +26,47 @@ matplotlib.rc("axes", titlesize=BIGGER_SIZE)
 
 
 class getPlots:
-    def __init__(self, workflow):
+    def __init__(self, workflow, rps, mode):
+        self.currentRead = 0
+        self.currentWrite = 0
+        self.currentDelete = 0
+        self.dataDict = {}
+        self.dataDict["cost"] = []
+        self.dataDict["rps"] = []
+        self.dataDict["mean_latency"] = []
+        self.dataDict["tail_latency"] = []
+        self.dataDict["mode"] = []
+        self.rps = rps
+        self.dataDict["rps"].append(self.rps)
+        self.dataDict["mode"].append(mode)
         path = str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/dateTest.ini"
         config = configparser.ConfigParser()
         config.read(path)
         dateConfig = config["settings"]
         self.startTestDate = dateConfig["date"]
         self.workflow = workflow
+        dfDir = Path(str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/")
+        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+        dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+        versions = [int((a.split(","))[1]) for a in dfFilesNames]
+        lastVersion = max(versions)
         dfPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/generatedDataFrame.pkl"
+            + "/generatedDataFrame,"+str(lastVersion)+".csv"
         )
         dateDFPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/dateDate.pkl"
+            + "/dateDate.csv"
         )
-        self.dateDF = pd.read_pickle(dateDFPath)
-        self.dataframe = pd.read_pickle(dfPath)
+        self.dateDF = pd.read_csv(dateDFPath)
+        self.dataframe = pd.read_csv(dfPath)
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
@@ -57,9 +77,42 @@ class getPlots:
             self.workflow_json = json.load(json_file)
         self.exePlot()
         self.latencyPlot()
-        # totalCost = self.costPlot()
-        # loggingTxt = "Total Cost = " + str(totalCost)
-        # logging.info(loggingTxt)
+        totalCost = self.costPlot()
+        print("Total Cost = " + str(totalCost))
+        loggingTxt = "Total Cost = " + str(totalCost)
+        self.dataDict["cost"].append(totalCost)
+        logging.info(loggingTxt)
+        self.saveRes()
+
+
+    def saveRes(self):
+        if os.path.isfile(
+            (os.path.dirname(os.path.abspath(__file__)))
+            + "/data/"
+            + "statsDataFrame.csv"
+        ):
+            prevDataframe = pd.read_csv(
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data"
+                + "/statsDataFrame.csv"
+            )
+            newDataAdded = pd.DataFrame.from_dict(self.dataDict)
+            newDataFrame = (
+                pd.concat([prevDataframe, newDataAdded]).drop_duplicates().reset_index(drop=True)
+            )
+            newDataFrame.to_csv(
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + "statsDataFrame.csv"
+            )
+
+        else:
+            newDataAdded = pd.DataFrame.from_dict(self.dataDict)
+            newDataAdded.to_csv(
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + "statsDataFrame.csv"
+            )
 
     def getArrivalTime(self, startByReq, reqID):
         if reqID in startByReq.keys():
@@ -109,7 +162,7 @@ class getPlots:
         Temps3["finish"] = pd.to_datetime(Temps3["finish"], utc=True)
         Temps3["dummy"] = 1
         date_series = pd.date_range(
-            (minDateData - datetime.timedelta(0, 1)),
+            (minDate),
             (maxDate + datetime.timedelta(0, 1)),
             freq="1S",
         )
@@ -191,19 +244,37 @@ class getPlots:
         return total
 
     def latencyPlot(self):
+
         terminals = self.findTerminals()
         plt.figure()
         ttTemp = copy.deepcopy(self.dataframe)
         # ttTemp = ttTemp[ttTemp["function"] == "Text2SpeechCensoringWorkflow_MergedFunction"]
         df2 = ttTemp.groupby(["reqID"])["reqID"].count().to_dict()
+        startTestDate = datetime.datetime.strptime(
+            (self.startTestDate), "%Y-%m-%d %H:%M:%S.%f"
+        )
+        dictStartT = {"startTest": ([startTestDate] * 10)}
+        dfStartT = pd.DataFrame(dictStartT)
+        dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
+        minDate = dfStartT["startTest"].min()
+        ttTemp["start"] = pd.to_datetime(ttTemp["start"], utc=True)
+        testing = ttTemp[ttTemp["start"] > minDate]
+        print("num:", len(testing))
+        print("startTest::", minDate)
+        print("MAx::Time::", testing["start"].max())
+        print("MAx::Time::Finsih::", testing["finish"].max())
+        print("diff reqs:", len(testing["reqID"].unique()))
+        df2 = testing.groupby(["reqID"])["reqID"].count().to_dict()
         # print(df2)
         for x in df2:
             if df2[x] != 8:
                 print(x, "::", df2[x])
         startByReq = self.getArrivalDict()
         endTemp = copy.deepcopy(self.dataframe)
-        endTemp = (endTemp[(endTemp.function.isin(terminals))])[["reqID", "finish"]]
+        endTemp = (endTemp[(endTemp.function.isin(terminals))])[["reqID", "finish", "start"]]
         endTemp["finish"] = pd.to_datetime(endTemp["finish"], utc=True)
+        endTemp["start"] = pd.to_datetime(endTemp["start"], utc=True)
+        endTemp = endTemp[endTemp["start"] > minDate]
         endTempGroup = endTemp.groupby(["reqID"])
         endDF = endTempGroup.agg(Maximum_Date=("finish", np.max))
         endDF = endDF.to_dict()["Maximum_Date"]
@@ -220,11 +291,17 @@ class getPlots:
         # print("ArrivalTimes:", arrival_time)
         print("Durations", duration)
         median = np.percentile(duration, 50)
+        meanRes = np.mean(duration)
         tail = np.percentile(duration, 75)
+        nintyFive = np.percentile(duration, 95)
         twentyFive = np.percentile(duration, 25)
         print("median: ", median)
+        print("95 percentile:", nintyFive)
         print("75 percentile:", tail)
         print("25 percentile:", twentyFive)
+        print("mean: ", meanRes)
+        self.dataDict["mean_latency"].append(meanRes)
+        self.dataDict["tail_latency"].append(nintyFive)
         plt.xlabel("Invocation Arrival Time")
         plt.ylabel("End-to-end Latency (milliseconds)")
         plt.show()
@@ -235,7 +312,19 @@ class getPlots:
         memories = self.workflow_json["memory"]
         workflowFunctions = self.workflow_json["workflowFunctions"]
         Temps = copy.deepcopy(self.dataframe)
-        Temps = Temps[["host", "function", "reqID", "duration", "mergingPoint"]]
+        Temps = Temps[["host", "function", "reqID", "duration", "mergingPoint", "start"]]
+        startTestDate = datetime.datetime.strptime(
+            (self.startTestDate), "%Y-%m-%d %H:%M:%S.%f"
+        )
+        dictStartT = {"startTest": ([startTestDate] * 10)}
+        dfStartT = pd.DataFrame(dictStartT)
+        dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
+        minDate = dfStartT["startTest"].min()
+        # ttTemp["start"] = pd.to_datetime(ttTemp["start"], utc=True)
+        # testing = ttTemp[ttTemp["start"] > minDate]
+        # Temps = Temps[["start", "function", "reqID"]]
+        Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
+        Temps = Temps[Temps["start"] > minDate]
         Temps["cost"] = Temps.apply(
             lambda row: self.cost_estimator(
                 row.duration, memories[workflowFunctions.index(row.function)], row.host
@@ -259,15 +348,25 @@ class getPlots:
         TotalMergings = Temps["isMerging"].sum()
         TotalInits = Temps["isInit"].sum()
         decisionInitCost = self.getDecisionInitCost(TotalInits)
-        dsCost = self.DScost(TotalVMexe)
+        dsCost = self.VMDScost(TotalVMexe)
         mergingCost = self.mergingPointCost(TotalMergings)
         TotalCost = TotalCostFunctions + dsCost + mergingCost + decisionInitCost
         return TotalCost
 
     def getArrivalDict(self):
         Temps = copy.deepcopy(self.dataframe)
+        startTestDate = datetime.datetime.strptime(
+            (self.startTestDate), "%Y-%m-%d %H:%M:%S.%f"
+        )
+        dictStartT = {"startTest": ([startTestDate] * 10)}
+        dfStartT = pd.DataFrame(dictStartT)
+        dfStartT["startTest"] = pd.to_datetime(dfStartT["startTest"], utc=True)
+        minDate = dfStartT["startTest"].min()
+        # ttTemp["start"] = pd.to_datetime(ttTemp["start"], utc=True)
+        # testing = ttTemp[ttTemp["start"] > minDate]
         Temps = Temps[["start", "function", "reqID"]]
         Temps["start"] = pd.to_datetime(Temps["start"], utc=True)
+        Temps = Temps[Temps["start"] > minDate]
         startByReq = Temps.loc[(Temps["function"] == self.workflow_json["initFunc"])]
         startByReq = startByReq.set_index("reqID").to_dict()["start"]
         return startByReq
@@ -309,11 +408,17 @@ class getPlots:
         unitDelete = 0.02 / 100000
         prev = self.getPrevDS()
         if mode == "r":
+            self.currentRead += current
+        elif mode == "w":
+            self.currentWrite += current
+        elif mode =="d":
+            self.currentDelete += current
+        if mode == "r":
             # if prev["DSread"] > free_tier_read:
             #     free_tier_read = 0
             # else:
             #     free_tier_read = free_tier_read - prev["DSread"]
-            cost = max(0, (current - free_tier_read)) * unitRead
+            cost = max(0, (self.currentRead - free_tier_read)) * unitRead
         elif mode == "w":
             
             # if prev["DSwrite"] > free_tier_write:
@@ -339,7 +444,7 @@ class getPlots:
         totDScost = costWrite + costRead
         return totDScost
 
-    def DScost(self, vmCount):
+    def VMDScost(self, vmCount):
         costRead = self.DSCost(vmCount, "r")
         costWrite = self.DSCost(vmCount, "w")
         costDelete = self.DSCost(vmCount, "d")
@@ -394,5 +499,6 @@ class getPlots:
 if __name__ == "__main__":
     # workflow = "ImageProcessingWorkflow"
     workflow = "Text2SpeechCensoringWorkflow"
-    # workflow = sys.argv[1]
-    x = getPlots(workflow)
+    rps = sys.argv[1]
+    mode = sys.argv[2]
+    x = getPlots(workflow,rps, mode)
