@@ -6,11 +6,11 @@
 | Video Analytics   | Recognition      | 512 MB      |
 | Montage           | GetInput         | 128 MB      |
 | Montage           | Project_Fanout   | 128 MB      |
-| Montage           | Project_Parallel | 4 GB        |
-| Montage           | Overlaps         | 2 GB        |
-| Montage           | Background       | 8 GB        |
-| Montage           | Add              | 8 GB        |
-| Montage           | DenPng           | 4 GB        |
+| Montage           | Project_Parallel | 512 MB      |
+| Montage           | Overlaps         | 512 MB      |
+| Montage           | Background       | 1 GB        |
+| Montage           | Add              | 2 GB        |
+| Montage           | GenPng           | 4 GB        |
 | Regression Tuning | GetInput         | 256 MB      |
 | Regression Tuning | CreateDataset    | 256 MB      |
 | Regression Tuning | FirstModel       | 1 GB        |
