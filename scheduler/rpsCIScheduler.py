@@ -186,6 +186,7 @@ class CIScheduler:
                 # print("Decision for case: {}:{}".format(decisionMode, x))
                 decisions.append(x)
             # print("decisions::", decisions)
+            AllZeroesFlag = True
             finalDecision = np.mean(decisions, axis=0)
             # print("Average for case:", finalDecision)
             finalDecision = finalDecision / 100
@@ -195,6 +196,16 @@ class CIScheduler:
                 finalDecision[i] = np.multiply(finalDecision[i], capArray[i])
             finalDecision = list(finalDecision)
             for function in range(len(finalDecision)):
+                allZero = (all(item == 0 for item in list(finalDecision[function])))
+                if allZero == False:
+                    AllZeroesFlag = False
+                    break
+            if AllZeroesFlag == True:
+                for function in range(len(finalDecision)):
+                    if function!=0:
+                        vmOffset = np.full(len(finalDecision[function]), 0.05)
+                        finalDecision[function] = np.maximum(finalDecision[function], vmOffset)
+            for function in range(len(finalDecision)):    
                 finalDecision[function] = list(finalDecision[function])
             self.routing["routing" + "_" + str(percent)] = str(finalDecision)
             print(

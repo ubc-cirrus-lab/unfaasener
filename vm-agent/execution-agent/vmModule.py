@@ -106,6 +106,8 @@ def flushExecutionDurations():
 
 def threaded_function(arg, lastexectimestamps):
     global executionDurations
+    global activeThreadCheckLock
+    global activeThreads
     while True:
         staticlastexectimestamps = lastexectimestamps
         for key in list(staticlastexectimestamps):
@@ -127,8 +129,16 @@ def threaded_function(arg, lastexectimestamps):
             # except:
             #     print("Error in flushing the vmLogs")
 
-        # wait 1 sec in between each thread
-        sleep(1)
+        # cleaning dead threads from the queue
+        activeThreadCheckLock.acquire()
+        for thread in activeThreads:
+            if thread.is_alive() is False:
+                activeThreads.remove(thread)
+        activeThreadCheckLock.release()
+        
+        # sleep
+        sleep(2)
+
 
 
 def getFunctionParameters(functionname):
