@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import logging
 
 from google.cloud import storage
 from dna_features_viewer import BiopythonTranslator
@@ -40,6 +41,8 @@ def handler(event, context):
 
     os.remove(local_gen_filename)
     os.remove(local_result_filename)
+
+    logging.warning(req_id)
 
     return {
         'message': f'uploaded to {req_id}'
