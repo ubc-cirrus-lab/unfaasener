@@ -6,3 +6,4 @@
 | ChatBot | Python | <img src="chatbot.png" alt="Alt text" title="Chat Bot Graph"> | Trains a one-vs-all classifier for the ChatBots Intent Recognition Dataset, available on [Kaggle](https://www.kaggle.com/datasets/elvinagammed/chatbots-intent-recognition-dataset) | [OSDI '22: Orion](https://github.com/icanforce/Orion-OSDI22) |
 | VideoAnalytics | Python | <img src="VideoAnalytics.png" alt="Alt text" title="Video Analytics Graph"> | Performs object recognition on images generated from a video stream. | [vSwarm](https://github.com/ease-lab/vSwarm/tree/main/benchmarks/video-analytics) |
 | Montage | Python | <img src="Montage.png" alt="Alt text" title="Montage Graph"> | A scientific workflow to astronomical mosaics | [Montage](https://github.com/Caltech-IPAC/Montage) |
+| DNAVisualization | Python | <img src="DNAVisualization.png" alt="Alt text" title="DNAVisualization Graph"> | Generates an image from DNA file. |  |
