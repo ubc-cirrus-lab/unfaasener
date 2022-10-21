@@ -1,0 +1,95 @@
+# This workflow demonstrates how to use the Cloud Functions connector.
+# This workflow creates a function from a zip archive containing the source code stored in a Cloud Storage bucket:
+# gs://your-bucket/cloud-function-source.zip.
+# Make sure cloud-function-source.zip contains properly structured Cloud Functions source code and the function returns
+# "success" when triggered.
+# Expected successful output: "SUCCESS"
+
+main:
+    params: [input]
+    steps:
+    - init:
+        assign:
+        - project: ${sys.get_env("ubc-serverless-ghazal")}
+        - location: "us-central1"
+        - object_name: "text2speech_result"
+        - bucket_name: "text2speech-workflow-storage"
+        - getInput_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_GetInput"
+        - text2speech_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Text2Speech"
+        - conversion_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Conversion"
+        - compression_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Compression"
+        - profanity_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Profanity"
+        - censor_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Censor"
+        - compression_out: {}
+        - profanity_out: {}
+    - get_input:
+        call: http.post
+        args:
+          url: ${getInput_url}
+          body:
+              message: ${input.message}
+          auth:
+              type: OIDC    
+        result: getInputOutput
+    - parallelStep:
+          parallel:
+            shared: [compression_out, profanity_out]
+            branches:
+              - compress:
+                  steps:
+                    - text2speech:
+                        call: http.post
+                        args:
+                          url: ${text2speech_url}
+                          body:
+                              message: ${getInputOutput.body.body.data.message}
+                              reqID: ${getInputOutput.body.body.data.reqID}
+                          auth:
+                              type: OIDC    
+                        result: text2speechOutput
+                    - conversion:
+                        call: http.post
+                        args:
+                          url: ${conversion_url}
+                          body:
+                              message: ${text2speechOutput.body.body.data.message}
+                              reqID: ${text2speechOutput.body.body.data.reqID}
+                          auth:
+                              type: OIDC    
+                        result: conversionOutput
+                    - compression:
+                        call: http.post
+                        args:
+                          url: ${compression_url}
+                          body:
+                              message: ${conversionOutput.body.body.data.message}
+                              reqID: ${conversionOutput.body.body.data.reqID}
+                          auth:
+                              type: OIDC    
+                        result: compression_out
+              - callProfanity:
+                  steps:
+                    - profanity:
+                        call: http.post
+                        args:
+                          url: ${profanity_url}
+                          body:
+                              message: ${getInputOutput.body.body.data.message}
+                              reqID: ${getInputOutput.body.body.data.reqID}
+                          auth:
+                              type: OIDC    
+                        result: profanity_out
+    - censor:
+          call: http.post
+          args:
+              url: ${censor_url}
+              body:
+                  reqID: ${profanity_out.body.body.data.reqID}
+                  convertedFileName: ${compression_out.body.body.data.message}
+                  indexes: ${profanity_out.body.body.data.message}
+              auth:
+                  type: OIDC    
+          result: finalOutput
+    - end_process:
+          return: 
+            - ${finalOutput.body}
