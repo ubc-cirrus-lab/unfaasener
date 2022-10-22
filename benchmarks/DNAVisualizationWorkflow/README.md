@@ -1,3 +1,3 @@
 # DNAVisualization
-This benchmark generates an image of a DNA sequence input.
-Utilizes python library [dna_features_viewer](https://github.com/Edinburgh-Genome-Foundry/DnaFeaturesViewer).
+This benchmark was originally taken from the following github repository: https://github.com/spcl/serverless-benchmarks/tree/master/benchmarks/500.scientific/504.dna-visualisation.
+We modified the code for our own purposes.
