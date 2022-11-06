@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cp ./tests/rps_cost_test.py ./scheduler
-cp ./tests/rps_latency_test.py ./scheduler
+cp ./tests/solver/rps_cost_test.py ./scheduler
+cp ./tests/solver/rps_latency_test.py ./scheduler
 cd ./scheduler
 
 if command -v python &> /dev/null
