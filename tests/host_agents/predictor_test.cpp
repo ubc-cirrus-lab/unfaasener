@@ -3,7 +3,10 @@
 
 using namespace std;
 
+int tests_conducted = 0;
+
 int test_buffer_size_check() {
+    tests_conducted ++;
     size_t ring_size = 0;
     ring cpu_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
@@ -20,6 +23,7 @@ int test_buffer_size_check() {
 }
 
 int test_const_zeros() {
+    tests_conducted ++;
     size_t ring_size = 5;
     ring cpu_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
@@ -50,7 +54,10 @@ int main(void) {
     test_results += test_const_zeros();
 
     if (test_results==0){
-        cout << "=> OK - All tests passed!\n";
+        cout << "=> OK - All " << tests_conducted << " tests passed!\n";
         return 0;
+    } else {
+        cout << "=> Failure - " << test_results << "/" << tests_conducted << " tests failed!\n";
+        return 1;
     }
 }
