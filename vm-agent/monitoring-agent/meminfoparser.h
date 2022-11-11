@@ -1,9 +1,6 @@
 #include <fstream>
 #include <iostream>
-#include <numeric>
-#include <unistd.h>
-#include <vector>
-#include <memory>
+
 
 class meminfoparser
 {
