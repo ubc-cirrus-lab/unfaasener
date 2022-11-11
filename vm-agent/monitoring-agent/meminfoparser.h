@@ -7,36 +7,35 @@
 
 class meminfoparser
 {
-//    size_t results[2];
+
 public:
     meminfoparser(size_t* results)
     {
-	results[0] = 0; //total memory
-	results[1] = 0; // free memory
+        results[0] = 0; // total memory
+        results[1] = 0; // available memory
     }
     bool get_meminfo(size_t* results) 
     {
-     std::string token;
-     std::ifstream meminfo("/proc/meminfo");
-     std::string memtotal;
-     std::string memfree;
-     while(meminfo >> token)
-     {
-	if ( token == "MemTotal:")
-	{	
-		meminfo >> results[0];
-//		std::cout << "MemFotal: " << results[0] << ")\n";	
-	}
-	if ( token == "MemAvailable:" )
-	{
-		meminfo >> results[1];
-//               std::cout << "MemFree: " << results[1] << ")\n";
-
-	}
-
-     }
-     return true;
+        std::string token;
+        std::ifstream meminfo("/proc/meminfo");
+        std::string memtotal;
+        std::string memfree;
+        bool total_mem_read = false;
+        bool avail_mem_read = false;
+        while(meminfo >> token)
+        {
+            if ( token == "MemTotal:") {
+                meminfo >> results[0];
+                total_mem_read = true;
+            }
+            if ( token == "MemAvailable:" ) {
+                meminfo >> results[1];
+                avail_mem_read = true;
+            }
+            if ( (total_mem_read)&&(avail_mem_read) )
+                break;
+        }
+        return true;
     }
     
-
 };
