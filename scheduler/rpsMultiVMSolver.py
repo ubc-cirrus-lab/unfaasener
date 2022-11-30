@@ -4,6 +4,7 @@ import string
 from unicodedata import name
 import pandas as pd
 import numpy as np
+import configparser
 from pathlib import Path
 from LatencyModel import LatencyModel
 from gekko import GEKKO
@@ -18,28 +19,36 @@ class rpsOffloadingSolver:
     def __init__(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
         self.testingFlag = testingFlag
         self.rps = rps
-        with open(
-            (
-                (os.path.dirname(os.path.abspath(__file__)))
-                + "/data/"
-                + str(workflow)
-                + "/"
-                + "slackData.json"
-            ),
-            "r", os.O_NONBLOCK
-        ) as outfile:
-            self.slacksDF = json.load(outfile)
-        with open(
-            (
-                (os.path.dirname(os.path.abspath(__file__)))
-                + "/data/"
-                + str(workflow)
-                + "/"
-                + "slackDurations.json"
-            ),
-            "r", os.O_NONBLOCK
-        ) as outfile:
-            self.slackDurationsDF = json.load(outfile)
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
+        self.config = configparser.ConfigParser()
+        self.config.read(path)
+        self.rankerConfig = self.config["settings"]
+        self.muFactor = self.rankerConfig["muFactor"]
+        if mode == "latency":
+            with open(
+                (
+                    (os.path.dirname(os.path.abspath(__file__)))
+                    + "/data/"
+                    + str(workflow)
+                    + "/"
+                    + "slackData.json"
+                ),
+                "r", os.O_NONBLOCK
+            ) as outfile:
+                self.slacksDF = json.load(outfile)
+            with open(
+                (
+                    (os.path.dirname(os.path.abspath(__file__)))
+                    + "/data/"
+                    + str(workflow)
+                    + "/"
+                    + "slackDurations.json"
+                ),
+                "r", os.O_NONBLOCK
+            ) as outfile:
+                self.slackDurationsDF = json.load(outfile)
         with open(
             (
                 (os.path.dirname(os.path.abspath(__file__)))
@@ -372,11 +381,13 @@ class rpsOffloadingSolver:
                                     * 0.001
                                 )
                                 * (offloadingDecisions[function + 1][VMIndex] / 100)
-                                * (
-                                    self.getCPU(
-                                        self.getMem(offloadingCandidates[function + 1])
-                                    )
-                                )
+                                * self.muFactor
+                                # * (
+                                #     self.getCPU(
+                                #         self.getMem(offloadingCandidates[function + 1])
+                                #     )
+                                # )
+                                # * 2
                             )
                             for function in range(len(offloadingDecisions) - 1)
                         ]
@@ -648,11 +659,14 @@ class rpsOffloadingSolver:
                                     * 0.001
                                 )
                                 * (offloadingDecisions[function + 1][VMIndex] / 100)
-                                * (
-                                    self.getCPU(
-                                        self.getMem(offloadingCandidates[function + 1])
-                                    )
-                                )
+                                * self.muFactor
+                                # * (
+                                #     self.getCPU(
+                                #         self.getMem(offloadingCandidates[function + 1])
+                                #     )
+                                # )
+                                # *
+                                # 2
                             )
                             for function in range(len(offloadingDecisions) - 1)
                         ]
