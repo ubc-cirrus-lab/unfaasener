@@ -6,6 +6,7 @@ import docker
 from google.cloud import datastore, functions_v1, pubsub_v1
 from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
 import json
+import configparser
 from multiprocessing import cpu_count
 import os
 from pathlib import Path
@@ -17,7 +18,17 @@ from time import sleep
 import uuid
 import wget
 from zipfile import ZipFile
+import shlex
 
+
+path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+            + "/scheduler/rankerConfig.ini"
+        )
+config = configparser.ConfigParser()
+config.read(path)
+rankerConfig =config["settings"]
+muFactor =rankerConfig["muFactor"]
 
 project_id = "ubc-serverless-ghazal"
 subscription_id = sys.argv[1]
@@ -38,26 +49,26 @@ cacheDurations = {}
 memoryLimits = {}
 # Initalize cpuLimits
 cpuLimits = {
-    "128MB": 83000,
-    "256MB": 167000,
-    "512MB": 333000,
-    "1024MB": 583000,
-    "2048MB": 1000000,
-    "4096MB": 2000000,
-    "8192MB": 4000000,
+    "128m": 8300,
+    "256m": 16700,
+    "512m": 33300,
+    "1024m": 58300,
+    "2048m": 100000,
+    "4096m": 200000,
+    "8192m": 400000,
 }
 lastexecutiontimestamps = {}
 client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
 
 # concurrency configs and locking variables
-CONCURRENCY_LIMIT = 20
+CONCURRENCY_LIMIT = int(4/float(muFactor))
 msgQueue = []  # queue of msgIDs used to enforce execution order
 activeThreads = []
 activeThreadCheckLock = Lock()
 contExecRunLock = Lock()
 activeContainerSearchList = {}  # function -> list of container
-
+contsPerFunct = {}
 
 def flushExecutionDurations():
     global executionDurations
@@ -152,7 +163,7 @@ def getFunctionParameters(functionname):
     #     + str(client.get_function(request=request).available_memory_mb)
     # )
     memoryLimits[functionname] = (
-        str(client.get_function(request=request).available_memory_mb) + "MB"
+        str(client.get_function(request=request).available_memory_mb) + "m"
     )
 
 
@@ -272,6 +283,16 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     }
     checkedForAvailableThread = False
     while len(activeThreads) >= CONCURRENCY_LIMIT:
+        if((((datetime.datetime.now())- before).total_seconds()) * 1000 > 1000):
+            invokedFun = jsonfile["attributes"].get("invokedFunction")
+            reqID = jsonfile["attributes"].get("reqID")
+            jsonfile["attributes"]["routing"] = (jsonfile["attributes"].get("routing")).replace("A", "0")
+            jsonfile["attributes"] = dict(jsonfile["attributes"])
+            topic_path = publisher.topic_path(project_id, invokedFun)
+            publish_future = publisher.publish(topic_path, data=(json.dumps(jsonfile["data"])).encode('utf-8'), **jsonfile["attributes"])
+            publish_future.result()
+            print("While waiting for threads, Request of function: ", invokedFun, " with reqID: ", reqID, " has forwarded to the serverless equivalent!")
+            return
         threadsRemoved = False
         checkedForAvailableThread = True
         activeThreadCheckLock.acquire()
@@ -298,164 +319,209 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
 
 def processReqs(jsonfile, before):
+    tot_cont_hash = uuid.uuid4().hex
     global executionDurations
     global cacheDurations
     global cpulimit
     global msgQueue
     global activeContainerSearchList
     global contExecRunLock
+    global contsPerFunct
     # n_cores = cpu_count()
     msgID = jsonfile["attributes"].get("identifier")
     reqID = jsonfile["attributes"].get("reqID")
     invokedFun = jsonfile["attributes"].get("invokedFunction")
     tmpInvokedFun = jsonfile["attributes"].get("invokedFunction")
-    imageNotFound = True
-    for image in client.images.list():
-        if invokedFun in str(image.tags):
-            # print("Image found")
-            imageNotFound = False
-    if imageNotFound:
-        containerize(invokedFun)
-
-    if invokedFun not in memoryLimits:
-        getFunctionParameters(invokedFun)
-    with open(
-        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
-    ) as output:
+    # with open(
+    #     str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
+    # ) as output:
         # TODO: try/except error handling
+
+
+    # conts = client.containers.list(
+    #     all=True, filters={"ancestor": "name:" + invokedFun}
+    # )
+    cpuutil = psutil.cpu_percent()
+    locked = False
+    if cpuutil > 80:
+        msgQueue.append(msgID)
+        locked = True
+    while locked:
+        cpuutil = psutil.cpu_percent()
+        if (cpuutil < 80) and (msgQueue.index(msgID) < 3):
+            msgQueue.remove(msgID)
+            break
+        elif((((datetime.datetime.now())- before).total_seconds()) * 1000 > 2000):
+            jsonfile["attributes"]["routing"] = (jsonfile["attributes"].get("routing")).replace("A", "0")
+            jsonfile["attributes"] = dict(jsonfile["attributes"])
+            topic_path = publisher.topic_path(project_id, invokedFun)
+            publish_future = publisher.publish(topic_path, data=(json.dumps(jsonfile["data"])).encode('utf-8'), **jsonfile["attributes"])
+            publish_future.result()
+            msgQueue.remove(msgID)
+            print("Waiting for CPU, Request of function: ", invokedFun, " with reqID: ", reqID, " has forwarded to the serverless equivalent!")
+            return
+        print(
+            "CPU is " + str(cpuutil) + " and queue length is " + str(len(msgQueue))
+        )
+        sleep(0.01)
+
+    # imageNotFound = True
+    # for image in client.images.list():
+    #     if invokedFun in str(image.tags):
+    #         # print("Image found")
+    #         imageNotFound = False
+    # if imageNotFound:
+    #     containerize(invokedFun)
+    try:
+        subprocess.check_output(shlex.split(("docker image inspect name:"+ invokedFun))).decode('utf-8')
+    except subprocess.CalledProcessError:
+        containerize(invokedFun)
+    # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
+    # It is disabled to enable the system to create more containers as more requests arrive
+    # These containers are then stopped by the thread
+    # TO -renable it , just remove the line what sets conts = {}
+    # conts = {} #THis line can be removed to allow reusing containers
+    execution_complete = 0
+    localcontsPerFunct = contsPerFunct.copy()
+    if tmpInvokedFun in localcontsPerFunct.keys():
+        conts = localcontsPerFunct[tmpInvokedFun]
+    else:
         conts = client.containers.list(
             all=True, filters={"ancestor": "name:" + invokedFun}
         )
-        cpuutil = psutil.cpu_percent()
-        locked = False
-        if cpuutil > 80:
-            msgQueue.append(msgID)
-            locked = True
-        while locked:
-            cpuutil = psutil.cpu_percent()
-            if (cpuutil < 80) and (msgQueue.index(msgID) < 3):
-                msgQueue.remove(msgID)
-                break
-            print(
-                "CPU is " + str(cpuutil) + " and queue length is " + str(len(msgQueue))
-            )
-            sleep(0.01)
-        # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
-        # It is disabled to enable the system to create more containers as more requests arrive
-        # These containers are then stopped by the thread
-        # TO -renable it , just remove the line what sets conts = {}
-        # conts = {} #THis line can be removed to allow reusing containers
-        execution_complete = 0
-        if len(conts) != 0:
-            for cont in conts:
-                contExecRunLock.acquire()
-                if tmpInvokedFun in activeContainerSearchList.keys():
-                    if cont not in activeContainerSearchList[tmpInvokedFun]:
-                        activeContainerSearchList[tmpInvokedFun].append(cont)
-                        contExecRunLock.release()
-                    else:
-                        contExecRunLock.release()
-                        continue
-                else:
-                    activeContainerSearchList[tmpInvokedFun] = [cont]
+        contExecRunLock.acquire()
+        contsPerFunct[tmpInvokedFun] = conts
+        contExecRunLock.release()
+    # print(f"{tot_cont_hash}:Before checking containers:: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+    if len(conts) != 0:
+        for cont in conts:
+            # print(f"{tot_cont_hash}:start checking::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+            contExecRunLock.acquire()
+            if tmpInvokedFun in activeContainerSearchList.keys():
+                if cont not in activeContainerSearchList[tmpInvokedFun]:
+                    activeContainerSearchList[tmpInvokedFun].append(cont)
                     contExecRunLock.release()
-                # if tmpInvokedFun in activeContainerSearchList.keys():
-                #     if cont in activeContainerSearchList[tmpInvokedFun]:
-                #         continue
-                if (cont.attrs['State']['Running']):
-                    statistics = cont.stats(stream=False)
-                    if int(statistics["pids_stats"]["current"]) > 1:
-                        contExecRunLock.acquire()
-                        activeContainerSearchList[tmpInvokedFun].remove(cont)
-                        contExecRunLock.release()
-                        continue
                 else:
-                    cont.start()
+                    contExecRunLock.release()
+                    continue
+            else:
+                activeContainerSearchList[tmpInvokedFun] = [cont]
+                contExecRunLock.release()
+            if (cont.attrs['State']['Running']):
                 # statistics = cont.stats(stream=False)
                 # if int(statistics["pids_stats"]["current"]) > 1:
-                #     execution_complete = 0
-                # contExecRunLock.acquire()
-                # if tmpInvokedFun in activeContainerSearchList.keys():
-                #     activeContainerSearchList[tmpInvokedFun].append(cont)
-                # else:
-                #     activeContainerSearchList[tmpInvokedFun] = [cont]
-                # contExecRunLock.release()
-                cont.exec_run(
-                    "python3 /app/main.py '"
-                    + str(jsonfile).replace("'", '"')
-                    + "' "
-                    + reqID,
-                    detach=True,
-                )
-                lastexecutiontimestamps[invokedFun] = before
-                execution_complete = 1
-                contExecRunLock.acquire()
-                activeContainerSearchList[tmpInvokedFun].remove(cont)
-                contExecRunLock.release()
-                break
-
-        if execution_complete == 0:
-            container = client.containers.create(
-                "name:" + invokedFun,
-                mem_limit=str(memoryLimits[invokedFun]),
-                cpu_period=1000000,
-                cpu_quota=int(cpuLimits[str(memoryLimits[invokedFun])]),
-                # cpu_quota=1000000,
-                command="tail -f /etc/hosts",
-                detach=False,
-                user="bin",
-            )
-            lastexecutiontimestamps[container.id] = before
-            container.start()
-            cmd = (
+                if len(cont.top()["Processes"]) > 1:
+                    contExecRunLock.acquire()
+                    activeContainerSearchList[tmpInvokedFun].remove(cont)
+                    contExecRunLock.release()
+                    # print(f"{tot_cont_hash}:checked unavailable cont::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+                    continue
+            else:
+                # name = cont.attrs['Name']
+                # subprocess.check_output(shlex.split(("docker start "+ name))).decode('utf-8')
+                cont.start()
+            
+            # print(f"{tot_cont_hash}:Starting exe time::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+            # statistics = cont.stats(stream=False)
+            # if int(statistics["pids_stats"]["current"]) > 1:
+            #     execution_complete = 0
+            # contExecRunLock.acquire()
+            # if tmpInvokedFun in activeContainerSearchList.keys():
+            #     activeContainerSearchList[tmpInvokedFun].append(cont)
+            # else:
+            #     activeContainerSearchList[tmpInvokedFun] = [cont]
+            # contExecRunLock.release()
+            # name = cont.attrs['Name']
+            # subprocess.check_output(shlex.split(("docker exec "+ name + " python3 /app/main.py '"
+            #     + str(jsonfile).replace("'", '"')
+            #     + "' "
+            #     + reqID))).decode('utf-8')
+            cont.exec_run(
                 "python3 /app/main.py '"
                 + str(jsonfile).replace("'", '"')
                 + "' "
-                + reqID
+                + reqID,
+                detach=False,
             )
-            container.exec_run(cmd, detach=False)
+            after = datetime.datetime.now()
+            # lastexecutiontimestamps[invokedFun] = before
+            execution_complete = 1
+            contExecRunLock.acquire()
+            activeContainerSearchList[tmpInvokedFun].remove(cont)
+            contExecRunLock.release()
+            print(f"{tot_cont_hash}:Total exe time::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+            break
 
-        after = datetime.datetime.now()
-        delta = after - before
-        if jsonfile["attributes"].get("branch") != None:
-            # Cover the Merging functions
-            invokedFun = (
-                str(invokedFun) + str(jsonfile["attributes"].get("branch")) + str(reqID)
-            )
-            executionDurations[invokedFun] = {}
-
-        if (invokedFun + str(reqID)) in executionDurations.keys():
-            newHash = uuid.uuid4().hex
-            invokedFun = str(invokedFun) + ":fanout:" + str(newHash) + str(reqID)
-            executionDurations[invokedFun] = {}
-        else:
-            invokedFun = invokedFun + str(reqID)
-            executionDurations[invokedFun] = {}
-
-        executionDurations[invokedFun]["duration"] = str(
-            ((delta).total_seconds()) * 1000
+    if execution_complete == 0:
+        # print(f"{tot_cont_hash}:Create new cont::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+        if invokedFun not in memoryLimits:
+            getFunctionParameters(invokedFun)
+        container = client.containers.create(
+            "name:" + invokedFun,
+            mem_limit=str(memoryLimits[invokedFun]),
+            cpu_period=100000,
+            # cpu_quota=min(int(cpuLimits[str(memoryLimits[invokedFun])])*2, 100000),
+            cpu_quota=100000,
+            command="tail -f /etc/hosts",
+            detach=False,
+            user="bin",
         )
-        if tmpInvokedFun not in cacheDurations.keys():
-            cacheDurations[tmpInvokedFun] = []
-            cacheDurations[tmpInvokedFun].append(
-                float(((delta).total_seconds()) * 1000)
-            )
-        else:
-            cacheDurations[tmpInvokedFun].append(
-                float(((delta).total_seconds()) * 1000)
-            )
-        executionDurations[invokedFun]["reqID"] = reqID
-        executionDurations[invokedFun]["start"] = str(before)
-        executionDurations[invokedFun]["finish"] = str(after)
-        executionDurations[invokedFun]["host"] = sys.argv[2]
-        executionDurations[invokedFun]["function"] = str(invokedFun)
-        executionDurations[invokedFun]["mergingPoint"] = ""
-        if jsonfile["attributes"].get("branch") != None:
-            executionDurations[invokedFun]["mergingPoint"] = str(
-                jsonfile["attributes"].get("branch")
-            )
-        elif ":fanout:" in invokedFun:
-            executionDurations[invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
+        lastexecutiontimestamps[container.id] = before
+        container.start()
+        cmd = (
+            "python3 /app/main.py '"
+            + str(jsonfile).replace("'", '"')
+            + "' "
+            + reqID
+        )
+        container.exec_run(cmd, detach=False)
+        print(f"{tot_cont_hash}:Exe time after creation::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+        after = datetime.datetime.now()
+        contExecRunLock.acquire()
+        contsPerFunct[tmpInvokedFun].append(container)
+        contExecRunLock.release()
+
+    # after = datetime.datetime.now()
+    delta = after - before
+    if jsonfile["attributes"].get("branch") != None:
+        # Cover the Merging functions
+        invokedFun = (
+            str(invokedFun) + str(jsonfile["attributes"].get("branch")) + str(reqID)
+        )
+        executionDurations[invokedFun] = {}
+
+    if (invokedFun + str(reqID)) in executionDurations.keys():
+        newHash = uuid.uuid4().hex
+        invokedFun = str(invokedFun) + ":fanout:" + str(newHash) + str(reqID)
+        executionDurations[invokedFun] = {}
+    else:
+        invokedFun = invokedFun + str(reqID)
+        executionDurations[invokedFun] = {}
+
+    executionDurations[invokedFun]["duration"] = str(
+        ((delta).total_seconds()) * 1000
+    )
+    if tmpInvokedFun not in cacheDurations.keys():
+        cacheDurations[tmpInvokedFun] = []
+        cacheDurations[tmpInvokedFun].append(
+            float(((delta).total_seconds()) * 1000)
+        )
+    else:
+        cacheDurations[tmpInvokedFun].append(
+            float(((delta).total_seconds()) * 1000)
+        )
+    executionDurations[invokedFun]["reqID"] = reqID
+    executionDurations[invokedFun]["start"] = str(before)
+    executionDurations[invokedFun]["finish"] = str(after)
+    executionDurations[invokedFun]["host"] = sys.argv[2]
+    executionDurations[invokedFun]["function"] = str(invokedFun)
+    executionDurations[invokedFun]["mergingPoint"] = ""
+    if jsonfile["attributes"].get("branch") != None:
+        executionDurations[invokedFun]["mergingPoint"] = str(
+            jsonfile["attributes"].get("branch")
+        )
+    elif ":fanout:" in invokedFun:
+        executionDurations[invokedFun]["mergingPoint"] = ":fanout:" + str(newHash)
 
 
 flow_control = pubsub_v1.types.FlowControl(max_messages=20)
