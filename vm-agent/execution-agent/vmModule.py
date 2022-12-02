@@ -47,22 +47,12 @@ client = docker.from_env()
 executionDurations = {}
 cacheDurations = {}
 memoryLimits = {}
-# Initalize cpuLimits
-cpuLimits = {
-    "128m": 8300,
-    "256m": 16700,
-    "512m": 33300,
-    "1024m": 58300,
-    "2048m": 100000,
-    "4096m": 200000,
-    "8192m": 400000,
-}
 lastexecutiontimestamps = {}
 client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
 
 # concurrency configs and locking variables
-CONCURRENCY_LIMIT = int(4/float(muFactor))
+CONCURRENCY_LIMIT = int((os.cpu_count())/float(muFactor))
 msgQueue = []  # queue of msgIDs used to enforce execution order
 activeThreads = []
 activeThreadCheckLock = Lock()
@@ -90,7 +80,6 @@ def flushExecutionDurations():
         newCachJSon = cacheDurations
         cacheDurations = {}
     with open(cachePath, "w", os.O_NONBLOCK) as f:
-        # print("Data written in cache")
         json.dump(newCachJSon, f)
     tempexecutionDurations = copy.deepcopy(executionDurations)
     kind = "vmLogs"
@@ -327,20 +316,13 @@ def processReqs(jsonfile, before):
     global activeContainerSearchList
     global contExecRunLock
     global contsPerFunct
-    # n_cores = cpu_count()
     msgID = jsonfile["attributes"].get("identifier")
     reqID = jsonfile["attributes"].get("reqID")
     invokedFun = jsonfile["attributes"].get("invokedFunction")
     tmpInvokedFun = jsonfile["attributes"].get("invokedFunction")
-    # with open(
-    #     str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
-    # ) as output:
-        # TODO: try/except error handling
+    # TODO: try/except error handling
 
 
-    # conts = client.containers.list(
-    #     all=True, filters={"ancestor": "name:" + invokedFun}
-    # )
     cpuutil = psutil.cpu_percent()
     locked = False
     if cpuutil > 80:
@@ -365,13 +347,6 @@ def processReqs(jsonfile, before):
         )
         sleep(0.01)
 
-    # imageNotFound = True
-    # for image in client.images.list():
-    #     if invokedFun in str(image.tags):
-    #         # print("Image found")
-    #         imageNotFound = False
-    # if imageNotFound:
-    #     containerize(invokedFun)
     try:
         subprocess.check_output(shlex.split(("docker image inspect name:"+ invokedFun))).decode('utf-8')
     except subprocess.CalledProcessError:
@@ -392,10 +367,8 @@ def processReqs(jsonfile, before):
         contExecRunLock.acquire()
         contsPerFunct[tmpInvokedFun] = conts
         contExecRunLock.release()
-    # print(f"{tot_cont_hash}:Before checking containers:: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
     if len(conts) != 0:
         for cont in conts:
-            # print(f"{tot_cont_hash}:start checking::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
             contExecRunLock.acquire()
             if tmpInvokedFun in activeContainerSearchList.keys():
                 if cont not in activeContainerSearchList[tmpInvokedFun]:
@@ -408,34 +381,13 @@ def processReqs(jsonfile, before):
                 activeContainerSearchList[tmpInvokedFun] = [cont]
                 contExecRunLock.release()
             if (cont.attrs['State']['Running']):
-                # statistics = cont.stats(stream=False)
-                # if int(statistics["pids_stats"]["current"]) > 1:
                 if len(cont.top()["Processes"]) > 1:
                     contExecRunLock.acquire()
                     activeContainerSearchList[tmpInvokedFun].remove(cont)
                     contExecRunLock.release()
-                    # print(f"{tot_cont_hash}:checked unavailable cont::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
                     continue
             else:
-                # name = cont.attrs['Name']
-                # subprocess.check_output(shlex.split(("docker start "+ name))).decode('utf-8')
                 cont.start()
-            
-            # print(f"{tot_cont_hash}:Starting exe time::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
-            # statistics = cont.stats(stream=False)
-            # if int(statistics["pids_stats"]["current"]) > 1:
-            #     execution_complete = 0
-            # contExecRunLock.acquire()
-            # if tmpInvokedFun in activeContainerSearchList.keys():
-            #     activeContainerSearchList[tmpInvokedFun].append(cont)
-            # else:
-            #     activeContainerSearchList[tmpInvokedFun] = [cont]
-            # contExecRunLock.release()
-            # name = cont.attrs['Name']
-            # subprocess.check_output(shlex.split(("docker exec "+ name + " python3 /app/main.py '"
-            #     + str(jsonfile).replace("'", '"')
-            #     + "' "
-            #     + reqID))).decode('utf-8')
             cont.exec_run(
                 "python3 /app/main.py '"
                 + str(jsonfile).replace("'", '"')
@@ -444,7 +396,7 @@ def processReqs(jsonfile, before):
                 detach=False,
             )
             after = datetime.datetime.now()
-            # lastexecutiontimestamps[invokedFun] = before
+            lastexecutiontimestamps[invokedFun] = before
             execution_complete = 1
             contExecRunLock.acquire()
             activeContainerSearchList[tmpInvokedFun].remove(cont)
@@ -453,14 +405,12 @@ def processReqs(jsonfile, before):
             break
 
     if execution_complete == 0:
-        # print(f"{tot_cont_hash}:Create new cont::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
         if invokedFun not in memoryLimits:
             getFunctionParameters(invokedFun)
         container = client.containers.create(
             "name:" + invokedFun,
             mem_limit=str(memoryLimits[invokedFun]),
             cpu_period=100000,
-            # cpu_quota=min(int(cpuLimits[str(memoryLimits[invokedFun])])*2, 100000),
             cpu_quota=100000,
             command="tail -f /etc/hosts",
             detach=False,
@@ -481,7 +431,6 @@ def processReqs(jsonfile, before):
         contsPerFunct[tmpInvokedFun].append(container)
         contExecRunLock.release()
 
-    # after = datetime.datetime.now()
     delta = after - before
     if jsonfile["attributes"].get("branch") != None:
         # Cover the Merging functions
