@@ -156,6 +156,7 @@ def getFunctionParameters(functionname):
     )
 
 
+
 def containerize(functionname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
@@ -205,16 +206,6 @@ def containerize(functionname):
         file_object.write("    main()\n")
         file_object.close()
         subprocess.call(
-            "cp Text2Speech/"
-            + functionname
-            + "/requirements.txt "
-            + functionname
-            + "/requirements.txt",
-            shell=True,
-            stdout=output,
-            stderr=output,
-        )
-        subprocess.call(
             "cp ubc-serverless-ghazal-9bede7ba1a47.json " + functionname + "/ ",
             shell=True,
             stdout=output,
@@ -242,8 +233,12 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-        subprocess.call("rm -rf "+ functionname)
-        subprocess.call("rm -rf "+ functionname+".zip")
+        subprocess.call("ls",stdout=output)
+        subprocess.run("rm -rf "+ functionname+"*",shell=True)
+
+
+
+
 
 
 

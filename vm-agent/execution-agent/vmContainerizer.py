@@ -1,11 +1,34 @@
-from google.cloud import functions_v1
-import wget
-from zipfile import ZipFile
+from concurrent.futures import TimeoutError
+import copy
+import datetime
+from datetime import timedelta
+import docker
+from google.cloud import datastore, functions_v1, pubsub_v1
+from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
+import json
+from multiprocessing import cpu_count
+import os
+from pathlib import Path
+import psutil
 import subprocess
 import sys
+from threading import Thread, Lock
+from time import sleep
+import uuid
+import wget
+from zipfile import ZipFile
 
 
-def containerize(functionname, workflowname):
+project_id = "ubc-serverless-ghazal"
+subscription_id = sys.argv[1]
+# timeout = 22.0
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+    str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/vmExeModule.json"
+)
+
+
+
+def containerize(functionname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
 
@@ -18,8 +41,9 @@ def containerize(functionname, workflowname):
     # Make the request
     response = client.generate_download_url(request=request)
     downloadlink = str(response).split(" ")[1].split('"')[1]
+
     # Download the function
-    print("\nDownloading the function")
+    # print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
     request = functions_v1.GetFunctionRequest(
         name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
@@ -31,11 +55,13 @@ def containerize(functionname, workflowname):
     entrypoint = response.entry_point
 
     # Unzip the function
-    print("\nUnzipping the function")
+    # print("\nUnzipping the function")
     with ZipFile(functionname + ".zip", "r") as zipObj:
         zipObj.extractall(functionname)
-    with open("/tmp/output.log", "a") as output:
-        print("\nCreating the Docker container \n")
+    with open(
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
+    ) as output:
+        # print("\nCreating the Docker container \n")
         # Copy the Docker file to the unzipped folder
         subprocess.call(
             "cp Dockerfile " + functionname, shell=True, stdout=output, stderr=output
@@ -46,24 +72,10 @@ def containerize(functionname, workflowname):
         file_object = open(functionname + "/main.py", "a")
         file_object.write("import sys\n")
         file_object.write("def main():\n")
-        file_object.write(
-            "    " + entrypoint + "(json.loads(sys.argv[1]),sys.argv[2])\n"
-        )
+        file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
         file_object.write("if __name__ == '__main__':\n")
         file_object.write("    main()\n")
         file_object.close()
-        subprocess.call(
-            "cp "
-            + workflowname
-            + "/"
-            + functionname
-            + "/requirements.txt "
-            + functionname
-            + "/requirements.txt",
-            shell=True,
-            stdout=output,
-            stderr=output,
-        )
         subprocess.call(
             "cp ubc-serverless-ghazal-9bede7ba1a47.json " + functionname + "/ ",
             shell=True,
@@ -92,6 +104,12 @@ def containerize(functionname, workflowname):
             stdout=output,
             stderr=output,
         )
+        subprocess.call("cd .. ")
+        subprocess.call("rm -rf "+ functionname)
+        subprocess.call("rm -rf "+ functionname+".zip")
+
+
+
 
 
 def run_container(functionname):
@@ -103,7 +121,7 @@ def run_container(functionname):
 
 
 def main():
-    containerize(sys.argv[1], sys.argv[2])
+    containerize(sys.argv[1])
 
 
 #    run_container(sys.argv[1])
