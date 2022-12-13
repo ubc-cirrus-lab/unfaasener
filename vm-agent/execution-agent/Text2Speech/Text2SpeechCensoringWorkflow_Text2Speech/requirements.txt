@@ -1,7 +1,0 @@
-# Function dependencies, for example:
-# package>=version
-gTTS==2.2.3
-google-cloud-storage==1.43.0
-google-cloud-datastore==1.13.2
-google-cloud-pubsub>=0.28.1
-Flask==2.1.0
