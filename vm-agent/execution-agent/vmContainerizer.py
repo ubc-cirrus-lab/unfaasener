@@ -70,9 +70,11 @@ def containerize(functionname):
             "cp init.sh " + functionname, shell=True, stdout=output, stderr=output
         )
         file_object = open(functionname + "/main.py", "a")
-        file_object.write("import sys\n")
+        file_object.write("\nimport sys\n")
         file_object.write("def main():\n")
-        file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
+        file_object.write(
+            "    " + entrypoint + "(json.loads(sys.argv[1]),sys.argv[2])\n"
+        )
         file_object.write("if __name__ == '__main__':\n")
         file_object.write("    main()\n")
         file_object.close()
@@ -104,9 +106,9 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-        subprocess.call("cd .. ")
-        subprocess.call("rm -rf "+ functionname)
-        subprocess.call("rm -rf "+ functionname+".zip")
+       # subprocess.call("cd .. ")
+       # subprocess.call("rm -rf "+ functionname)
+       # subprocess.call("rm -rf "+ functionname+".zip")
 
 
 

@@ -202,6 +202,10 @@ def containerize(functionname):
         file_object.write("import sys\n")
         file_object.write("def main():\n")
         file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
+        file_object.write(
+            "    " + entrypoint + "(json.loads(sys.argv[1]),sys.argv[2])\n"
+        )
+
         file_object.write("if __name__ == '__main__':\n")
         file_object.write("    main()\n")
         file_object.close()
