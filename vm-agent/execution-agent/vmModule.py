@@ -156,6 +156,7 @@ def getFunctionParameters(functionname):
     )
 
 
+
 def containerize(functionname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
@@ -184,7 +185,7 @@ def containerize(functionname):
 
     # Unzip the function
     # print("\nUnzipping the function")
-    with ZipFile(functionname + ".zip", "r") as zipObj:
+    with ZipFile(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/"+functionname + ".zip", "r") as zipObj:
         zipObj.extractall(functionname)
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
@@ -192,42 +193,36 @@ def containerize(functionname):
         # print("\nCreating the Docker container \n")
         # Copy the Docker file to the unzipped folder
         subprocess.call(
-            "cp Dockerfile " + functionname, shell=True, stdout=output, stderr=output
+            "cp "+str(Path(os.path.dirname(os.path.abspath(__file__))))+"/Dockerfile "+str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname, shell=True, stdout=output, stderr=output
         )
         subprocess.call(
-            "cp init.sh " + functionname, shell=True, stdout=output, stderr=output
+            "cp "+str(Path(os.path.dirname(os.path.abspath(__file__))))+"/init.sh " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname, shell=True, stdout=output, stderr=output
         )
-        file_object = open(functionname + "/main.py", "a")
+        file_object = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname + "/main.py", "a")
         file_object.write("import sys\n")
         file_object.write("def main():\n")
         file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
+        file_object.write(
+            "    " + entrypoint + "(json.loads(sys.argv[1]),sys.argv[2])\n"
+        )
+
         file_object.write("if __name__ == '__main__':\n")
         file_object.write("    main()\n")
         file_object.close()
         subprocess.call(
-            "cp Text2Speech/"
-            + functionname
-            + "/requirements.txt "
-            + functionname
-            + "/requirements.txt",
+            "cp "+str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/ubc-serverless-ghazal-9bede7ba1a47.json " + str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname + "/ ",
             shell=True,
             stdout=output,
             stderr=output,
         )
         subprocess.call(
-            "cp ubc-serverless-ghazal-9bede7ba1a47.json " + functionname + "/ ",
+            "sed -i 's/json.loads(base64.b64decode//g' " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname + "/main.py ",
             shell=True,
             stdout=output,
             stderr=output,
         )
         subprocess.call(
-            "sed -i 's/json.loads(base64.b64decode//g' " + functionname + "/main.py ",
-            shell=True,
-            stdout=output,
-            stderr=output,
-        )
-        subprocess.call(
-            "sed -i \"s/.decode('utf-8'))//g\" " + functionname + "/main.py ",
+            "sed -i \"s/.decode('utf-8'))//g\" " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname + "/main.py ",
             shell=True,
             stdout=output,
             stderr=output,
@@ -235,6 +230,8 @@ def containerize(functionname):
         # Create the image from the Dockerfile also copy the function's code
         subprocess.call(
             "cd "
+            +str(Path(os.path.dirname(os.path.abspath(__file__))))
+            +"/"
             + functionname
             + "; docker build . < Dockerfile --tag name:"
             + functionname,
@@ -242,8 +239,12 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-        subprocess.call("rm -rf "+ functionname)
-        subprocess.call("rm -rf "+ functionname+".zip")
+        subprocess.call("ls",stdout=output)
+        subprocess.run("rm -rf "+str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname+"*",shell=True)
+
+
+
+
 
 
 
