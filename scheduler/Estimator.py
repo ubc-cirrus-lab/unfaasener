@@ -93,17 +93,24 @@ class Estimator:
         self.windowSize = int(self.rankerConfig["windowSize"])
         # self.windowSize = 50
         self.memories = workflow_json["memory"]
-        with open(
-            (
-                (os.path.dirname(os.path.abspath(__file__)))
-                + "/data/"
-                + str(workflow)
-                + "/"
-                + "slackDurations.json"
-            ),
-            "r", os.O_NONBLOCK
-        ) as outfile:
-            self.slackDurationsDF = json.load(outfile)
+        if os.path.exists((
+                    (os.path.dirname(os.path.abspath(__file__)))
+                    + "/data/"
+                    + str(workflow)
+                    + "/"
+                    + "slackDurations.json"
+                )):
+            with open(
+                (
+                    (os.path.dirname(os.path.abspath(__file__)))
+                    + "/data/"
+                    + str(workflow)
+                    + "/"
+                    + "slackDurations.json"
+                ),
+                "r", os.O_NONBLOCK
+            ) as outfile:
+                self.slackDurationsDF = json.load(outfile)
 
     def prev_cost(self):
 
