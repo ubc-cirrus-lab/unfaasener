@@ -28,6 +28,7 @@ class resetLastDicision:
         decisionModes = (self.rankerConfig["decisionMode"]).split()
         self.rankerConfig["workflow"] = workflow
         self.rankerConfig["mode"] = mode
+        self.rankerConfig["mufactor"] = str(1)
         self.rankerConfig["starttest"] = str(datetime.datetime.now())
         with open(path, "w") as configfile:
                 self.config.write(configfile)
@@ -106,13 +107,21 @@ class resetLastDicision:
                     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
                     + "/vm-agent/monitoring-agent/triggers.txt"
                 )
+        utilFilePath = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                    + "/vm-agent/monitoring-agent/utilFile.txt"
+                )
+        forcedLockFile = (
+                    str(Path(os.path.dirname(os.path.abspath(__file__))))
+                    + "/forcedLock.txt"
+                )
         
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
         #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
         #         )
         cachePath = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.json")
-        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson, cachePath, triggersFile]
+        filePaths = [dfPickel, dfCSV, irPickel, irCSV, lockFile, vmAgentLogFile, dateDataframepkl, dateDataframecsv, prevDataJson, cachePath, triggersFile, utilFilePath, forcedLockFile]
         finalPaths = filePaths + dfPaths + irPaths
         for filePath in finalPaths:
             if os.path.isfile(filePath):

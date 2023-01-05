@@ -82,7 +82,6 @@ class baselineSlackAnalysisClass:
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
-        # self.windowSize = 50
         self.slackData = {}
         self.dependencies = []
         self.recordNum = len(self.workflowFunctions)

@@ -30,14 +30,20 @@ class dataStoreLogParser(GetLog):
         self.workflowFunctions = workflow_json["workflowFunctions"]
         self.initFunc = workflow_json["initFunc"]
         self.dictData = {}
-        # self.windowSize = 50
         path = str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])+ "/scheduler/rankerConfig.ini"
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
         startDate = str(self.rankerConfig["starttest"])
-        self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
+        try:
+            self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")                              
+        except:
+            startDate = startDate + ".0"
+            self.startTest = datetime.datetime.strptime(
+                        (startDate), "%Y-%m-%d %H:%M:%S.%f"
+                    )
+        # self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -83,15 +89,27 @@ class dataStoreLogParser(GetLog):
                         (res["finish"]) = (
                             res["finish"]
                         )[:-1] + ".000"
-            finish = datetime.datetime.strptime(
+            try:
+                finish = datetime.datetime.strptime(
+                        (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
+                    )                                 
+            except:
+                (res["finish"]) = (res["finish"]) + ".0"
+                finish = datetime.datetime.strptime(
                         (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
             if (res["start"]).endswith("Z"):
                         (res["start"]) = (
                             res["start"]
                         )[:-1] + ".000"
-            start = datetime.datetime.strptime(
-                        (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
+            try:
+                start = datetime.datetime.strptime(
+                         (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
+                    )                                 
+            except:
+                (res["start"]) =  (res["start"]) + ".0"
+                start = datetime.datetime.strptime(
+                         (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
             if start >= self.startTest:
                 self.dictData["function"].append(res["function"])
@@ -111,9 +129,6 @@ class dataStoreLogParser(GetLog):
             + self.workflow
             + "/")
         dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
-        # if os.path.isfile(
-        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
-        # ):
         if len(dfFilesNames) != 0 :
             dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
             versions = [int((a.split(","))[1]) for a in dfFilesNames]
@@ -144,9 +159,6 @@ class dataStoreLogParser(GetLog):
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow +  "/generatedDataFrame,"+str(newVersion)+".csv"
             )
         invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')) and (file.name.endswith('.pkl')))]
-        # if os.path.isfile(
-        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
-        # ):
         if len(invocationFilesNames) != 0 :
             invocationFilesNames = [a.replace(".pkl", "") for a in invocationFilesNames]
             versions = [int((a.split(","))[1]) for a in invocationFilesNames]
@@ -203,5 +215,6 @@ class dataStoreLogParser(GetLog):
 
 
 if __name__ == "__main__":
-    workflow = "Text2SpeechCensoringWorkflow"
+    # workflow = "Text2SpeechCensoringWorkflow"
+    workflow = "ImageProcessingWorkflow"
     x = dataStoreLogParser(workflow)
