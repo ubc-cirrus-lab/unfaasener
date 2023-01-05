@@ -57,7 +57,8 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [0.0], [100.0], [0.0]])
+        # Due to the change of adding mu factor set to 1, the cpu for that function is increased causing the change in decisions
+        self.assertEqual(x, [[0.0], [0.0], [52.0], [0.0]])
 
     # Test on when the tolerance window is not limited for the user
     def test_unlimitedToleranceWindow(self):
