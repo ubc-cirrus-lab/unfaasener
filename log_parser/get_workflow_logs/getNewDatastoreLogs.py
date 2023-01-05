@@ -30,7 +30,6 @@ class dataStoreLogParser(GetLog):
         self.workflowFunctions = workflow_json["workflowFunctions"]
         self.initFunc = workflow_json["initFunc"]
         self.dictData = {}
-        # self.windowSize = 50
         path = str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])+ "/scheduler/rankerConfig.ini"
         self.config = configparser.ConfigParser()
         self.config.read(path)
@@ -99,9 +98,6 @@ class dataStoreLogParser(GetLog):
                 finish = datetime.datetime.strptime(
                         (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
-            # finish = datetime.datetime.strptime(
-            #             (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
-            #         )
             if (res["start"]).endswith("Z"):
                         (res["start"]) = (
                             res["start"]
@@ -115,9 +111,6 @@ class dataStoreLogParser(GetLog):
                 start = datetime.datetime.strptime(
                          (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
-            # start = datetime.datetime.strptime(
-            #             (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
-            #         )
             if start >= self.startTest:
                 self.dictData["function"].append(res["function"])
                 self.dictData["reqID"].append(res["reqID"])
@@ -136,9 +129,6 @@ class dataStoreLogParser(GetLog):
             + self.workflow
             + "/")
         dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
-        # if os.path.isfile(
-        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/generatedDataFrame.pkl"
-        # ):
         if len(dfFilesNames) != 0 :
             dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
             versions = [int((a.split(","))[1]) for a in dfFilesNames]
@@ -169,9 +159,6 @@ class dataStoreLogParser(GetLog):
                 (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow +  "/generatedDataFrame,"+str(newVersion)+".csv"
             )
         invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')) and (file.name.endswith('.pkl')))]
-        # if os.path.isfile(
-        #     (os.path.dirname(os.path.abspath(__file__))) + "/data/" + self.workflow + "/invocationRates.pkl"
-        # ):
         if len(invocationFilesNames) != 0 :
             invocationFilesNames = [a.replace(".pkl", "") for a in invocationFilesNames]
             versions = [int((a.split(","))[1]) for a in invocationFilesNames]

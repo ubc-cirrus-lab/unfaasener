@@ -183,8 +183,6 @@ class Estimator:
         return upperBound
 
     def getMean(self, array):
-        # median = statistics.median(array)
-        # return median
         avg = np.mean(array)
         return avg
 
