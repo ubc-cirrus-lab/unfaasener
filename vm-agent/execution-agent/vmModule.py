@@ -19,6 +19,16 @@ import uuid
 import wget
 from zipfile import ZipFile
 import shlex
+import math
+import numpy as np
+import logging
+import pandas as pd
+
+logging.basicConfig(
+    filename=str(Path(os.path.dirname(os.path.abspath(__file__))))
+    + "/adaptiveConcurrency.log",
+    level=logging.INFO,
+)
 
 
 path = (
@@ -60,10 +70,83 @@ contExecRunLock = Lock()
 activeContainerSearchList = {}  # function -> list of container
 contsPerFunct = {}
 
+# adaptive_concurrency_variables and configs
+deltaLat = {}
+allDurationsAvg = {}
+adaptiveConcurrency = int(rankerConfig["adaptiveConcurrency"])
+
+
+def getUtilFile():
+    util_window_param = 10
+    path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/monitoring-agent/utilFile.txt"
+        )
+    if os.path.exists(path):
+        with open(path) as util_file:
+            util_array = util_file.readlines()
+        util_array = np.array(util_array)
+        util_array = util_array.astype(float)
+        logging.info(str(datetime.datetime.now()))
+        logging.info("last n utils: = {}, with mean of = {}".format((util_array[-util_window_param:]), (np.mean(util_array[-util_window_param:]))))
+        return (np.mean(util_array[-util_window_param:]))
+    else:
+        return None
+
+def adjustMU():
+    global muFactor
+    global CONCURRENCY_LIMIT
+    global config
+    global rankerConfig
+    avgUtil = getUtilFile()
+    if avgUtil == None:
+        return
+    global deltaLat
+    funcitonParam = 0.03
+    sumDeltaLat = (sum(deltaLat.values()))
+    newMU = avgUtil + (funcitonParam*(math.exp(sumDeltaLat) - 1))
+    newMU = min(1, newMU)
+    # quantizationList = [0.25, 0.5, 0.75, 1]
+    quantizationList = [0.33, 0.66, 1]
+    quantized_mu = float(min(quantizationList, key=lambda x:abs(x-newMU)))
+    logging.info("Delta Latency = {}, Average Util = {},  New mu factor = {}, quantized mu: {}".format(sumDeltaLat, avgUtil, newMU, quantized_mu))
+    logging.info(str(datetime.datetime.now()))
+    # if (float(float(muFactor) / newMU) > 1.25) or (float(newMU/ float(muFactor)) > 1.25):
+    changedFlag = 0
+    if float(muFactor) != quantized_mu:
+        changedFlag = 1
+        logging.info("Changing mu factor from {}, to = {}".format(float(muFactor), quantized_mu))
+        rankerConfig["muFactor"] = str(quantized_mu)
+        muFactor = quantized_mu
+        CONCURRENCY_LIMIT = int((os.cpu_count())/float(quantized_mu))
+        with open(path, "w") as configfile:
+            config.write(configfile)
+        schedulerPath= (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+            + "/scheduler/"
+        )
+        command = "cd "+ schedulerPath+  "; python3 rpsCIScheduler.py forced &"
+        os.system(command)
+        logging.info(str(datetime.datetime.now()))
+        logging.info("Changed mu factor to = {}".format(quantized_mu))
+    logging.info("mu: {}, quantized_mu: {}, changed: {}, timestamp: {}, average_util: {}, parameter: {}, delta_latency: {}".format(newMU, quantized_mu, changedFlag, (datetime.datetime.now()), avgUtil, funcitonParam, sumDeltaLat))
+    # newMuData = {"mu":[newMU], "quantized_mu":[quantized_mu], "changed": [changedFlag],"timestamp":[(datetime.datetime.now())], "average_util":[avgUtil], "parameter":[funcitonParam], "delta_latency": [sumDeltaLat]}
+    # newMuDF = pd.DataFrame.from_dict(newMuData)
+    # muDF_path= (
+    #     str(Path(os.path.dirname(os.path.abspath(__file__))))
+    #     + "/data/muDF.csv"
+    # )
+    # newMuDF.to_csv(muDF_path, mode='a', header=not os.path.exists(muDF_path))
+
+
+
 def flushExecutionDurations():
     global executionDurations
     global cacheDurations
 
+    global adaptiveConcurrency
+    if adaptiveConcurrency == 1:
+        adjustMU()
     cachePath = (
         str(Path(os.path.dirname(os.path.abspath(__file__))))
         + "/data/cachedVMData.json"
@@ -156,7 +239,6 @@ def getFunctionParameters(functionname):
     )
 
 
-
 def containerize(functionname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
@@ -199,9 +281,9 @@ def containerize(functionname):
             "cp "+str(Path(os.path.dirname(os.path.abspath(__file__))))+"/init.sh " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname, shell=True, stdout=output, stderr=output
         )
         file_object = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname + "/main.py", "a")
-        file_object.write("import sys\n")
+        file_object.write("\nimport sys\n")
         file_object.write("def main():\n")
-        file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
+        # file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
         file_object.write(
             "    " + entrypoint + "(json.loads(sys.argv[1]),sys.argv[2])\n"
         )
@@ -244,15 +326,11 @@ def containerize(functionname):
 
 
 
-
-
-
-
-
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     before = datetime.datetime.now()
     global activeThreads
     global activeThreadCheckLock
+    global CONCURRENCY_LIMIT
     receivedDateObj = datetime.datetime.utcnow()
     decodedMessage = (json.loads(message.data.decode("utf-8"))).get("data")
     print(f"received data:{decodedMessage}")
@@ -310,6 +388,9 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
 
 def processReqs(jsonfile, before):
     tot_cont_hash = uuid.uuid4().hex
+    global adaptiveConcurrency
+    global allDurationsAvg
+    global deltaLat
     global executionDurations
     global cacheDurations
     global cpulimit
@@ -320,6 +401,7 @@ def processReqs(jsonfile, before):
     msgID = jsonfile["attributes"].get("identifier")
     reqID = jsonfile["attributes"].get("reqID")
     invokedFun = jsonfile["attributes"].get("invokedFunction")
+    print("FUNCTION: ",invokedFun )
     tmpInvokedFun = jsonfile["attributes"].get("invokedFunction")
     # TODO: try/except error handling
 
@@ -368,6 +450,7 @@ def processReqs(jsonfile, before):
         contExecRunLock.acquire()
         contsPerFunct[tmpInvokedFun] = conts
         contExecRunLock.release()
+    print(f"{tot_cont_hash}:before checking::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
     if len(conts) != 0:
         for cont in conts:
             contExecRunLock.acquire()
@@ -389,6 +472,7 @@ def processReqs(jsonfile, before):
                     continue
             else:
                 cont.start()
+            print(f"{tot_cont_hash}:before running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
             cont.exec_run(
                 "python3 /app/main.py '"
                 + str(jsonfile).replace("'", '"')
@@ -396,6 +480,7 @@ def processReqs(jsonfile, before):
                 + reqID,
                 detach=False,
             )
+            print(f"{tot_cont_hash}:After running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
             after = datetime.datetime.now()
             lastexecutiontimestamps[invokedFun] = before
             execution_complete = 1
@@ -460,6 +545,17 @@ def processReqs(jsonfile, before):
         cacheDurations[tmpInvokedFun].append(
             float(((delta).total_seconds()) * 1000)
         )
+    # Added for adaptive concurrency
+    if adaptiveConcurrency == 1:
+        if tmpInvokedFun not in allDurationsAvg.keys():
+            allDurationsAvg[tmpInvokedFun] = float(((delta).total_seconds()) * 1000)
+        else:
+            latParam = 0.8
+            newL = float(((delta).total_seconds()) * 1000)
+            prevValue =allDurationsAvg[tmpInvokedFun]
+            allDurationsAvg[tmpInvokedFun] = (latParam*prevValue) + ((1-latParam)*newL)
+        deltaLat[tmpInvokedFun] = float(((float(((delta).total_seconds()) * 1000)) - allDurationsAvg[tmpInvokedFun])/1000)
+
     executionDurations[invokedFun]["reqID"] = reqID
     executionDurations[invokedFun]["start"] = str(before)
     executionDurations[invokedFun]["finish"] = str(after)
@@ -492,3 +588,4 @@ with subscriber:
         )
         streaming_pull_future.cancel()
         streaming_pull_future.result()
+        

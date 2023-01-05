@@ -37,6 +37,15 @@ void writeTriggerType(string triggerType)
         triggerFile.close();
 }
 
+void writeUtilization(double util)
+{
+        std::ofstream utilFile;
+        utilFile.open("utilFile.txt", std::ios_base::app);// append instead of overwrite
+        utilFile << util;
+        utilFile << "\n";
+        utilFile.close();
+}
+
 string readTriggerType()
 {
         std::fstream triggerFile;
@@ -84,12 +93,15 @@ int handle_prediction_violation(double cpu_pred, double memory_pred, string mode
 
 
 int main(int, char *[]) {
+    int adaptiveFlag = 1;
     int initialFlag = 1;
     float avg_docker_cpusum = 0;
+    float avg_container_numbers = 0;
     size_t ring_size = 10; // keep last 10 records, i.e. 1 second  
     size_t hardTriggerBufferSize = 4;
     size_t hardTriggerBuffer[hardTriggerBufferSize] = {0};
     size_t hardTriggerBufferIndex = 0;
+    size_t cpuPredictionBuffer[hardTriggerBufferSize] = {0};
     short int softTriggerVote = 0;
     short int lowLoadTrigger = 0;
     size_t current_cpu_readings[2]= { 0 };
@@ -126,6 +138,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
 	 redi::ipstream proc("ps -u bin -o pid=", redi::pstreams::pstdout | redi::pstreams::pstderr);
 	   std::string line;
 	   int processcount=0;
+           int in_use_containers_num = 0;
 	   //float current_docker_reading[100] = {0};
 	   float docker_utilization[1000] = {0};
 	   float docker_mem[1000] = {0};
@@ -151,6 +164,10 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      docker_mem_utilization[containerd_pids[processcount]] = dockerprocstat.get_proc_stat_memory(containerd_pids[processcount]);
      docker_mem[processcount] = docker_mem_utilization[containerd_pids[processcount]];
      previous_docker_reading[containerd_pids[processcount]] = current_docker_reading[containerd_pids[processcount]];
+     if (docker_utilization[processcount] > 0)
+     {
+        in_use_containers_num++;
+     }
      processcount++;
          //std::cout << "stdout: " << processcount << '\n';
 
@@ -163,6 +180,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
      docker_cpusum = accumulate(docker_utilization, docker_utilization+1000, 0);
      docker_memsum = accumulate(docker_mem, docker_mem+1000, 0);
      avg_docker_cpusum += docker_cpusum;
+     avg_container_numbers += in_use_containers_num;
 
 	 procstat.get_proc_stat_times(current_cpu_readings);
 
@@ -191,7 +209,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
          //std::cout << cpu_utilization << std::endl;
          //std::cout << mem_utilization << std::endl;
 //fill the utilziation buffers for the ring_size (i.e. 10 predictions in 1 second)
-         if (cpu_utilization_buffer.size() < ring_size) {
+         if (cpu_utilization_buffer.size() < ring_size - 1) {
                 cpu_utilization_buffer.push(double(cpu_utilization));
                 mem_utilization_buffer.push(double(mem_utilization));
          }
@@ -230,7 +248,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                         hardTriggerBuffer[hardTriggerBufferIndex] = 1;
                 else
                         hardTriggerBuffer[hardTriggerBufferIndex] = 0;
-                
+                cpuPredictionBuffer[hardTriggerBufferIndex] = cpu_pred_old;
                 // Check if the trigger buffer has sufficient violations
                 size_t recentViols = 0;
                 for (int i=0; i<hardTriggerBufferSize; i++) {
@@ -244,8 +262,17 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 double docker_utilization_change_threshold = 1;
                 double availableCores = getTotalSystemCores() * (100 - cpu_pred_old)/100;
                 avg_docker_cpusum = (avg_docker_cpusum / ring_size);
+                avg_container_numbers = (avg_container_numbers / ring_size);
                 double docker_cores_used =  ((avg_docker_cpusum)/(total_diff)) * getTotalSystemCores();
+                double cpu_num_per_container = (docker_cores_used / avg_container_numbers);
+                std::cout << "Number of containers:" << avg_container_numbers << std::endl;
+                if (adaptiveFlag == 1){
+                        if(avg_container_numbers != 0) {
+                                writeUtilization(cpu_num_per_container);
+                        }
+                }
                 avg_docker_cpusum = 0;
+                avg_container_numbers = 0;
                 // std::cout << "idle_diff:" << idle_diff << std::endl;
                 // std::cout << "docker_utilization:" << docker_utilization << std::endl;
                 std::cout << "docker_utilization:" << docker_cpusum << std::endl;
@@ -255,8 +282,9 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 // std::cout << "cpu_pred_old:" << cpu_pred_old << std::endl;
                 std::cout << "available_num_of_cores:" << availableCores << std::endl;
                 std::cout << "docker_number_of_cores:" << docker_cores_used << std::endl;
+                std::cout << "CPU num per container:" << cpu_num_per_container << std::endl;
                 std::cout << "docker_Prev_number_of_cores:" << prev_docker_utilization_cores_used << std::endl;
-
+                
                 if (availableCores == 0){
                         if (docker_cores_used > 0){
                                 std::cout << "High Load Sensed"<< std::endl;
@@ -272,10 +300,19 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                                 softTriggerVote += 1;
                         }
                 }
-                
+                double adjusted_cpu_pred_old = cpu_pred_old;
+                if(cpu_pred_old == 100){
+                        double sum = 0.0;
+                        for (int i=0; i<hardTriggerBufferSize; i++) {
+                                sum += cpuPredictionBuffer[i];
+                        }
+                        sum = sum / hardTriggerBufferSize;
+                        adjusted_cpu_pred_old = sum;
+                        std::cout << "Changed the cpu prediction to :" << adjusted_cpu_pred_old << std::endl;
+                    }
                 if (softTriggerVote > 4) {
                     std::cout << "Triggering scheduler with HIGH LOAD option."<< std::endl;
-                    handle_prediction_violation(cpu_pred_old, mem_pred_old, "highLoad", false);
+                    handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "highLoad", false);
                     // system("cd ../../scheduler/; python3 rpsCIScheduler.py highLoad &");
                     softTriggerVote = 0;
                 } else if (softTriggerVote < -4 ) {
@@ -286,10 +323,10 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                                 std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
                                 // handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
                                 if (docker_cores_used == 0){
-                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", true);
+                                        handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "lowLoad", true);
                                 }
                                 else{
-                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                                        handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "lowLoad", false);
                                 }
                                 }
                         }
@@ -297,10 +334,10 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                                 lowLoadTrigger = 1;  
                                 std::cout << "Triggering scheduler with LOW LOAD option."<< std::endl;
                                 if (docker_cores_used == 0){
-                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", true);
+                                        handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "lowLoad", true);
                                 }
                                 else{
-                                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "lowLoad", false);
+                                        handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "lowLoad", false);
                                 }
                         }
                 //     prevTrigger = readTriggerType();
@@ -322,10 +359,10 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 } else if (recentViols > int(0.5*hardTriggerBufferSize)) {
                         std::cout << "Triggering scheduler with RESOLVE option."<< std::endl;
                         if (docker_cores_used == 0){
-                                handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve", true);
+                                handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "resolve", true);
                         }
                         else{
-                                handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve", false);
+                                handle_prediction_violation(adjusted_cpu_pred_old, mem_pred_old, "resolve", false);
                         }
                         // reset the buffer
                         for (int i=0; i<hardTriggerBufferSize; i++) {

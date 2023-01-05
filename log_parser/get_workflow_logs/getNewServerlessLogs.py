@@ -91,17 +91,17 @@ class getNewLogs(GetLog):
             self.lastTimestamp = None
             self.checkLatestTimeStamp(func)
             self.pullLogs(func)
-        with open(
-            (
-                (os.path.dirname(os.path.abspath(__file__)))
-                + "/data/"
-                + str(self.workflow)
-                + "/"
-                + "data.json"
-            ),
-            "w", os.O_NONBLOCK
-        ) as outfile:
-            json.dump(self.newTimeStampRecorded, outfile)
+        # with open(
+        #     (
+        #         (os.path.dirname(os.path.abspath(__file__)))
+        #         + "/data/"
+        #         + str(self.workflow)
+        #         + "/"
+        #         + "data.json"
+        #     ),
+        #     "w", os.O_NONBLOCK
+        # ) as outfile:
+        #     json.dump(self.newTimeStampRecorded, outfile)
         self.getDict()
         self.saveCost()
 
@@ -174,6 +174,7 @@ class getNewLogs(GetLog):
             # !!!!!!!!!!
             # self.newTimeStampRecorded[function] = lastLogEndDate
             self.tempTimeStampRecorded[function] = lastLog_date[0]
+            print("Time for  func: ", function, " is::",  lastLog_date[0])
             endFlag = False
             while endFlag != True:
                 tempDate = datetime.datetime.strptime(
@@ -206,6 +207,7 @@ class getNewLogs(GetLog):
                 ]
                 (self.writeLogs[function]) = project_logs_json + (prevData)
                 print("PREVV:::", len(prevData))
+                print("RETRIEVED::::::", len(project_logs_json_old))
                 print("NEWW:::", len(project_logs_json))
                 print("LENN:::", len(self.writeLogs[function]))
                 ids = [
@@ -230,18 +232,18 @@ class getNewLogs(GetLog):
                     endFlag = True
                 if len(project_logs_json_old) != 0:
                     self.tempTimeStampRecorded[function] = str(project_logs_json_old[-1]["time_utc"])
-            self.newTimeStampRecorded[function] = lastLog_date[0]
-            with open(
-                    (
-                        (os.path.dirname(os.path.abspath(__file__)))
-                        + "/data/"
-                        + str(self.workflow)
-                        + "/"
-                        + "data.json"
-                    ),
-                    "w", os.O_NONBLOCK
-                ) as outfile:
-                    json.dump(self.newTimeStampRecorded, outfile)
+            # self.newTimeStampRecorded[function] = lastLog_date[0]
+            # with open(
+            #         (
+            #             (os.path.dirname(os.path.abspath(__file__)))
+            #             + "/data/"
+            #             + str(self.workflow)
+            #             + "/"
+            #             + "data.json"
+            #         ),
+            #         "w", os.O_NONBLOCK
+            #     ) as outfile:
+            #         json.dump(self.newTimeStampRecorded, outfile)
                 # self.checkLatestTimeStamp(function)
         else:
             "No data file!"

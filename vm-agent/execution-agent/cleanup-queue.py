@@ -218,7 +218,7 @@ streaming_pull_future = subscriber.subscribe(subscription_path, callback=callbac
 with subscriber:
     try:
         # num of seconds the subscriber pulls the unacked messages
-        timeout = 60
+        timeout = 15
         streaming_pull_future.result(timeout=timeout)
     except TimeoutError:
         streaming_pull_future.cancel()

@@ -182,7 +182,7 @@ class Estimator:
             upperBound = sortedArray[index]
         return upperBound
 
-    def getMedian(self, array):
+    def getMean(self, array):
         # median = statistics.median(array)
         # return median
         avg = np.mean(array)
@@ -239,7 +239,7 @@ class Estimator:
                     else:
                         exeTimes[func][mode] = self.getUpperBound(durations)
                 elif mode == "default":
-                    exeTimes[func][mode] = self.getMedian(durations)
+                    exeTimes[func][mode] = self.getMean(durations)
         with open(
             (
                 (os.path.dirname(os.path.abspath(__file__)))
@@ -413,7 +413,7 @@ class Estimator:
             else:
                 exeTime = self.getUpperBound(durations)
         elif mode == "default":
-            exeTime = self.getMedian(durations)
+            exeTime = self.getMean(durations)
         # if host != "s":
             # print("INFOOO!:", func, ":::", exeTime)
         return exeTime
@@ -426,7 +426,7 @@ class Estimator:
         counts = (selectedInits.groupby(["reqID"]).size().reset_index(name="counts"))[
             "counts"
         ].to_numpy()
-        numPerReq = self.getMedian(counts)
+        numPerReq = self.getMean(counts)
         return numPerReq
 
     # Check Here!!!!
@@ -584,7 +584,7 @@ class Estimator:
         elif mode == "worst-case":
             exeTime = self.getUpperBound(durations)
         elif mode == "default":
-            exeTime = self.getMedian(durations)
+            exeTime = self.getMean(durations)
         serverlessDuration = self.slackDurationsDF[parent + "-" + child][mode]
         # print("\\\\////\\\\\DIFF:::", (exeTime - serverlessDuration),":::", parent,"-",parentHost
         # , "----", child,"-",childHost
@@ -624,7 +624,7 @@ class Estimator:
                     et = self.getLowerBound(durations)
                     costs[func][mode] = self.cost_estimator(1, et, GB)
                 elif mode == "default":
-                    et = self.getMedian(durations)
+                    et = self.getMean(durations)
                     costs[func][mode] = self.cost_estimator(1, et, GB)
         with open(
             (
@@ -663,7 +663,7 @@ class Estimator:
             et = self.getLowerBound(durations)
             cost = self.cost_estimator(1, et, GB)
         elif mode == "default":
-            et = self.getMedian(durations)
+            et = self.getMean(durations)
             cost = self.cost_estimator(1, et, GB)
         return cost
 

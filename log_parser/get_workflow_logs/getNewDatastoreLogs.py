@@ -37,7 +37,14 @@ class dataStoreLogParser(GetLog):
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
         startDate = str(self.rankerConfig["starttest"])
-        self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
+        try:
+            self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")                              
+        except:
+            startDate = startDate + ".0"
+            self.startTest = datetime.datetime.strptime(
+                        (startDate), "%Y-%m-%d %H:%M:%S.%f"
+                    )
+        # self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -83,16 +90,34 @@ class dataStoreLogParser(GetLog):
                         (res["finish"]) = (
                             res["finish"]
                         )[:-1] + ".000"
-            finish = datetime.datetime.strptime(
+            try:
+                finish = datetime.datetime.strptime(
+                        (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
+                    )                                 
+            except:
+                (res["finish"]) = (res["finish"]) + ".0"
+                finish = datetime.datetime.strptime(
                         (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
+            # finish = datetime.datetime.strptime(
+            #             (res["finish"]), "%Y-%m-%d %H:%M:%S.%f"
+            #         )
             if (res["start"]).endswith("Z"):
                         (res["start"]) = (
                             res["start"]
                         )[:-1] + ".000"
-            start = datetime.datetime.strptime(
-                        (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
+            try:
+                start = datetime.datetime.strptime(
+                         (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
+                    )                                 
+            except:
+                (res["start"]) =  (res["start"]) + ".0"
+                start = datetime.datetime.strptime(
+                         (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
                     )
+            # start = datetime.datetime.strptime(
+            #             (res["start"]), "%Y-%m-%d %H:%M:%S.%f"
+            #         )
             if start >= self.startTest:
                 self.dictData["function"].append(res["function"])
                 self.dictData["reqID"].append(res["reqID"])
@@ -203,5 +228,6 @@ class dataStoreLogParser(GetLog):
 
 
 if __name__ == "__main__":
-    workflow = "Text2SpeechCensoringWorkflow"
+    # workflow = "Text2SpeechCensoringWorkflow"
+    workflow = "ImageProcessingWorkflow"
     x = dataStoreLogParser(workflow)

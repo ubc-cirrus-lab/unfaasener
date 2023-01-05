@@ -12,6 +12,7 @@ from rpsMultiVMSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
+from time import sleep
 
 # import psutil, os
 import logging
@@ -225,33 +226,58 @@ class CIScheduler:
 
 
 if __name__ == "__main__":
+    checkingFlag = False
     start_time = time.time()
+    triggerType = sys.argv[1]
+    initType = sys.argv[1]
+    if initType == "forced":
+        triggerType = "resolve"
     # Added by mohamed to allow locking
     if os.path.exists(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
     ):
         print("LOCK EXISTSSS!!")
+        if initType == "forced":
+            logging.info(str(datetime.datetime.now()))
+            logging.info("Forced trigger!!!")
+            if not(os.path.exists(
+                str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+            )):
+                with open(
+                str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt", "w"
+                ) as f:
+                    f.write("forced Lock")
+                    f.close
         exit()
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt", "w"
     ) as f:
         f.write("lock")
         f.close
+    if os.path.exists(
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+    ):
+        triggerType = "resolve"
+        checkingFlag = True
+        logging.info("Forced to change to resolve!!!")
     print("LOCK CREATED!!!")
     pid = os.getpid()
     logging.info(str(pid))
     logging.info("LOCK CREATED!!!")
     logging.info(str(datetime.datetime.now()))
     # triggerType = "resolve"
-    triggerType = sys.argv[1]
     solver = CIScheduler(triggerType)
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt")
+    if ((os.path.exists(
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+    )) and (checkingFlag == True) ):
+        os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt")
     logging.info("Lock released!!!")
     logging.info(str(datetime.datetime.now()))
-    print(
-        "LOCK removed-> search for lock file:",
-        os.path.exists(
-            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
-        ),
-    )
+    # print(
+    #     "LOCK removed-> search for lock file:",
+    #     os.path.exists(
+    #         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
+    #     ),
+    # )
     print("--- %s seconds ---" % (time.time() - start_time))
