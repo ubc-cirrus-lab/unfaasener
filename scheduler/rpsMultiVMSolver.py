@@ -1,8 +1,5 @@
 import os
 import json
-import string
-from unicodedata import name
-import pandas as pd
 import numpy as np
 import configparser
 from pathlib import Path
@@ -144,13 +141,12 @@ class rpsOffloadingSolver:
         """
         Returns estimated duration for the critical path
         """
-        durations = list(self.allPathsSlack.keys())
-        cpDuration = max(durations)
+        cpDuration = max(self.allPathsSlack.keys())
         return cpDuration
 
     def getSlackForPath(self):
         """
-        Returns a list consists of all paths in the workflow besides their duration as a dictionary
+        Returns a list consisting of all paths in the workflow and their duration as a dictionary
         """
         for path in self.allPaths:
             nodes = []
