@@ -1,6 +1,5 @@
 from datastoreGarbageCollector import mergingDataGarbageCollector
 from pathlib import Path
-from dataFrameGarbageCollector import garbageCollector
 import time
 import os
 # import rankerConfig

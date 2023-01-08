@@ -1,6 +1,5 @@
 import os
 import json
-import numpy as np
 import configparser
 from pathlib import Path
 from LatencyModel import LatencyModel

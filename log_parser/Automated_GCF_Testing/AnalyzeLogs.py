@@ -1,15 +1,8 @@
-import subprocess
 import json
-import shlex
 import datetime
-from sys import getsizeof
-import time
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
-import seaborn as sns
-import math
 
 class AnalyzeLogs:
     def __init__(self, logsFile, publisherExeFile, vmData, subType):

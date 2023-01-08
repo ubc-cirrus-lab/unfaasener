@@ -1,12 +1,9 @@
-import time
-import numpy as np
 import sys
 import os
 import json
 from pathlib import Path
 from google.cloud import datastore
 import sys
-import copy
 import datetime
 
 

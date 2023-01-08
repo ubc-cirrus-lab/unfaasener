@@ -12,7 +12,6 @@ from rpsMultiVMSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
-from time import sleep
 
 # import psutil, os
 import logging
