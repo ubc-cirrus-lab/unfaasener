@@ -12,8 +12,8 @@ using namespace std;
 class predictor
 {
     ring* utilization_records;
-    double sum,standardDeviation = 0.0,mean = 0.0;
-    double max,alpha,margin,prediction = 0.0;
+    double sum = 0.0;
+    double max, alpha, margin, prediction = 0.0;
     int size;
     
 public:
@@ -25,6 +25,7 @@ public:
     
     auto compute_predicton_ExponentialMovingAverage(double x, int type, int initialFlag)
     {
+        // type: 0 -> cpu, 1 -> memory
         size_t violation = 0;
         alpha = 0.85;
         margin = 0.2;
