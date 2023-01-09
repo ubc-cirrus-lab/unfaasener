@@ -4,7 +4,6 @@ import os
 import json
 # import rankerConfig
 import configparser
-import pandas as pd
 import datetime
 
 class resetLastDicision:

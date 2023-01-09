@@ -9,9 +9,6 @@ import sys
 import numpy as np
 import math
 import json
-import seaborn as sns
-from matplotlib.pyplot import figure
-from sklearn.preprocessing import MinMaxScaler
 import matplotlib
 import logging
 

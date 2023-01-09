@@ -1,17 +1,10 @@
-import base64
 from google.cloud import datastore
 from datetime import timedelta
-import pandas as pd
 import datetime
-import json
 import os
 import json
 from pathlib import Path
-import time
-import numpy as np
 import datetime
-import logging
-import uuid
 
 
 class mergingDataGarbageCollector:
