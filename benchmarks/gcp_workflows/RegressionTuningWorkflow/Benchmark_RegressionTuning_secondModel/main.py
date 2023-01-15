@@ -4,8 +4,6 @@ import requests
 import logging
 import uuid
 from sys import getsizeof
-from google.cloud import pubsub_v1
-from google.cloud import datastore
 import os
 import json
 from google.cloud import storage

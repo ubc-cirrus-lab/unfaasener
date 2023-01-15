@@ -1,15 +1,9 @@
-from sklearn import datasets
 import base64
 import json
 import datetime
 import logging
 import uuid
-from random import randint
 from sys import getsizeof
-from google.cloud import datastore
-from google.cloud import pubsub_v1
-import numpy as np
-import random
 
 
 def getInput(request):
@@ -26,4 +20,3 @@ def getInput(request):
     logging.info(message_json)
 
     return message_json
-

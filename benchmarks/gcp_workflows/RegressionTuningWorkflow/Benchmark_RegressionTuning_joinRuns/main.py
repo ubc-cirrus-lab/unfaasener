@@ -5,8 +5,6 @@ import logging
 import uuid
 import numpy as np
 from sys import getsizeof
-from google.cloud import pubsub_v1
-from google.cloud import datastore
 from io import BytesIO
 import os
 import json
@@ -19,10 +17,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import tarfile
-
-publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
-DSclient = datastore.Client()
 
 def join(request):
 
