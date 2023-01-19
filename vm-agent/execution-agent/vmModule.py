@@ -24,21 +24,36 @@ import numpy as np
 import logging
 import pandas as pd
 
-logging.basicConfig(
-    filename=str(Path(os.path.dirname(os.path.abspath(__file__))))
-    + "/adaptiveConcurrency.log",
-    level=logging.INFO,
+
+def setup_logger(name, logFile, level=logging.INFO):
+    handler = logging.FileHandler(logFile)
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+    return logger
+
+
+logger = setup_logger(
+    "adaptiveConcurrency_logger",
+    (
+        str(Path(os.path.dirname(os.path.abspath(__file__))))
+        + "/logs/adaptiveConcurrency.log"
+    ),
+)
+execLogger = setup_logger(
+    "execution_logger",
+    (str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/logs/executionLogs.log"),
 )
 
 
 path = (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
-            + "/scheduler/rankerConfig.ini"
-        )
+    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+    + "/scheduler/rankerConfig.ini"
+)
 config = configparser.ConfigParser()
 config.read(path)
-rankerConfig =config["settings"]
-muFactor =rankerConfig["muFactor"]
+rankerConfig = config["settings"]
+muFactor = rankerConfig["muFactor"]
 
 project_id = "ubc-serverless-ghazal"
 subscription_id = sys.argv[1]
@@ -62,7 +77,7 @@ client_api = docker.APIClient(base_url="unix://var/run/docker.sock")
 info = client_api.df()
 
 # concurrency configs and locking variables
-CONCURRENCY_LIMIT = int((os.cpu_count())/float(muFactor))
+CONCURRENCY_LIMIT = int((os.cpu_count()) / float(muFactor))
 msgQueue = []  # queue of msgIDs used to enforce execution order
 activeThreads = []
 activeThreadCheckLock = Lock()
@@ -77,23 +92,31 @@ adaptiveConcurrency = int(rankerConfig["adaptiveConcurrency"])
 
 
 def getUtilFile():
+    global logger
     util_window_param = 10
     path = (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/monitoring-agent/utilFile.txt"
-        )
+        str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        + "/monitoring-agent/utilFile.txt"
+    )
     if os.path.exists(path):
         with open(path) as util_file:
             util_array = util_file.readlines()
         util_array = np.array(util_array)
         util_array = util_array.astype(float)
-        logging.info(str(datetime.datetime.now()))
-        logging.info("last n utils: = {}, with mean of = {}".format((util_array[-util_window_param:]), (np.mean(util_array[-util_window_param:]))))
-        return (np.mean(util_array[-util_window_param:]))
+        logger.info(str(datetime.datetime.now()))
+        logger.info(
+            "last n utils: = {}, with mean of = {}".format(
+                (util_array[-util_window_param:]),
+                (np.mean(util_array[-util_window_param:])),
+            )
+        )
+        return np.mean(util_array[-util_window_param:])
     else:
         return None
 
+
 def adjustMU():
+    global logger
     global muFactor
     global CONCURRENCY_LIMIT
     global config
@@ -103,41 +126,47 @@ def adjustMU():
         return
     global deltaLat
     funcitonParam = 0.03
-    sumDeltaLat = (sum(deltaLat.values()))
-    newMU = avgUtil + (funcitonParam*(math.exp(sumDeltaLat) - 1))
+    sumDeltaLat = sum(deltaLat.values())
+    newMU = avgUtil + (funcitonParam * (math.exp(sumDeltaLat) - 1))
     newMU = min(1, newMU)
-    # quantizationList = [0.25, 0.5, 0.75, 1]
     quantizationList = [0.33, 0.66, 1]
-    quantized_mu = float(min(quantizationList, key=lambda x:abs(x-newMU)))
-    logging.info("Delta Latency = {}, Average Util = {},  New mu factor = {}, quantized mu: {}".format(sumDeltaLat, avgUtil, newMU, quantized_mu))
-    logging.info(str(datetime.datetime.now()))
-    # if (float(float(muFactor) / newMU) > 1.25) or (float(newMU/ float(muFactor)) > 1.25):
+    quantized_mu = float(min(quantizationList, key=lambda x: abs(x - newMU)))
+    logger.info(
+        "Delta Latency = {}, Average Util = {},  New mu factor = {}, quantized mu: {}".format(
+            sumDeltaLat, avgUtil, newMU, quantized_mu
+        )
+    )
+    logger.info(str(datetime.datetime.now()))
     changedFlag = 0
     if float(muFactor) != quantized_mu:
         changedFlag = 1
-        logging.info("Changing mu factor from {}, to = {}".format(float(muFactor), quantized_mu))
+        logger.info(
+            "Changing mu factor from {}, to = {}".format(float(muFactor), quantized_mu)
+        )
         rankerConfig["muFactor"] = str(quantized_mu)
         muFactor = quantized_mu
-        CONCURRENCY_LIMIT = int((os.cpu_count())/float(quantized_mu))
+        CONCURRENCY_LIMIT = int((os.cpu_count()) / float(quantized_mu))
         with open(path, "w") as configfile:
             config.write(configfile)
-        schedulerPath= (
+        schedulerPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
             + "/scheduler/"
         )
-        command = "cd "+ schedulerPath+  "; python3 rpsCIScheduler.py forced &"
+        command = "cd " + schedulerPath + "; python3 rpsCIScheduler.py forced &"
         os.system(command)
-        logging.info(str(datetime.datetime.now()))
-        logging.info("Changed mu factor to = {}".format(quantized_mu))
-    logging.info("mu: {}, quantized_mu: {}, changed: {}, timestamp: {}, average_util: {}, parameter: {}, delta_latency: {}".format(newMU, quantized_mu, changedFlag, (datetime.datetime.now()), avgUtil, funcitonParam, sumDeltaLat))
-    # newMuData = {"mu":[newMU], "quantized_mu":[quantized_mu], "changed": [changedFlag],"timestamp":[(datetime.datetime.now())], "average_util":[avgUtil], "parameter":[funcitonParam], "delta_latency": [sumDeltaLat]}
-    # newMuDF = pd.DataFrame.from_dict(newMuData)
-    # muDF_path= (
-    #     str(Path(os.path.dirname(os.path.abspath(__file__))))
-    #     + "/data/muDF.csv"
-    # )
-    # newMuDF.to_csv(muDF_path, mode='a', header=not os.path.exists(muDF_path))
-
+        logger.info(str(datetime.datetime.now()))
+        logger.info("Changed mu factor to = {}".format(quantized_mu))
+    logger.info(
+        "mu: {}, quantized_mu: {}, changed: {}, timestamp: {}, average_util: {}, parameter: {}, delta_latency: {}".format(
+            newMU,
+            quantized_mu,
+            changedFlag,
+            (datetime.datetime.now()),
+            avgUtil,
+            funcitonParam,
+            sumDeltaLat,
+        )
+    )
 
 
 def flushExecutionDurations():
@@ -164,7 +193,11 @@ def flushExecutionDurations():
         cacheDurations = {}
     with open(cachePath, "w", os.O_NONBLOCK) as f:
         json.dump(newCachJSon, f)
-    tempexecutionDurations = copy.deepcopy(executionDurations)
+    try:
+        tempexecutionDurations = copy.deepcopy(executionDurations)
+    except RuntimeError:
+        print("Dictionary changed size during iteration!")
+        return
     kind = "vmLogs"
     for key in tempexecutionDurations.keys():
         if len(tempexecutionDurations[key]) == 7:
@@ -218,10 +251,9 @@ def threaded_function(arg, lastexectimestamps):
             if thread.is_alive() is False:
                 activeThreads.remove(thread)
         activeThreadCheckLock.release()
-        
+
         # sleep
         sleep(2)
-
 
 
 def getFunctionParameters(functionname):
@@ -230,10 +262,6 @@ def getFunctionParameters(functionname):
         name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
         + functionname,
     )
-    # print(
-    #     "Function Parameters"
-    #     + str(client.get_function(request=request).available_memory_mb)
-    # )
     memoryLimits[functionname] = (
         str(client.get_function(request=request).available_memory_mb) + "m"
     )
@@ -266,24 +294,37 @@ def containerize(functionname):
     entrypoint = response.entry_point
 
     # Unzip the function
-    # print("\nUnzipping the function")
     with ZipFile(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/"+functionname + ".zip", "r") as zipObj:
         zipObj.extractall(functionname)
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
     ) as output:
-        # print("\nCreating the Docker container \n")
         # Copy the Docker file to the unzipped folder
         subprocess.call(
-            "cp "+str(Path(os.path.dirname(os.path.abspath(__file__))))+"/Dockerfile "+str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname, shell=True, stdout=output, stderr=output
+            "cp "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/Dockerfile "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname,
+            shell=True,
+            stdout=output,
+            stderr=output,
         )
         subprocess.call(
-            "cp "+str(Path(os.path.dirname(os.path.abspath(__file__))))+"/init.sh " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname, shell=True, stdout=output, stderr=output
+            "cp "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/init.sh "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname,
+            shell=True,
+            stdout=output,
+            stderr=output,
         )
         file_object = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname + "/main.py", "a")
         file_object.write("\nimport sys\n")
         file_object.write("def main():\n")
-        # file_object.write("    " + entrypoint + '(json.loads(sys.argv[1]),"dummy")\n')
         file_object.write(
             "    " + entrypoint + "(json.loads(sys.argv[1]),sys.argv[2])\n"
         )
@@ -292,19 +333,33 @@ def containerize(functionname):
         file_object.write("    main()\n")
         file_object.close()
         subprocess.call(
-            "cp "+str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/ubc-serverless-ghazal-9bede7ba1a47.json " + str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname + "/ ",
+            "cp "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/ubc-serverless-ghazal-9bede7ba1a47.json "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname
+            + "/ ",
             shell=True,
             stdout=output,
             stderr=output,
         )
         subprocess.call(
-            "sed -i 's/json.loads(base64.b64decode//g' " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname + "/main.py ",
+            "sed -i 's/json.loads(base64.b64decode//g' "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname
+            + "/main.py ",
             shell=True,
             stdout=output,
             stderr=output,
         )
         subprocess.call(
-            "sed -i \"s/.decode('utf-8'))//g\" " +str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname + "/main.py ",
+            "sed -i \"s/.decode('utf-8'))//g\" "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname
+            + "/main.py ",
             shell=True,
             stdout=output,
             stderr=output,
@@ -312,8 +367,8 @@ def containerize(functionname):
         # Create the image from the Dockerfile also copy the function's code
         subprocess.call(
             "cd "
-            +str(Path(os.path.dirname(os.path.abspath(__file__))))
-            +"/"
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
             + functionname
             + "; docker build . < Dockerfile --tag name:"
             + functionname,
@@ -321,9 +376,15 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-        subprocess.call("ls",stdout=output)
-        subprocess.run("rm -rf "+str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+ functionname+"*",shell=True)
-
+        subprocess.call("ls", stdout=output)
+        subprocess.run(
+            "rm -rf "
+            + str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname
+            + "*",
+            shell=True,
+        )
 
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
@@ -351,15 +412,27 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     }
     checkedForAvailableThread = False
     while len(activeThreads) >= CONCURRENCY_LIMIT:
-        if((((datetime.datetime.now())- before).total_seconds()) * 1000 > 1000):
+        if (((datetime.datetime.now()) - before).total_seconds()) * 1000 > 1000:
             invokedFun = jsonfile["attributes"].get("invokedFunction")
             reqID = jsonfile["attributes"].get("reqID")
-            jsonfile["attributes"]["routing"] = (jsonfile["attributes"].get("routing")).replace("A", "0")
+            jsonfile["attributes"]["routing"] = (
+                jsonfile["attributes"].get("routing")
+            ).replace("A", "0")
             jsonfile["attributes"] = dict(jsonfile["attributes"])
             topic_path = publisher.topic_path(project_id, invokedFun)
-            publish_future = publisher.publish(topic_path, data=(json.dumps(jsonfile["data"])).encode('utf-8'), **jsonfile["attributes"])
+            publish_future = publisher.publish(
+                topic_path,
+                data=(json.dumps(jsonfile["data"])).encode("utf-8"),
+                **jsonfile["attributes"],
+            )
             publish_future.result()
-            print("While waiting for threads, Request of function: ", invokedFun, " with reqID: ", reqID, " has forwarded to the serverless equivalent!")
+            print(
+                "While waiting for threads, Request of function: ",
+                invokedFun,
+                " with reqID: ",
+                reqID,
+                " has forwarded to the serverless equivalent!",
+            )
             return
         threadsRemoved = False
         checkedForAvailableThread = True
@@ -398,13 +471,13 @@ def processReqs(jsonfile, before):
     global activeContainerSearchList
     global contExecRunLock
     global contsPerFunct
+    global execLogger
     msgID = jsonfile["attributes"].get("identifier")
     reqID = jsonfile["attributes"].get("reqID")
     invokedFun = jsonfile["attributes"].get("invokedFunction")
-    print("FUNCTION: ",invokedFun )
+    print("FUNCTION: ", invokedFun)
     tmpInvokedFun = jsonfile["attributes"].get("invokedFunction")
     # TODO: try/except error handling
-
 
     cpuutil = psutil.cpu_percent()
     locked = False
@@ -416,22 +489,34 @@ def processReqs(jsonfile, before):
         if (cpuutil < 80) and (msgQueue.index(msgID) < 3):
             msgQueue.remove(msgID)
             break
-        elif((((datetime.datetime.now())- before).total_seconds()) * 1000 > 2000):
-            jsonfile["attributes"]["routing"] = (jsonfile["attributes"].get("routing")).replace("A", "0")
+        elif (((datetime.datetime.now()) - before).total_seconds()) * 1000 > 2000:
+            jsonfile["attributes"]["routing"] = (
+                jsonfile["attributes"].get("routing")
+            ).replace("A", "0")
             jsonfile["attributes"] = dict(jsonfile["attributes"])
             topic_path = publisher.topic_path(project_id, invokedFun)
-            publish_future = publisher.publish(topic_path, data=(json.dumps(jsonfile["data"])).encode('utf-8'), **jsonfile["attributes"])
+            publish_future = publisher.publish(
+                topic_path,
+                data=(json.dumps(jsonfile["data"])).encode("utf-8"),
+                **jsonfile["attributes"],
+            )
             publish_future.result()
             msgQueue.remove(msgID)
-            print("Waiting for CPU, Request of function: ", invokedFun, " with reqID: ", reqID, " has forwarded to the serverless equivalent!")
+            print(
+                "Waiting for CPU, Request of function: ",
+                invokedFun,
+                " with reqID: ",
+                reqID,
+                " has forwarded to the serverless equivalent!",
+            )
             return
-        print(
-            "CPU is " + str(cpuutil) + " and queue length is " + str(len(msgQueue))
-        )
+        print("CPU is " + str(cpuutil) + " and queue length is " + str(len(msgQueue)))
         sleep(0.01)
 
     try:
-        subprocess.check_output(shlex.split(("docker image inspect name:"+ invokedFun))).decode('utf-8')
+        subprocess.check_output(
+            shlex.split(("docker image inspect name:" + invokedFun))
+        ).decode("utf-8")
     except subprocess.CalledProcessError:
         containerize(invokedFun)
     # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
@@ -450,7 +535,9 @@ def processReqs(jsonfile, before):
         contExecRunLock.acquire()
         contsPerFunct[tmpInvokedFun] = conts
         contExecRunLock.release()
-    print(f"{tot_cont_hash}:before checking::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+    print(
+        f"{tot_cont_hash}:before checking::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"
+    )
     if len(conts) != 0:
         for cont in conts:
             contExecRunLock.acquire()
@@ -464,7 +551,7 @@ def processReqs(jsonfile, before):
             else:
                 activeContainerSearchList[tmpInvokedFun] = [cont]
                 contExecRunLock.release()
-            if (cont.attrs['State']['Running']):
+            if cont.attrs["State"]["Running"]:
                 if len(cont.top()["Processes"]) > 1:
                     contExecRunLock.acquire()
                     activeContainerSearchList[tmpInvokedFun].remove(cont)
@@ -472,22 +559,33 @@ def processReqs(jsonfile, before):
                     continue
             else:
                 cont.start()
-            print(f"{tot_cont_hash}:before running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
-            cont.exec_run(
+            print(
+                f"{tot_cont_hash}:before running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"
+            )
+            _, stream = cont.exec_run(
                 "python3 /app/main.py '"
                 + str(jsonfile).replace("'", '"')
                 + "' "
                 + reqID,
                 detach=False,
+                stream=True,
             )
-            print(f"{tot_cont_hash}:After running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+            for data in stream:
+                execLogger.info(str(datetime.datetime.now()))
+                execLogger.info(str(invokedFun))
+                execLogger.info(str(data.decode()))
+            print(
+                f"{tot_cont_hash}:After running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"
+            )
             after = datetime.datetime.now()
             lastexecutiontimestamps[invokedFun] = before
             execution_complete = 1
             contExecRunLock.acquire()
             activeContainerSearchList[tmpInvokedFun].remove(cont)
             contExecRunLock.release()
-            print(f"{tot_cont_hash}:Total exe time::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
+            print(
+                f"{tot_cont_hash}:Total exe time::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"
+            )
             break
 
     if execution_complete == 0:
@@ -504,14 +602,17 @@ def processReqs(jsonfile, before):
         )
         lastexecutiontimestamps[container.id] = before
         container.start()
-        cmd = (
-            "python3 /app/main.py '"
-            + str(jsonfile).replace("'", '"')
-            + "' "
-            + reqID
+        cmd = "python3 /app/main.py '" + str(jsonfile).replace("'", '"') + "' " + reqID
+        _, stream = container.exec_run(cmd, detach=False)
+
+        for data in stream:
+            execLogger.info(str(datetime.datetime.now()))
+            execLogger.info(str(invokedFun))
+            execLogger.info(str(data.decode()))
+
+        print(
+            f"{tot_cont_hash}:Exe time after creation::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"
         )
-        container.exec_run(cmd, detach=False)
-        print(f"{tot_cont_hash}:Exe time after creation::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}")
         after = datetime.datetime.now()
         contExecRunLock.acquire()
         contsPerFunct[tmpInvokedFun].append(container)
@@ -533,18 +634,12 @@ def processReqs(jsonfile, before):
         invokedFun = invokedFun + str(reqID)
         executionDurations[invokedFun] = {}
 
-    executionDurations[invokedFun]["duration"] = str(
-        ((delta).total_seconds()) * 1000
-    )
+    executionDurations[invokedFun]["duration"] = str(((delta).total_seconds()) * 1000)
     if tmpInvokedFun not in cacheDurations.keys():
         cacheDurations[tmpInvokedFun] = []
-        cacheDurations[tmpInvokedFun].append(
-            float(((delta).total_seconds()) * 1000)
-        )
+        cacheDurations[tmpInvokedFun].append(float(((delta).total_seconds()) * 1000))
     else:
-        cacheDurations[tmpInvokedFun].append(
-            float(((delta).total_seconds()) * 1000)
-        )
+        cacheDurations[tmpInvokedFun].append(float(((delta).total_seconds()) * 1000))
     # Added for adaptive concurrency
     if adaptiveConcurrency == 1:
         if tmpInvokedFun not in allDurationsAvg.keys():
@@ -552,9 +647,14 @@ def processReqs(jsonfile, before):
         else:
             latParam = 0.8
             newL = float(((delta).total_seconds()) * 1000)
-            prevValue =allDurationsAvg[tmpInvokedFun]
-            allDurationsAvg[tmpInvokedFun] = (latParam*prevValue) + ((1-latParam)*newL)
-        deltaLat[tmpInvokedFun] = float(((float(((delta).total_seconds()) * 1000)) - allDurationsAvg[tmpInvokedFun])/1000)
+            prevValue = allDurationsAvg[tmpInvokedFun]
+            allDurationsAvg[tmpInvokedFun] = (latParam * prevValue) + (
+                (1 - latParam) * newL
+            )
+        deltaLat[tmpInvokedFun] = float(
+            ((float(((delta).total_seconds()) * 1000)) - allDurationsAvg[tmpInvokedFun])
+            / 1000
+        )
 
     executionDurations[invokedFun]["reqID"] = reqID
     executionDurations[invokedFun]["start"] = str(before)
@@ -588,4 +688,3 @@ with subscriber:
         )
         streaming_pull_future.cancel()
         streaming_pull_future.result()
-        
