@@ -15,7 +15,6 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
 )
 
 
-
 def containerize(functionname):
     # Create a client
     client = functions_v1.CloudFunctionsServiceClient()
@@ -94,12 +93,9 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-       # subprocess.call("cd .. ")
-       # subprocess.call("rm -rf "+ functionname)
-       # subprocess.call("rm -rf "+ functionname+".zip")
-
-
-
+    # subprocess.call("cd .. ")
+    # subprocess.call("rm -rf "+ functionname)
+    # subprocess.call("rm -rf "+ functionname+".zip")
 
 
 def run_container(functionname):

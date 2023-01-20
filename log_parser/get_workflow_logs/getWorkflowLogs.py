@@ -32,13 +32,9 @@ if __name__ == "__main__":
     interuptTime = 60
     initial = int(sys.argv[2])
     path = (
-                str(
-                    Path(os.path.dirname(os.path.abspath(__file__)))
-                    .resolve()
-                    .parents[1]
-                )
-                + "/scheduler/rankerConfig.ini"
-            )
+        str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+        + "/scheduler/rankerConfig.ini"
+    )
     config = configparser.ConfigParser()
     config.read(path)
     rankerConfig = config["settings"]

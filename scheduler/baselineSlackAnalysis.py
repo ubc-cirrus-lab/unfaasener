@@ -4,11 +4,13 @@ import pandas as pd
 import numpy as np
 from criticalpath import Node
 from pathlib import Path
+
 # import rankerConfig
 import configparser
 import statistics
 import functools
 import operator
+
 pd.options.mode.chained_assignment = None
 
 
@@ -24,26 +26,41 @@ class baselineSlackAnalysisClass:
             + ".json"
         )
         # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
-        dfDir = Path(str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+        dfDir = Path(
+            str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/")
-        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+            + "/"
+        )
+        dfFilesNames = [
+            file.name
+            for file in dfDir.iterdir()
+            if (
+                (file.name.startswith("generatedDataFrame"))
+                and (file.name.endswith(".pkl"))
+            )
+        ]
         # if os.path.isfile(
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
         #     + "/log_parser/get_workflow_logs/data/"
         #     + self.workflow
         #     + "/generatedDataFrame.pkl"
         # ):
-        if len(dfFilesNames) != 0 :
+        if len(dfFilesNames) != 0:
             dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
             versions = [int((a.split(","))[1]) for a in dfFilesNames]
             lastVersion = max(versions)
             dataframePath = (
-                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
-                + "/generatedDataFrame,"+str(lastVersion)+".pkl"
+                + "/generatedDataFrame,"
+                + str(lastVersion)
+                + ".pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
@@ -53,7 +70,11 @@ class baselineSlackAnalysisClass:
             + "/generatedDataFrame.csv"
         ):
             dataframePath = (
-                str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
@@ -70,7 +91,9 @@ class baselineSlackAnalysisClass:
         self.predecessors = workflow_json["predecessors"]
         self.successors = workflow_json["successors"]
         self.recordNum = 0
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
@@ -94,7 +117,7 @@ class baselineSlackAnalysisClass:
         self.observations = self.getObservations()
         self.slackCalculations()
         with open(path, "w") as configfile:
-                self.config.write(configfile)
+            self.config.write(configfile)
 
     # def getCriticalPathDuration(self):
     #     return self.duration
@@ -111,8 +134,10 @@ class baselineSlackAnalysisClass:
             # newMergingPatternChanges
             createdSet = selectedReq["function"].copy()
             createdSet = set(createdSet.to_numpy())
-            if (selectedReq.shape[0] >= self.recordNum) and (len(createdSet) == len(self.workflowFunctions)):
-            # if selectedReq.shape[0] >= self.recordNum:
+            if (selectedReq.shape[0] >= self.recordNum) and (
+                len(createdSet) == len(self.workflowFunctions)
+            ):
+                # if selectedReq.shape[0] >= self.recordNum:
                 selectedRecords.append(record["reqID"])
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]
@@ -163,29 +188,35 @@ class baselineSlackAnalysisClass:
                     ]
                     if dfPrev.shape[0] == 1:
                         finish = dfPrev.iloc[0]["finish"]
-                    elif len(self.predecessors[self.workflowFunctions.index(prevFunc)]) > 1:
+                    elif (
+                        len(self.predecessors[self.workflowFunctions.index(prevFunc)])
+                        > 1
+                    ):
                         finish = dfPrev["finish"].max()
                     else:
-                        start = self.avg_datetime(dfNext['start'])
+                        start = self.avg_datetime(dfNext["start"])
                     if dfNext.shape[0] == 1:
                         start = dfNext.iloc[0]["start"]
-                    elif len(self.predecessors[self.workflowFunctions.index(nextFunc)]) > 1:
+                    elif (
+                        len(self.predecessors[self.workflowFunctions.index(nextFunc)])
+                        > 1
+                    ):
                         start = dfNext.loc[dfNext["mergingPoint"] == prevFunc].iloc[0][
                             "start"
                         ]
                     else:
-                        start = self.avg_datetime(dfNext['start'])
+                        start = self.avg_datetime(dfNext["start"])
                         # start = dfNext.loc[dfNext["mergingPoint"] == prevFunc].iloc[0][
                         #     "start"
                         # ]
 
                     duration = ((start - finish).total_seconds()) * 1000
                     self.slackData[entry].append(duration)
-    
+
     # newMergingPatternChanges
     def avg_datetime(self, series):
         dt_min = series.min()
-        deltas = [x-dt_min for x in series]
+        deltas = [x - dt_min for x in series]
         return dt_min + functools.reduce(operator.add, deltas) / len(deltas)
 
     def getUpperBound(self, array):
@@ -290,7 +321,9 @@ class baselineSlackAnalysisClass:
             slackResults[col] = {}
             slackDurations[col] = {}
 
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         config = configparser.ConfigParser()
         config.read(path)
         rankerConfig = config["settings"]
@@ -316,7 +349,9 @@ class baselineSlackAnalysisClass:
             )
             if decisionMode == "default":
                 multipliedParam = 1
-                self.rankerConfig["tolerancewindow"] = str(multipliedParam* (int(self.duration)))
+                self.rankerConfig["tolerancewindow"] = str(
+                    multipliedParam * (int(self.duration))
+                )
             self.completeESEF(self.initFunc)
             self.completeLSLF(self.duration, self.crPath)
             for col in self.slackData.keys():
@@ -324,12 +359,27 @@ class baselineSlackAnalysisClass:
                 slackResults[col][decisionMode] = slack
         # print(slackResults)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackData.json"), "w", os.O_NONBLOCK
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "slackData.json"
+            ),
+            "w",
+            os.O_NONBLOCK,
         ) as outfile:
             json.dump(slackResults, outfile)
         with open(
-            ((os.path.dirname(os.path.abspath(__file__))) + "/data/" + str(self.workflow) + "/" + "slackDurations.json"),
-            "w", os.O_NONBLOCK
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(self.workflow)
+                + "/"
+                + "slackDurations.json"
+            ),
+            "w",
+            os.O_NONBLOCK,
         ) as outfile:
             json.dump(slackDurations, outfile)
 

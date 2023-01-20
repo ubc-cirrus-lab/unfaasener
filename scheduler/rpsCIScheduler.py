@@ -31,7 +31,7 @@ class CIScheduler:
         self.dateDFData["triggered"] = []
         triggerTime = datetime.datetime.now()
         self.dateDFData["triggered"].append(triggerTime)
-        print(str(triggerTime)+ " Scheduler triggered with: "+ triggerType)
+        print(str(triggerTime) + " Scheduler triggered with: " + triggerType)
         self.dateDFData["triggerType"].append(triggerType)
         path = (
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
@@ -148,7 +148,8 @@ class CIScheduler:
         # self.rps = float(self.rankerConfig["rps"])
         resources = open(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt",
-            "r", os.O_NONBLOCK
+            "r",
+            os.O_NONBLOCK,
         )
         Lines = resources.readlines()
         cpus = Lines[0].split()
@@ -196,16 +197,18 @@ class CIScheduler:
                 finalDecision[i] = np.multiply(finalDecision[i], capArray[i])
             finalDecision = list(finalDecision)
             for function in range(len(finalDecision)):
-                allZero = (all(item == 0 for item in list(finalDecision[function])))
+                allZero = all(item == 0 for item in list(finalDecision[function]))
                 if allZero == False:
                     AllZeroesFlag = False
                     break
             if AllZeroesFlag == True:
                 for function in range(len(finalDecision)):
-                    if function!=0:
+                    if function != 0:
                         vmOffset = np.full(len(finalDecision[function]), 0.05)
-                        finalDecision[function] = np.maximum(finalDecision[function], vmOffset)
-            for function in range(len(finalDecision)):    
+                        finalDecision[function] = np.maximum(
+                            finalDecision[function], vmOffset
+                        )
+            for function in range(len(finalDecision)):
                 finalDecision[function] = list(finalDecision[function])
             self.routing["routing" + "_" + str(percent)] = str(finalDecision)
             print(
@@ -239,11 +242,16 @@ if __name__ == "__main__":
         if initType == "forced":
             logging.info(str(datetime.datetime.now()))
             logging.info("Forced trigger!!!")
-            if not(os.path.exists(
-                str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
-            )):
+            if not (
+                os.path.exists(
+                    str(Path(os.path.dirname(os.path.abspath(__file__))))
+                    + "/forcedLock.txt"
+                )
+            ):
                 with open(
-                str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt", "w"
+                    str(Path(os.path.dirname(os.path.abspath(__file__))))
+                    + "/forcedLock.txt",
+                    "w",
                 ) as f:
                     f.write("forced Lock")
                     f.close
@@ -267,10 +275,14 @@ if __name__ == "__main__":
     # triggerType = "resolve"
     solver = CIScheduler(triggerType)
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt")
-    if ((os.path.exists(
-        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
-    )) and (checkingFlag == True) ):
-        os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt")
+    if (
+        os.path.exists(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+        )
+    ) and (checkingFlag == True):
+        os.remove(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+        )
     logging.info("Lock released!!!")
     logging.info(str(datetime.datetime.now()))
     # print(

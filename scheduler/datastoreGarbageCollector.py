@@ -16,7 +16,6 @@ class mergingDataGarbageCollector:
         self.datastore_client = datastore.Client()
         self.remove()
 
-
     def remove(self):
         query = self.datastore_client.query(kind="Merging")
         results = list(query.fetch())

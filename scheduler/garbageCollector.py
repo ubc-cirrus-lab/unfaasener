@@ -2,15 +2,23 @@ from datastoreGarbageCollector import mergingDataGarbageCollector
 from pathlib import Path
 import time
 import os
+
 # import rankerConfig
 import datetime
 import configparser
 import logging
-logging.basicConfig(filename=str(Path(os.path.dirname(os.path.abspath(__file__))))+"/logs/GC.log", level=logging.INFO)
+
+logging.basicConfig(
+    filename=str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/logs/GC.log",
+    level=logging.INFO,
+)
+
 
 class dataGarbageCollector:
     def __init__(self):
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
@@ -20,7 +28,7 @@ class dataGarbageCollector:
 
 
 if __name__ == "__main__":
-    interuptTime = 60*60
+    interuptTime = 60 * 60
     time.sleep(interuptTime)
     while True:
         logging.info("GC is running......")

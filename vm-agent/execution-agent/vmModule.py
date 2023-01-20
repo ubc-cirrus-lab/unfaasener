@@ -291,7 +291,13 @@ def containerize(functionname):
     entrypoint = response.entry_point
 
     # Unzip the function
-    with ZipFile(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/"+functionname + ".zip", "r") as zipObj:
+    with ZipFile(
+        str(Path(os.path.dirname(os.path.abspath(__file__))))
+        + "/"
+        + functionname
+        + ".zip",
+        "r",
+    ) as zipObj:
         zipObj.extractall(functionname)
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
@@ -319,7 +325,13 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-        file_object = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname + "/main.py", "a")
+        file_object = open(
+            str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname
+            + "/main.py",
+            "a",
+        )
         file_object.write("\nimport sys\n")
         file_object.write("def main():\n")
         file_object.write(

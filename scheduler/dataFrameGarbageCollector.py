@@ -2,6 +2,7 @@ import json
 import os
 import pandas as pd
 from pathlib import Path
+
 pd.options.mode.chained_assignment = None
 import configparser
 
@@ -33,7 +34,7 @@ class garbageCollector:
             + self.workflow
             + "/data.json"
         )
-        
+
         self.dataframe = pd.read_pickle(dataframePath)
 
         with open(jsonPath, "r") as json_file:
@@ -45,7 +46,9 @@ class garbageCollector:
         self.predecessors = workflow_json["predecessors"]
         self.successors = workflow_json["successors"]
         self.recordNum = 0
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
@@ -78,7 +81,9 @@ class garbageCollector:
             # newMergingPatternChanges
             createdSet = selectedReq["function"].copy()
             createdSet = set(createdSet.to_numpy())
-            if (selectedReq.shape[0] >= self.recordNum) and (len(createdSet) == len(self.workflowFunctions)):
+            if (selectedReq.shape[0] >= self.recordNum) and (
+                len(createdSet) == len(self.workflowFunctions)
+            ):
                 selectedRecords.append(record["reqID"])
         # print("selected::: ", selectedRecords)
         if len(selectedRecords) >= self.windowSize:
@@ -102,14 +107,14 @@ class garbageCollector:
             # )
             # self.dataframe
             selected2 = self.dataframe.loc[
-                (self.dataframe["function"] == func)
-                & (self.dataframe["host"] == "s")
+                (self.dataframe["function"] == func) & (self.dataframe["host"] == "s")
             ]
             selected2["start"] = pd.to_datetime(
                 selected2["start"], format="%Y-%m-%d %H:%M:%S.%f"
             )
             selected2 = selected2.loc[
-                ((selected2["start"]) < startDate) & (~selected2["reqID"].isin(self.selectedIDs))
+                ((selected2["start"]) < startDate)
+                & (~selected2["reqID"].isin(self.selectedIDs))
             ]
             # print(func, ",:::,",  selected2.index)
             self.dataframe.drop(

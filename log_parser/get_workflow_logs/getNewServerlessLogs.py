@@ -75,7 +75,8 @@ class getNewLogs(GetLog):
                 + str(self.workflow)
                 + "/"
                 + "prevData.json",
-                "r", os.O_NONBLOCK
+                "r",
+                os.O_NONBLOCK,
             ) as outfile:
                 self.prevData = json.load(outfile)
         else:
@@ -100,7 +101,6 @@ class getNewLogs(GetLog):
         self.getDict()
         self.saveCost()
 
-    
     def saveCost(self):
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
@@ -112,7 +112,9 @@ class getNewLogs(GetLog):
         prevCost_json["GB-Sec"] = prevCost_json["GB-Sec"] + self.GBSec
         prevCost_json["GHz-Sec"] = prevCost_json["GHz-Sec"] + self.GHzSec
         prevCost_json["NI"] = prevCost_json["NI"] + self.NI
-        prevCost_json["DSread"] = prevCost_json["DSread"] + self.dataStoreCount + self.readDecisionCount
+        prevCost_json["DSread"] = (
+            prevCost_json["DSread"] + self.dataStoreCount + self.readDecisionCount
+        )
         prevCost_json["DSwrite"] = prevCost_json["DSwrite"] + self.dataStoreCount
         with open(jsonPath, "w") as json_file:
             json.dump(prevCost_json, json_file)
@@ -131,7 +133,8 @@ class getNewLogs(GetLog):
                 + str(self.workflow)
                 + "/"
                 + "data.json",
-                "r", os.O_NONBLOCK
+                "r",
+                os.O_NONBLOCK,
             ) as outfile:
                 workflow_json = json.load(outfile)
                 self.newTimeStampRecorded = copy.deepcopy(workflow_json)
@@ -147,18 +150,18 @@ class getNewLogs(GetLog):
     def pullLogs(self, function):
         if self.lastTimestamp != None:
             lastLog = (
-                    "gcloud functions logs read "
-                    + function
-                    + " --region northamerica-northeast1 --format json --limit 1 "
-                )
+                "gcloud functions logs read "
+                + function
+                + " --region northamerica-northeast1 --format json --limit 1 "
+            )
             lastLog_logs = subprocess.check_output(shlex.split(lastLog))
             lastLog_logs_json = json.loads(lastLog_logs)
-                # if len(lastLog_logs_json) == 0:
-                #     endFlag = True
-                #     break
+            # if len(lastLog_logs_json) == 0:
+            #     endFlag = True
+            #     break
             lastLog_date = [
-                    element["time_utc"] for idx, element in enumerate(lastLog_logs_json)
-                ]
+                element["time_utc"] for idx, element in enumerate(lastLog_logs_json)
+            ]
             # lastLogEndDate = datetime.datetime.strptime(
             #         lastLog_date[0], "%Y-%m-%d %H:%M:%S.%f"
             #     )
@@ -169,7 +172,7 @@ class getNewLogs(GetLog):
             # !!!!!!!!!!
             # self.newTimeStampRecorded[function] = lastLogEndDate
             self.tempTimeStampRecorded[function] = lastLog_date[0]
-            print("Time for  func: ", function, " is::",  lastLog_date[0])
+            print("Time for  func: ", function, " is::", lastLog_date[0])
             endFlag = False
             while endFlag != True:
                 tempDate = datetime.datetime.strptime(
@@ -226,7 +229,9 @@ class getNewLogs(GetLog):
                     #     self.newTimeStampRecorded[function] = str(self.writeLogs[function][0]["time_utc"])
                     endFlag = True
                 if len(project_logs_json_old) != 0:
-                    self.tempTimeStampRecorded[function] = str(project_logs_json_old[-1]["time_utc"])
+                    self.tempTimeStampRecorded[function] = str(
+                        project_logs_json_old[-1]["time_utc"]
+                    )
             # self.newTimeStampRecorded[function] = lastLog_date[0]
             # with open(
             #         (
@@ -239,7 +244,7 @@ class getNewLogs(GetLog):
             #         "w", os.O_NONBLOCK
             #     ) as outfile:
             #         json.dump(self.newTimeStampRecorded, outfile)
-                # self.checkLatestTimeStamp(function)
+            # self.checkLatestTimeStamp(function)
         else:
             "No data file!"
             # project_list_logs = (
@@ -428,18 +433,27 @@ class getNewLogs(GetLog):
                 + [funcData[i] for i in finishLogsIndex]
             )
         df = pd.DataFrame(self.dictData)
-        dfDir = Path((os.path.dirname(os.path.abspath(__file__)))
+        dfDir = Path(
+            (os.path.dirname(os.path.abspath(__file__)))
             + "/data/"
             + self.workflow
-            + "/")
-        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+            + "/"
+        )
+        dfFilesNames = [
+            file.name
+            for file in dfDir.iterdir()
+            if (
+                (file.name.startswith("generatedDataFrame"))
+                and (file.name.endswith(".pkl"))
+            )
+        ]
         # if os.path.isfile(
         #     (os.path.dirname(os.path.abspath(__file__)))
         #     + "/data/"
         #     + self.workflow
         #     + "/generatedDataFrame,"+str(lastVersion)+".pkl"
         # ):
-        if len(dfFilesNames) != 0 :
+        if len(dfFilesNames) != 0:
             dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
             versions = [int((a.split(","))[1]) for a in dfFilesNames]
             lastVersion = max(versions)
@@ -448,7 +462,9 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame,"+str(lastVersion)+".pkl"
+                + "/generatedDataFrame,"
+                + str(lastVersion)
+                + ".pkl"
             )
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
@@ -457,13 +473,17 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame,"+str(newVersion)+".pkl"
+                + "/generatedDataFrame,"
+                + str(newVersion)
+                + ".pkl"
             )
             newDataFrame.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                +  "/generatedDataFrame,"+str(newVersion)+".csv"
+                + "/generatedDataFrame,"
+                + str(newVersion)
+                + ".csv"
             )
 
         else:
@@ -473,22 +493,33 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/generatedDataFrame,"+str(newVersion)+".pkl"
+                + "/generatedDataFrame,"
+                + str(newVersion)
+                + ".pkl"
             )
             df.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                +"/generatedDataFrame,"+str(newVersion)+".csv"
+                + "/generatedDataFrame,"
+                + str(newVersion)
+                + ".csv"
             )
-        invocationFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('invocationRates')) and (file.name.endswith('.pkl')))]
+        invocationFilesNames = [
+            file.name
+            for file in dfDir.iterdir()
+            if (
+                (file.name.startswith("invocationRates"))
+                and (file.name.endswith(".pkl"))
+            )
+        ]
         # if os.path.isfile(
         #     (os.path.dirname(os.path.abspath(__file__)))
         #     + "/data/"
         #     + self.workflow
         #     + "/invocationRates.pkl"
         # ):
-        if len(invocationFilesNames) != 0 :
+        if len(invocationFilesNames) != 0:
             invocationFilesNames = [a.replace(".pkl", "") for a in invocationFilesNames]
             versions = [int((a.split(","))[1]) for a in invocationFilesNames]
             lastVersion = max(versions)
@@ -497,7 +528,9 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                +"/invocationRates,"+str(lastVersion)+".pkl"
+                + "/invocationRates,"
+                + str(lastVersion)
+                + ".pkl"
             )
             initRecords = df.loc[(df["function"] == self.initFunc)]
             initRecords = initRecords["start"]
@@ -513,13 +546,17 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                +"/invocationRates,"+str(newVersion)+".pkl"
+                + "/invocationRates,"
+                + str(newVersion)
+                + ".pkl"
             )
             newInvocations.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates,"+str(newVersion)+".csv"
+                + "/invocationRates,"
+                + str(newVersion)
+                + ".csv"
             )
 
         else:
@@ -531,13 +568,17 @@ class getNewLogs(GetLog):
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates,"+str(newVersion)+".pkl"
+                + "/invocationRates,"
+                + str(newVersion)
+                + ".pkl"
             )
             initRecords.to_csv(
                 (os.path.dirname(os.path.abspath(__file__)))
                 + "/data/"
                 + self.workflow
-                + "/invocationRates,"+str(newVersion)+".csv"
+                + "/invocationRates,"
+                + str(newVersion)
+                + ".csv"
             )
         with open(
             (
@@ -547,7 +588,8 @@ class getNewLogs(GetLog):
                 + "/"
                 + "prevData.json"
             ),
-            "w", os.O_NONBLOCK
+            "w",
+            os.O_NONBLOCK,
         ) as outfile:
             json.dump(self.prevData, outfile)
 
