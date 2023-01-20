@@ -5,7 +5,6 @@ from sys import getsizeof
 import time
 import os
 import math
-import pandas as pd
 
 
 class GetWorkflowLogs:

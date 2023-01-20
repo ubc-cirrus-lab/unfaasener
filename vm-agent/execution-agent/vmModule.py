@@ -1,4 +1,3 @@
-from concurrent.futures import TimeoutError
 import copy
 import datetime
 from datetime import timedelta
@@ -7,7 +6,6 @@ from google.cloud import datastore, functions_v1, pubsub_v1
 from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
 import json
 import configparser
-from multiprocessing import cpu_count
 import os
 from pathlib import Path
 import psutil
@@ -22,7 +20,6 @@ import shlex
 import math
 import numpy as np
 import logging
-import pandas as pd
 
 
 def setup_logger(name, logFile, level=logging.INFO):

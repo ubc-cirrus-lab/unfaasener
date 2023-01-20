@@ -2,7 +2,6 @@ from google.cloud import datastore
 from datetime import timedelta
 import datetime
 import os
-import json
 from pathlib import Path
 import datetime
 
