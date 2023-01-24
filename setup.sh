@@ -12,9 +12,17 @@ for dirname in "${arr[@]}"
 do
     mkdir "$dirname"
 done 
-cd ../../
+cd ../
+mkdir logs
+cd ../
 cd ./log_parser/get_workflow_logs/data
 for dirname in "${arr[@]}"
 do
     mkdir "$dirname"
 done 
+cd ../
+mkdir logs
+cd ../../
+cd ./vm-agent/execution-agent
+mkdir logs
+mkdir data
