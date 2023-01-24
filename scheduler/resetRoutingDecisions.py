@@ -20,7 +20,10 @@ class resetDicision:
         self.functionNum = len(self.workflow_json["workflowFunctions"])
         self.workflow = workflow
         self.vmNum = vmNum
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/key/schedulerKey.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/key/schedulerKey.json"
+        )
         project = "ubc-serverless-ghazal"
         self.datastore_client = datastore.Client()
         kind = "routingDecision"
@@ -31,29 +34,32 @@ class resetDicision:
         self.resetSavedTimestamps()
         self.resetResources()
 
-
     def resetResources(self):
         lines = [0, 0]
-        with open(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/resources.txt", 'w') as f:
+        with open(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt",
+            "w",
+        ) as f:
             for line in lines:
                 f.write(str(line))
-                f.write('\n')
+                f.write("\n")
 
     def resetSavedTimestamps(self):
         now = str(datetime.datetime.now())
         dataJSONN = (
-                    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-                    + "/log_parser/get_workflow_logs/data/"+self.workflow+"/data.json"
-                )
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/data.json"
+        )
         newData = {}
         for func in self.workflow_json["workflowFunctions"]:
             newData[func] = now
         with open(dataJSONN, "w") as outfile:
             json.dump(newData, outfile)
 
-
     def resetRouting(self):
-        rates = [25,50,75,95]
+        rates = [25, 50, 75, 95]
         for percent in rates:
             finalDecision = []
             for i in range(self.functionNum):

@@ -1,20 +1,8 @@
-from concurrent.futures import TimeoutError
-import copy
-import datetime
-from datetime import timedelta
-import docker
-from google.cloud import datastore, functions_v1, pubsub_v1
-from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
-import json
-from multiprocessing import cpu_count
+from google.cloud import functions_v1
 import os
 from pathlib import Path
-import psutil
 import subprocess
 import sys
-from threading import Thread, Lock
-from time import sleep
-import uuid
 import wget
 from zipfile import ZipFile
 
@@ -25,7 +13,6 @@ subscription_id = sys.argv[1]
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
     str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/vmExeModule.json"
 )
-
 
 
 def containerize(functionname):
@@ -106,12 +93,9 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-       # subprocess.call("cd .. ")
-       # subprocess.call("rm -rf "+ functionname)
-       # subprocess.call("rm -rf "+ functionname+".zip")
-
-
-
+    # subprocess.call("cd .. ")
+    # subprocess.call("rm -rf "+ functionname)
+    # subprocess.call("rm -rf "+ functionname+".zip")
 
 
 def run_container(functionname):

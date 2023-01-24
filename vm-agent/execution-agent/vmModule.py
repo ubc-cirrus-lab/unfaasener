@@ -1,4 +1,3 @@
-from concurrent.futures import TimeoutError
 import copy
 import datetime
 from datetime import timedelta
@@ -7,7 +6,6 @@ from google.cloud import datastore, functions_v1, pubsub_v1
 from google.cloud.pubsub_v1.subscriber import exceptions as sub_exceptions
 import json
 import configparser
-from multiprocessing import cpu_count
 import os
 from pathlib import Path
 import psutil
@@ -22,7 +20,6 @@ import shlex
 import math
 import numpy as np
 import logging
-import pandas as pd
 
 
 def setup_logger(name, logFile, level=logging.INFO):
@@ -294,7 +291,13 @@ def containerize(functionname):
     entrypoint = response.entry_point
 
     # Unzip the function
-    with ZipFile(str(Path(os.path.dirname(os.path.abspath(__file__))))+"/"+functionname + ".zip", "r") as zipObj:
+    with ZipFile(
+        str(Path(os.path.dirname(os.path.abspath(__file__))))
+        + "/"
+        + functionname
+        + ".zip",
+        "r",
+    ) as zipObj:
         zipObj.extractall(functionname)
     with open(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/output2.log", "a"
@@ -322,7 +325,13 @@ def containerize(functionname):
             stdout=output,
             stderr=output,
         )
-        file_object = open(str(Path(os.path.dirname(os.path.abspath(__file__)))) +"/"+functionname + "/main.py", "a")
+        file_object = open(
+            str(Path(os.path.dirname(os.path.abspath(__file__))))
+            + "/"
+            + functionname
+            + "/main.py",
+            "a",
+        )
         file_object.write("\nimport sys\n")
         file_object.write("def main():\n")
         file_object.write(

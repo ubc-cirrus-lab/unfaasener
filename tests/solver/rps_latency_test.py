@@ -30,7 +30,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
@@ -48,7 +48,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 1, "mem_mb": 500}]
         alpha = 0
@@ -63,7 +63,7 @@ class TestSolver(unittest.TestCase):
         workflow = "TestCase2Workflow"
         toleranceWindow = 100000000
         solver = rpsOffloadingSolver(
-            workflow, self.mode, None, toleranceWindow, rps=self.rps, testingFlag = True
+            workflow, self.mode, None, toleranceWindow, rps=self.rps, testingFlag=True
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -77,7 +77,7 @@ class TestSolver(unittest.TestCase):
         workflow = "TestCase11Workflow"
         toleranceWindow = 50
         solver = rpsOffloadingSolver(
-            workflow, self.mode, None, toleranceWindow, rps=self.rps, testingFlag = True
+            workflow, self.mode, None, toleranceWindow, rps=self.rps, testingFlag=True
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -91,7 +91,7 @@ class TestSolver(unittest.TestCase):
         workflow = "TestCase11Workflow"
         toleranceWindow = 20
         solver = rpsOffloadingSolver(
-            workflow, self.mode, None, toleranceWindow, rps=self.rps, testingFlag = True
+            workflow, self.mode, None, toleranceWindow, rps=self.rps, testingFlag=True
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -125,7 +125,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [
             {"cores": 2, "mem_mb": 400},
@@ -161,7 +161,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [
             {"cores": 2, "mem_mb": 100},
@@ -197,7 +197,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [
             {"cores": 2, "mem_mb": 400},

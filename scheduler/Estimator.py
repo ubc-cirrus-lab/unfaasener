@@ -1,4 +1,3 @@
-from re import S
 import json
 import datetime
 import os
@@ -32,18 +31,27 @@ class Estimator:
             + self.workflow
             + ".json"
         )
-        dfDir = Path(str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+        dfDir = Path(
+            str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
-            + "/")
-        dfFilesNames = [file.name for file in dfDir.iterdir() if ((file.name.startswith('generatedDataFrame')) and (file.name.endswith('.pkl')))]  
+            + "/"
+        )
+        dfFilesNames = [
+            file.name
+            for file in dfDir.iterdir()
+            if (
+                (file.name.startswith("generatedDataFrame"))
+                and (file.name.endswith(".pkl"))
+            )
+        ]
         # if os.path.isfile(
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
         #     + "/log_parser/get_workflow_logs/data/"
         #     + self.workflow
         #     + "/generatedDataFrame.pkl"
         # ):
-        if len(dfFilesNames) != 0 :
+        if len(dfFilesNames) != 0:
             dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
             versions = [int((a.split(","))[1]) for a in dfFilesNames]
             lastVersion = max(versions)
@@ -55,7 +63,9 @@ class Estimator:
                 )
                 + "/log_parser/get_workflow_logs/data/"
                 + self.workflow
-                + "/generatedDataFrame,"+str(lastVersion)+".pkl"
+                + "/generatedDataFrame,"
+                + str(lastVersion)
+                + ".pkl"
             )
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
@@ -88,13 +98,15 @@ class Estimator:
         self.windowSize = int(self.rankerConfig["windowSize"])
         # self.windowSize = 50
         self.memories = workflow_json["memory"]
-        if os.path.exists((
-                    (os.path.dirname(os.path.abspath(__file__)))
-                    + "/data/"
-                    + str(workflow)
-                    + "/"
-                    + "slackDurations.json"
-                )):
+        if os.path.exists(
+            (
+                (os.path.dirname(os.path.abspath(__file__)))
+                + "/data/"
+                + str(workflow)
+                + "/"
+                + "slackDurations.json"
+            )
+        ):
             with open(
                 (
                     (os.path.dirname(os.path.abspath(__file__)))
@@ -103,7 +115,8 @@ class Estimator:
                     + "/"
                     + "slackDurations.json"
                 ),
-                "r", os.O_NONBLOCK
+                "r",
+                os.O_NONBLOCK,
             ) as outfile:
                 self.slackDurationsDF = json.load(outfile)
 
@@ -111,7 +124,7 @@ class Estimator:
 
         with open(
             (os.path.dirname(os.path.abspath(__file__))) + "/data/" + "prevCost.json",
-            "r"
+            "r",
         ) as json_file:
             workflow_json = json.load(json_file)
         return workflow_json
@@ -242,7 +255,8 @@ class Estimator:
                 + host
                 + ", exeTime.json"
             ),
-            "w", os.O_NONBLOCK
+            "w",
+            os.O_NONBLOCK,
         ) as outfile:
             json.dump(exeTimes, outfile)
 
@@ -344,7 +358,8 @@ class Estimator:
                 + "/"
                 + "pubSubSize.json"
             ),
-            "w", os.O_NONBLOCK
+            "w",
+            os.O_NONBLOCK,
         ) as outfile:
             json.dump(pubSubSize, outfile)
 
@@ -408,7 +423,7 @@ class Estimator:
         elif mode == "default":
             exeTime = self.getMean(durations)
         # if host != "s":
-            # print("INFOOO!:", func, ":::", exeTime)
+        # print("INFOOO!:", func, ":::", exeTime)
         return exeTime
 
     # newMergingPatternChanges
@@ -627,7 +642,8 @@ class Estimator:
                 + "/"
                 + "Costs.json"
             ),
-            "w", os.O_NONBLOCK
+            "w",
+            os.O_NONBLOCK,
         ) as outfile:
             json.dump(costs, outfile)
 
