@@ -19,6 +19,7 @@ from zipfile import ZipFile
 import shlex
 import math
 import numpy as np
+import pandas as pd
 import logging
 
 
@@ -86,6 +87,10 @@ contsPerFunct = {}
 deltaLat = {}
 allDurationsAvg = {}
 adaptiveConcurrency = int(rankerConfig["adaptiveConcurrency"])
+
+
+# Datastore Backup Counter
+DSCounter = 0
 
 
 def getUtilFile():
@@ -168,28 +173,22 @@ def adjustMU():
 
 def flushExecutionDurations():
     global executionDurations
-    global cacheDurations
-
     global adaptiveConcurrency
+    global DSCounter
+    dataDict = {
+        "reqID": [],
+        "function": [],
+        "duration": [],
+        "start": [],
+        "finish": [],
+        "host": [],
+        "mergingPoint": [],
+    }
     if adaptiveConcurrency == 1:
         adjustMU()
     cachePath = (
-        str(Path(os.path.dirname(os.path.abspath(__file__))))
-        + "/data/cachedVMData.json"
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/data/cachedVMData.csv"
     )
-    if os.path.isfile(cachePath):
-        with open(cachePath, "r", os.O_NONBLOCK) as json_file:
-            cach_json = json.load(json_file)
-            newCachJSon = {
-                key: cach_json.get(key, []) + cacheDurations.get(key, [])
-                for key in set(list(cach_json.keys()) + list(cacheDurations.keys()))
-            }
-            cacheDurations = {}
-    else:
-        newCachJSon = cacheDurations
-        cacheDurations = {}
-    with open(cachePath, "w", os.O_NONBLOCK) as f:
-        json.dump(newCachJSon, f)
     try:
         tempexecutionDurations = copy.deepcopy(executionDurations)
     except RuntimeError:
@@ -198,23 +197,53 @@ def flushExecutionDurations():
     kind = "vmLogs"
     for key in tempexecutionDurations.keys():
         if len(tempexecutionDurations[key]) == 7:
-            newHash = uuid.uuid4().hex
-            task_key = datastore_client.key(kind, str(key) + str(newHash))
-            task = datastore.Entity(key=task_key)
-            task["reqID"] = tempexecutionDurations[key]["reqID"]
+            DSCounter += 1
+            dataDict["reqID"].append(tempexecutionDurations[key]["reqID"])
             removedPart = str(key).replace(
                 str(tempexecutionDurations[key]["mergingPoint"]), ""
             )
-            task["function"] = str(removedPart).replace(str(task["reqID"]), "")
-            task["duration"] = tempexecutionDurations[key]["duration"]
-            task["start"] = tempexecutionDurations[key]["start"]
-            task["finish"] = tempexecutionDurations[key]["finish"]
-            task["host"] = tempexecutionDurations[key]["host"]
+            dataDict["function"].append(
+                str(removedPart).replace(str(tempexecutionDurations[key]["reqID"]), "")
+            )
+            dataDict["duration"].append(tempexecutionDurations[key]["duration"])
+            dataDict["start"].append(tempexecutionDurations[key]["start"])
+            dataDict["finish"].append(tempexecutionDurations[key]["finish"])
+            dataDict["host"].append(tempexecutionDurations[key]["host"])
             if ":fanout:" in tempexecutionDurations[key]["mergingPoint"]:
                 tempexecutionDurations[key]["mergingPoint"] = ""
-            task["mergingPoint"] = tempexecutionDurations[key]["mergingPoint"]
-            datastore_client.put(task)
+            dataDict["mergingPoint"].append(tempexecutionDurations[key]["mergingPoint"])
             executionDurations.pop(key)
+    newDataDF = pd.DataFrame.from_dict(dataDict)
+    newDataDF.to_csv(
+        cachePath, mode="a", header=not os.path.exists(cachePath), index=False
+    )
+
+    if DSCounter >= 1000:
+        prevCounter = DSCounter
+        DSCounter = 0
+        storinginDSThread = Thread(target=Datastore_function, args=(prevCounter))
+        storinginDSThread.start()
+
+
+def Datastore_function(recordsCounter):
+    cachePath = (
+        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/data/cachedVMData.csv"
+    )
+    if os.path.isfile(cachePath):
+        vmData = pd.read_csv(cachePath)
+        lastObservations = vmData.tail(recordsCounter)
+        for index, row in lastObservations.iterrows():
+            newHash = uuid.uuid4().hex
+            task_key = datastore_client.key(kind, str(newHash))
+            task = datastore.Entity(key=task_key)
+            task["reqID"] = row["reqID"]
+            task["function"] = row["function"]
+            task["duration"] = row["duration"]
+            task["start"] = row["start"]
+            task["finish"] = row["finish"]
+            task["host"] = row["host"]
+            task["mergingPoint"] = row["mergingPoint"]
+            datastore_client.put(task)
 
 
 def threaded_function(arg, lastexectimestamps):
@@ -421,7 +450,7 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     }
     checkedForAvailableThread = False
     while len(activeThreads) >= CONCURRENCY_LIMIT:
-        if (((datetime.datetime.now()) - before).total_seconds()) * 1000 > 1000:
+        if (((datetime.datetime.now()) - before).total_seconds()) * 1000 > 2000:
             invokedFun = jsonfile["attributes"].get("invokedFunction")
             reqID = jsonfile["attributes"].get("reqID")
             jsonfile["attributes"]["routing"] = (
@@ -582,7 +611,10 @@ def processReqs(jsonfile, before):
             for data in stream:
                 execLogger.info(str(datetime.datetime.now()))
                 execLogger.info(str(invokedFun))
-                execLogger.info(str(data.decode()))
+                if isinstance(data, str):
+                    execLogger.info(str(data.decode()))
+                else:
+                    execLogger.info(str(data))
             print(
                 f"{tot_cont_hash}:After running::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"
             )
@@ -617,7 +649,10 @@ def processReqs(jsonfile, before):
         for data in stream:
             execLogger.info(str(datetime.datetime.now()))
             execLogger.info(str(invokedFun))
-            execLogger.info(str(data.decode()))
+            if isinstance(data, str):
+                execLogger.info(str(data.decode()))
+            else:
+                execLogger.info(str(data))
 
         print(
             f"{tot_cont_hash}:Exe time after creation::: {(((datetime.datetime.now()) - before).total_seconds())} seconds.{reqID}"

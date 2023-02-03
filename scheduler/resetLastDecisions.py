@@ -136,6 +136,7 @@ class resetLastDicision:
         forcedLockFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )
+        VMcachDataframe = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.csv")
 
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -159,6 +160,7 @@ class resetLastDicision:
             triggersFile,
             utilFilePath,
             forcedLockFile,
+            VMcachDataframe
         ]
         finalPaths = filePaths + dfPaths + irPaths
         for filePath in finalPaths:

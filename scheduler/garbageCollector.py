@@ -1,4 +1,6 @@
 from datastoreGarbageCollector import mergingDataGarbageCollector
+from dataFrameGarbageCollector import garbageCollector
+from vmDataFrameGC import VMgarbageCollector
 from pathlib import Path
 import time
 import os
@@ -25,6 +27,7 @@ class dataGarbageCollector:
         workflow = self.rankerConfig["workflow"]
         serverless = mergingDataGarbageCollector()
         # gc = garbageCollector(workflow)
+        # vmGC = VMgarbageCollector(workflow)
 
 
 if __name__ == "__main__":
