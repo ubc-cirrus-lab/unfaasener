@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 import math
+from scipy.stats import ks_2samp, mannwhitneyu, chisquare
 
 # from monitoring import monitoring
 from pathlib import Path
@@ -67,7 +68,7 @@ class Estimator:
                 + str(lastVersion)
                 + ".pkl"
             )
-            self.dataframe = pd.read_pickle(dataframePath)
+            serverlessDF = pd.read_pickle(dataframePath)
         elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
@@ -84,10 +85,23 @@ class Estimator:
                 + self.workflow
                 + "/generatedDataFrame.csv"
             )
-            self.dataframe = pd.read_csv(dataframePath)
+            serverlessDF = pd.read_csv(dataframePath)
         else:
             print("Dataframe not found!")
-            self.dataframe = None
+            serverlessDF = None
+        vmcachePath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/vm-agent/execution-agent/data/cachedVMData.csv"
+        )
+        if os.path.isfile(vmcachePath):
+            vmData = pd.read_csv(vmcachePath)
+        else:
+            vmData = None
+        if vmData is not None:
+            self.dataframe = pd.concat([serverlessDF, vmData], ignore_index=True)
+        else:
+            self.dataframe = serverlessDF
+
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
         self.initFunc = workflow_json["initFunc"]
@@ -370,31 +384,11 @@ class Estimator:
     def getFuncExecutionTime(self, func, host, mode):
         exeTime = 0
         durations = []
-        if "vm" in host:
-            # print("reading cache!!!!")
-            cachePath = (
-                str(
-                    Path(os.path.dirname(os.path.abspath(__file__)))
-                    .resolve()
-                    .parents[0]
-                )
-                + "/vm-agent/execution-agent/data/cachedVMData.json"
-            )
-            if os.path.isfile(cachePath):
-                # print("Found Cache file!!!!")
-                with open(cachePath, "r", os.O_NONBLOCK) as json_file:
-                    try:
-                        cach_json = json.load(json_file)
-                        if func in cach_json.keys():
-                            durations = durations + cach_json[func]
-                    except json.JSONDecodeError:
-                        print("Empty Cache File")
         selectedInits = self.dataframe.loc[
             (self.dataframe["function"] == func) & (self.dataframe["host"] == host)
         ]
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
-        # Needs to be implemented!!!!!!
         if (len(selectedInits) == 0) and (len(durations) == 0):
             return 0
         if len(selectedInits) != 0:
@@ -422,8 +416,6 @@ class Estimator:
                 exeTime = self.getUpperBound(durations)
         elif mode == "default":
             exeTime = self.getMean(durations)
-        # if host != "s":
-        # print("INFOOO!:", func, ":::", exeTime)
         return exeTime
 
     # newMergingPatternChanges
@@ -675,6 +667,127 @@ class Estimator:
             et = self.getMean(durations)
             cost = self.cost_estimator(1, et, GB)
         return cost
+
+    def getDurationsList(self, func, host):
+        durations = []
+        selectedInits = self.dataframe.loc[
+            (self.dataframe["function"] == func) & (self.dataframe["host"] == host)
+        ]
+        selectedInits["start"] = pd.to_datetime(selectedInits["start"])
+        selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
+        if (len(selectedInits) == 0) and (len(durations) == 0):
+            # print("No records found for {} running in {}".format(func, host))
+            return []
+        if len(selectedInits) != 0:
+            g = selectedInits.groupby(selectedInits["reqID"], sort=False)
+            selectedInits = pd.concat(
+                islice(map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None)
+            )
+            for i, record in selectedInits.iterrows():
+                durations.append(record["duration"])
+        return durations
+
+    def distributions_SMDTest(self, vmDurations, serverlessDuration):
+        print("SMD")
+        vmMean = np.mean(np.array(vmDurations))
+        serverlessMean = np.mean(np.array(serverlessDuration))
+        vmStd = np.std(np.array(vmDurations))
+        serverlessStd = np.std(np.array(serverlessDuration))
+        SMD = abs(vmMean - serverlessMean) / math.sqrt(
+            ((vmStd**2) + (serverlessStd**2)) / 2
+        )
+        print("SMD::", SMD)
+        if SMD < 0.1:
+            # the distributions are similar in that case
+            return 1
+        else:
+            return 0
+
+    def distributions_KS_Test(self, vmDurations, serverlessDuration):
+        print("KS_Test")
+        ksTestRes = ks_2samp(vmDurations, serverlessDuration)
+        pvalue = ksTestRes.pvalue
+        print(pvalue)
+        if pvalue < 0.05:
+            # reject null hypothesis, so different distributions
+            return 0
+        else:
+            return 1
+
+    def distributions_Mann_Whitney_Test(self, vmDurations, serverlessDuration):
+        print("Mann_Whitney_Test")
+        stat, pvalue = mannwhitneyu(vmDurations, serverlessDuration)
+        # 1: in case the distributions are similar,
+        # 0: in case the distributions are different
+        print(pvalue)
+        if pvalue < 0.05:
+            # reject null hypothesis, so different distributions
+            return 0
+        else:
+            return 1
+
+    def distributions_Chisquared_Test(self, vmDurations, serverlessDuration):
+        print("Chisquared_Test")
+        binsDF = pd.DataFrame()
+        # Generate bins from control group
+        _, bins = pd.qcut(serverlessDuration, q=10, retbins=True)
+        binsDF["bin"] = pd.cut(serverlessDuration, bins=bins).value_counts().index
+
+        # Apply bins to both groups
+        binsDF["duration_c_observed"] = (
+            pd.cut(serverlessDuration, bins=bins).value_counts().values
+        )
+        binsDF["duration_t_observed"] = (
+            pd.cut(vmDurations, bins=bins).value_counts().values
+        )
+
+        # Compute expected frequency in the treatment group
+        binsDF["duration_t_expected"] = (
+            binsDF["duration_c_observed"]
+            / np.sum(binsDF["duration_c_observed"])
+            * np.sum(binsDF["duration_t_observed"])
+        )
+        stat, pvalue = chisquare(
+            binsDF["duration_t_observed"], binsDF["duration_t_expected"]
+        )
+        print(pvalue)
+        if pvalue < 0.05:
+            # reject null hypothesis, so different distributions
+            return 0
+        else:
+            return 1
+
+    def compareDistributions(self, func, vmNum):
+        # 1: in case the distributions are similar,
+        # 0: in case the distributions are different
+
+        vmDurations = self.getDurationsList(func, "vm" + str(vmNum))
+        serverlessDuration = self.getDurationsList(func, "s")
+        if len(vmDurations) == 0:
+            # we don't have data on vm executions
+            return "NotFound"
+        # res = self.distributions_SMDTest(vmDurations, serverlessDuration)
+        res = self.distributions_KS_Test(vmDurations, serverlessDuration)
+        # res = self.distributions_Mann_Whitney_Test(vmDurations, serverlessDuration)
+        # res = self.distributions_Chisquared_Test(vmDurations, serverlessDuration)
+        return res
+
+    def tripleCaseDicision(self, totalVMs):
+        thresholdParam = 0.3
+        individualDecisions = []
+        for vmNum in range(totalVMs):
+            for func in self.workflowFunctions:
+                seperateDicision = self.compareDistributions(func, vmNum)
+                if seperateDicision != "NotFound":
+                    individualDecisions.append(seperateDicision)
+        print("individualDecisions, ", individualDecisions)
+        if len(individualDecisions) == 0:
+            return False
+        elif np.sum(individualDecisions) >= thresholdParam * len(individualDecisions):
+            # The distributions are similar, so run the solver in three cases
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":

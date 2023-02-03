@@ -578,14 +578,15 @@ class rpsOffloadingSolver:
                 self.saveNewDecision(offloadingDecisionsFinal)
                 return offloadingDecisionsFinal
             except:
-                offloadingDecisionsFinal = [
-                    [0 for i in range(len(availResources))]
-                    for j in range(len(offloadingCandidates))
-                ]
+                # offloadingDecisionsFinal = [
+                #     [0 for i in range(len(availResources))]
+                #     for j in range(len(offloadingCandidates))
+                # ]
                 print("No solution could be found!")
-                self.saveNewDecision(offloadingDecisionsFinal)
-                return offloadingDecisionsFinal
-                model.open_folder()
+                return "NotFound"
+                # self.saveNewDecision(offloadingDecisionsFinal)
+                # return offloadingDecisionsFinal
+                # model.open_folder()
 
         elif self.optimizationMode == "latency":
             self.getAllPaths()
@@ -929,8 +930,8 @@ class rpsOffloadingSolver:
             )
             model.options.SOLVER = 1
 
-            model.options.OTOL = 1e-12
-            model.options.RTOL = 1e-12
+            model.options.OTOL = 1e-13
+            model.options.RTOL = 1e-13
 
             try:
                 model.solve(disp=False)
@@ -1243,14 +1244,15 @@ class rpsOffloadingSolver:
                 # )
                 return offloadingDecisionsFinal
             except:
-                offloadingDecisionsFinal = [
-                    [0 for i in range(len(availResources))]
-                    for j in range(len(offloadingCandidates))
-                ]
+                # offloadingDecisionsFinal = [
+                #     [0 for i in range(len(availResources))]
+                #     for j in range(len(offloadingCandidates))
+                # ]
                 print("No solution could be found!")
-                self.saveNewDecision(offloadingDecisionsFinal)
+                # self.saveNewDecision(offloadingDecisionsFinal)
                 # return offloadingDecisionsFinal, 0, 0, 0, 0, 0
-                return offloadingDecisionsFinal
+                # return offloadingDecisionsFinal
+                return "NotFound"
                 # model.open_folder()
 
     # Saving new decisions in the Json file assigned to each workflow
