@@ -172,6 +172,7 @@ def adjustMU():
 
 
 def flushExecutionDurations():
+    datastorePushThreshold = 1000
     global executionDurations
     global adaptiveConcurrency
     global DSCounter
@@ -217,10 +218,10 @@ def flushExecutionDurations():
         cachePath, mode="a", header=not os.path.exists(cachePath), index=False
     )
 
-    if DSCounter >= 1000:
+    if DSCounter >= datastorePushThreshold:
         prevCounter = DSCounter
         DSCounter = 0
-        storinginDSThread = Thread(target=Datastore_function, args=(prevCounter))
+        storinginDSThread = Thread(target=Datastore_function, args=(prevCounter,))
         storinginDSThread.start()
 
 
