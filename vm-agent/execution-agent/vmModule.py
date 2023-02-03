@@ -194,7 +194,6 @@ def flushExecutionDurations():
     except RuntimeError:
         print("Dictionary changed size during iteration!")
         return
-    kind = "vmLogs"
     for key in tempexecutionDurations.keys():
         if len(tempexecutionDurations[key]) == 7:
             DSCounter += 1
@@ -226,6 +225,8 @@ def flushExecutionDurations():
 
 
 def Datastore_function(recordsCounter):
+    global datastore_client
+    kind = "vmLogs"
     cachePath = (
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/data/cachedVMData.csv"
     )
