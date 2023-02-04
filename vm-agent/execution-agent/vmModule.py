@@ -226,7 +226,15 @@ def flushExecutionDurations():
 
 
 def Datastore_function(recordsCounter):
+    print("Datastore_function invoked with {}".format(recordsCounter))
     global datastore_client
+    # for removing the previous stored logs
+    query = datastore_client.query(kind="vmLogs")
+    results = list(query.fetch())
+    for res in results:
+        merge_key = datastore_client.key("vmLogs", res.key.id_or_name)
+        datastore_client.delete(merge_key)
+
     kind = "vmLogs"
     cachePath = (
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/data/cachedVMData.csv"

@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 pip3 install -r ./requirements.txt
 
@@ -26,3 +26,15 @@ cd ../../
 cd ./vm-agent/execution-agent
 mkdir logs
 mkdir data
+cd ../../
+if [ $1 -eq 1 ]
+then
+cd ./log_parser/get_workflow_logs
+if command -v python &> /dev/null
+then
+    python getNewDatastoreLogs.py
+elif command -v python3 &> /dev/null
+then
+    python3 getNewDatastoreLogs.py
+fi 
+fi

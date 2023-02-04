@@ -1,5 +1,6 @@
 import os
 import json
+import configparser
 from pathlib import Path
 from google.cloud import datastore
 import pandas as pd
@@ -160,7 +161,7 @@ class dataStoreLogParser(GetLog):
             newDataFrame = (
                 pd.concat([prevDataframe, df]).drop_duplicates().reset_index(drop=True)
             )
-            # newDF = self.keepWindowSize(newDataFrame)
+            newDF = self.keepWindowSize(newDataFrame)
             newDF = newDataFrame
             newDF.to_pickle(
                 (os.path.dirname(os.path.abspath(__file__)))
@@ -280,6 +281,12 @@ class dataStoreLogParser(GetLog):
 
 
 if __name__ == "__main__":
-    # workflow = "Text2SpeechCensoringWorkflow"
-    workflow = "ImageProcessingWorkflow"
+    path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+            + "/scheduler/rankerConfig.ini"
+    )
+    config = configparser.ConfigParser()
+    config.read(path)
+    rankerConfig = config["settings"]
+    workflow = rankerConfig["workflow"]
     x = dataStoreLogParser(workflow)

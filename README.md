@@ -5,9 +5,10 @@ Seamless Integration of Serverless and VM-based Cloud Applications for Increased
 
 ## Setting Up and Building the Tool
 
-To set up the dependencies for the tool simply run the following script:
+To set up the dependencies for the tool simply run the following script. The input would be 1 in case of leader failure in order to retrieve host logs from the datastore, and 0 otherwise.
 ```
-./setup.sh
+./setup.sh 1: In case of leader failure
+./setup.sh 0: Otherwise
 ```
 Then, run the following script to build those components that need to be compiled:
 ```
