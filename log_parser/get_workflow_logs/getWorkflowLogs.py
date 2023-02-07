@@ -25,7 +25,7 @@ from monitoring import monitoring
 class getWorkflowLogs:
     def __init__(self, workflow):
         serverless = getNewLogs(workflow)
-        vm = dataStoreLogParser(workflow)
+        # vm = dataStoreLogParser(workflow)
 
 
 if __name__ == "__main__":

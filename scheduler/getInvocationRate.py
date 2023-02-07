@@ -97,10 +97,11 @@ class InvocationRate:
         # print(diff)
         percentiles = [25, 50, 75, 95]
         results = {}
+        medianIR = np.percentile(diff, 50)
+        results[95] = max((1.45 * medianIR), (np.percentile(diff, 95)))
+        results[75] = max((1.25 * medianIR), (np.percentile(diff, 75)))
         results[50] = np.percentile(diff, 50)
-        results[25] = min((0.75 * results[50]), (np.percentile(diff, 25)))
-        results[75] = max((1.25 * results[50]), (np.percentile(diff, 75)))
-        results[95] = max((1.45 * results[50]), (np.percentile(diff, 95)))
+        results[25] = min((0.75 * medianIR), (np.percentile(diff, 25)))
         # for percent in percentiles:
         #     results[percent] = np.percentile(diff, percent)
         print("Invocation Rates: ", results)

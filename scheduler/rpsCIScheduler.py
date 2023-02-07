@@ -142,7 +142,6 @@ class CIScheduler:
         # self.rates = invocationRate.getRPS()
         x.getCost()
         x.getPubSubMessageSize()
-        decisionModes = (self.rankerConfig["decisionMode"]).split()
         mode = self.rankerConfig["mode"]
         alpha = float(self.rankerConfig["statisticalParameter"])
         # self.rps = float(self.rankerConfig["rps"])
@@ -163,6 +162,17 @@ class CIScheduler:
             dict["cores"] = float(cpus[i])
             dict["mem_mb"] = float(memories[i])
             availableResources.append(dict)
+        if mode == "cost":
+            decisionModes = ["default"]
+        else:
+            totalTripleDecisioin = x.tripleCaseDicision(len(cpus))
+            if totalTripleDecisioin == True:
+                decisionModes = ["default", "worst-case", "best-case"]
+                logging.info("latency mode, similar distributions")
+            else:
+                decisionModes = ["default"]
+                logging.info("latency mode, different distributions")
+
         print("AvailableResources ===", availableResources)
         logging.info("AvailableResources = {}".format(availableResources))
         # self.availableResources = rankerConfig.availResources
@@ -171,6 +181,7 @@ class CIScheduler:
         logging.info(str(datetime.datetime.now()))
         rates = invocationRate.getRPS()
         decisions = []
+        prevDecision = None
         for percent in rates.keys():
             rate = rates[percent]
             for decisionMode in decisionModes:
@@ -185,7 +196,30 @@ class CIScheduler:
                 logging.info("Decision for case: {}:{}".format(decisionMode, x))
                 logging.info(str(datetime.datetime.now()))
                 # print("Decision for case: {}:{}".format(decisionMode, x))
-                decisions.append(x)
+                if (len(decisionModes) != 1) and (x == "NotFound"):
+                    logging.info(
+                        "Not found solution for case: {}:{}, ignored in triple mode".format(
+                            decisionMode, x
+                        )
+                    )
+                elif (len(decisionModes) == 1) and (x == "NotFound"):
+                    if prevDecision != None:
+                        self.routing["routing" + "_" + str(percent)] = str(prevDecision)
+                        logging.info(
+                            "Not found solution for case: {}:{}, replaced in single mode to: {}".format(
+                                decisionMode, x, prevDecision
+                            )
+                        )
+                    else:
+                        logging.info(
+                            "Not found solution for case: {}:{}, ignored in single mode".format(
+                                decisionMode, x
+                            )
+                        )
+                else:
+                    decisions.append(x)
+            if len(decisions) == 0:
+                continue
             # print("decisions::", decisions)
             AllZeroesFlag = True
             finalDecision = np.mean(decisions, axis=0)
@@ -211,6 +245,7 @@ class CIScheduler:
             for function in range(len(finalDecision)):
                 finalDecision[function] = list(finalDecision[function])
             self.routing["routing" + "_" + str(percent)] = str(finalDecision)
+            prevDecision = str(finalDecision)
             print(
                 "Final Decision: {} for invcation rate: {} ({} percent)".format(
                     list(finalDecision), rate, percent

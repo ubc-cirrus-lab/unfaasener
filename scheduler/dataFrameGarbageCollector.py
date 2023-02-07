@@ -22,21 +22,71 @@ class garbageCollector:
             + self.workflow
             + "/generatedDataFrame.pkl"
         )
-        dataframePathCSV = (
+        # dataframePathCSV = (
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/generatedDataFrame.csv"
+        # )
+        # dataJsonPath = (
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/data.json"
+        # )
+
+        # self.dataframe = pd.read_pickle(dataframePath)
+        dfDir = Path(
+            str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/"
+        )
+        dfFilesNames = [
+            file.name
+            for file in dfDir.iterdir()
+            if (
+                (file.name.startswith("generatedDataFrame"))
+                and (file.name.endswith(".pkl"))
+            )
+        ]
+        if len(dfFilesNames) != 0:
+            dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+            versions = [int((a.split(","))[1]) for a in dfFilesNames]
+            lastVersion = max(versions)
+            dataframePath = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
+                + "/log_parser/get_workflow_logs/data/"
+                + self.workflow
+                + "/generatedDataFrame,"
+                + str(lastVersion)
+                + ".pkl"
+            )
+            self.dataframe = pd.read_pickle(dataframePath)
+        elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
-        )
-        dataJsonPath = (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
-            + self.workflow
-            + "/data.json"
-        )
-
-        self.dataframe = pd.read_pickle(dataframePath)
-
+        ):
+            dataframePath = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
+                + "/log_parser/get_workflow_logs/data/"
+                + self.workflow
+                + "/generatedDataFrame.csv"
+            )
+            self.dataframe = pd.read_csv(dataframePath)
+        else:
+            print("Dataframe not found!")
+            return
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
         with open(dataJsonPath, "r") as json_file:
