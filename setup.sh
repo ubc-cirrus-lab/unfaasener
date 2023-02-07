@@ -1,5 +1,6 @@
-!/bin/bash
+# !/bin/bash
 
+leaderFailure=0
 pip3 install -r ./requirements.txt
 
 sudo apt install -y docker.io
@@ -27,7 +28,7 @@ cd ./vm-agent/execution-agent
 mkdir logs
 mkdir data
 cd ../../
-if [ $1 -eq 1 ]
+if [ $leaderFailure -eq 1 ]
 then
 cd ./log_parser/get_workflow_logs
 if command -v python &> /dev/null
