@@ -40,20 +40,25 @@ int test_const_zeros_ema() {
     return 0;
 }
 
-int test_const_zeros_mc() {
+int test_large_values_ema() {
     tests_conducted ++;
     size_t ring_size = 5;
     ring cpu_utilization_buffer(ring_size);
     predictor cpu_predictor(&cpu_utilization_buffer);
-    cpu_utilization_buffer.push(double(0.0));
-    cpu_utilization_buffer.push(double(0.0));
-    cpu_utilization_buffer.push(double(0.0));
-    cpu_utilization_buffer.push(double(0.0));
-    cpu_utilization_buffer.push(double(0.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
     double cpu_pred_old = 0;
     size_t cpu_violation;
-    auto pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
-    std::cout << "Predicted Value with zero trace (MC): " << pred_result.prediction << "\n";
+    auto pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+    std::cout << "Predicted Value with large values (EMA): " << pred_result.prediction << "\n";
+    if (pred_result.prediction > 100) {
+        std::cout << "Error: predicted value is larger than the largest value in the trace.\n";
+        return 1;
+    }
+    cpu_violation = pred_result.violation;
     return 0;
 }
 
@@ -86,6 +91,44 @@ int test_trace1_ema() {
     return 0;
 }
 
+int test_const_zeros_mc() {
+    tests_conducted ++;
+    size_t ring_size = 5;
+    ring cpu_utilization_buffer(ring_size);
+    predictor cpu_predictor(&cpu_utilization_buffer);
+    cpu_utilization_buffer.push(double(0.0));
+    cpu_utilization_buffer.push(double(0.0));
+    cpu_utilization_buffer.push(double(0.0));
+    cpu_utilization_buffer.push(double(0.0));
+    cpu_utilization_buffer.push(double(0.0));
+    double cpu_pred_old = 0;
+    size_t cpu_violation;
+    auto pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+    std::cout << "Predicted Value with zero trace (MC): " << pred_result.prediction << "\n";
+    return 0;
+}
+
+int test_large_values_mc() {
+    tests_conducted ++;
+    size_t ring_size = 5;
+    ring cpu_utilization_buffer(ring_size);
+    predictor cpu_predictor(&cpu_utilization_buffer);
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    cpu_utilization_buffer.push(double(1000.0));
+    double cpu_pred_old = 0;
+    size_t cpu_violation;
+    auto pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+    std::cout << "Predicted Value with large values (MC): " << pred_result.prediction << "\n";
+    if (pred_result.prediction > 100) {
+        std::cout << "Error: predicted value is larger than the largest value in the trace.\n";
+        return 1;
+    }
+    cpu_violation = pred_result.violation;
+    return 0;
+}
 
 int test_trace1_mc() {
     tests_conducted ++;
@@ -123,9 +166,13 @@ int main(void) {
     int test_results = 0; // 0 notifies passing tests
 
     test_results += test_buffer_size_check();
+    // EMA tests
     test_results += test_const_zeros_ema();
-    test_results += test_const_zeros_mc();
+    test_results += test_large_values_ema();
     test_results += test_trace1_ema();
+    // MC tests
+    test_results += test_const_zeros_mc();
+    test_results += test_large_values_mc();
     test_results += test_trace1_mc();
 
     if (test_results == 0){
