@@ -250,14 +250,14 @@ class baselineSlackAnalysisClass:
 
     def findCriticalPath(self, tasks, dependencies):
         workflow = Node("Workflow")
-        for t in tasks:
-            workflow.add(Node(t, duration=tasks[t]))
-        for d in dependencies:
-            workflow.link(d[0], d[1])
+        for task in tasks:
+            workflow.add(Node(task, duration=tasks[task]))
+        for dependency in dependencies:
+            workflow.link(dependency[0], dependency[1])
         workflow.update_all()
-        crit_path = [str(n) for n in workflow.get_critical_path()]
-        workflow_duration = workflow.duration
-        return workflow_duration, crit_path
+        criticalPath = [str(node) for node in workflow.get_critical_path()]
+        workflowDuration = workflow.duration
+        return workflowDuration, criticalPath
 
     def completeESEF(self, initial):
         self.es[initial] = 0
