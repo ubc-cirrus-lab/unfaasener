@@ -12,7 +12,6 @@ from rpsMultiVMSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
-from time import sleep
 
 # import psutil, os
 import logging
@@ -32,7 +31,7 @@ class CIScheduler:
         self.dateDFData["triggered"] = []
         triggerTime = datetime.datetime.now()
         self.dateDFData["triggered"].append(triggerTime)
-        print(str(triggerTime)+ " Scheduler triggered with: "+ triggerType)
+        print(str(triggerTime) + " Scheduler triggered with: " + triggerType)
         self.dateDFData["triggerType"].append(triggerType)
         path = (
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
@@ -143,13 +142,13 @@ class CIScheduler:
         # self.rates = invocationRate.getRPS()
         x.getCost()
         x.getPubSubMessageSize()
-        decisionModes = (self.rankerConfig["decisionMode"]).split()
         mode = self.rankerConfig["mode"]
         alpha = float(self.rankerConfig["statisticalParameter"])
         # self.rps = float(self.rankerConfig["rps"])
         resources = open(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/resources.txt",
-            "r", os.O_NONBLOCK
+            "r",
+            os.O_NONBLOCK,
         )
         Lines = resources.readlines()
         cpus = Lines[0].split()
@@ -163,6 +162,17 @@ class CIScheduler:
             dict["cores"] = float(cpus[i])
             dict["mem_mb"] = float(memories[i])
             availableResources.append(dict)
+        if mode == "cost":
+            decisionModes = ["default"]
+        else:
+            totalTripleDecisioin = x.tripleCaseDicision(len(cpus))
+            if totalTripleDecisioin == True:
+                decisionModes = ["default", "worst-case", "best-case"]
+                logging.info("latency mode, similar distributions")
+            else:
+                decisionModes = ["default"]
+                logging.info("latency mode, different distributions")
+
         print("AvailableResources ===", availableResources)
         logging.info("AvailableResources = {}".format(availableResources))
         # self.availableResources = rankerConfig.availResources
@@ -171,6 +181,7 @@ class CIScheduler:
         logging.info(str(datetime.datetime.now()))
         rates = invocationRate.getRPS()
         decisions = []
+        prevDecision = None
         for percent in rates.keys():
             rate = rates[percent]
             for decisionMode in decisionModes:
@@ -185,7 +196,30 @@ class CIScheduler:
                 logging.info("Decision for case: {}:{}".format(decisionMode, x))
                 logging.info(str(datetime.datetime.now()))
                 # print("Decision for case: {}:{}".format(decisionMode, x))
-                decisions.append(x)
+                if (len(decisionModes) != 1) and (x == "NotFound"):
+                    logging.info(
+                        "Not found solution for case: {}:{}, ignored in triple mode".format(
+                            decisionMode, x
+                        )
+                    )
+                elif (len(decisionModes) == 1) and (x == "NotFound"):
+                    if prevDecision != None:
+                        self.routing["routing" + "_" + str(percent)] = str(prevDecision)
+                        logging.info(
+                            "Not found solution for case: {}:{}, replaced in single mode to: {}".format(
+                                decisionMode, x, prevDecision
+                            )
+                        )
+                    else:
+                        logging.info(
+                            "Not found solution for case: {}:{}, ignored in single mode".format(
+                                decisionMode, x
+                            )
+                        )
+                else:
+                    decisions.append(x)
+            if len(decisions) == 0:
+                continue
             # print("decisions::", decisions)
             AllZeroesFlag = True
             finalDecision = np.mean(decisions, axis=0)
@@ -197,18 +231,21 @@ class CIScheduler:
                 finalDecision[i] = np.multiply(finalDecision[i], capArray[i])
             finalDecision = list(finalDecision)
             for function in range(len(finalDecision)):
-                allZero = (all(item == 0 for item in list(finalDecision[function])))
+                allZero = all(item == 0 for item in list(finalDecision[function]))
                 if allZero == False:
                     AllZeroesFlag = False
                     break
             if AllZeroesFlag == True:
                 for function in range(len(finalDecision)):
-                    if function!=0:
+                    if function != 0:
                         vmOffset = np.full(len(finalDecision[function]), 0.05)
-                        finalDecision[function] = np.maximum(finalDecision[function], vmOffset)
-            for function in range(len(finalDecision)):    
+                        finalDecision[function] = np.maximum(
+                            finalDecision[function], vmOffset
+                        )
+            for function in range(len(finalDecision)):
                 finalDecision[function] = list(finalDecision[function])
             self.routing["routing" + "_" + str(percent)] = str(finalDecision)
+            prevDecision = str(finalDecision)
             print(
                 "Final Decision: {} for invcation rate: {} ({} percent)".format(
                     list(finalDecision), rate, percent
@@ -240,11 +277,16 @@ if __name__ == "__main__":
         if initType == "forced":
             logging.info(str(datetime.datetime.now()))
             logging.info("Forced trigger!!!")
-            if not(os.path.exists(
-                str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
-            )):
+            if not (
+                os.path.exists(
+                    str(Path(os.path.dirname(os.path.abspath(__file__))))
+                    + "/forcedLock.txt"
+                )
+            ):
                 with open(
-                str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt", "w"
+                    str(Path(os.path.dirname(os.path.abspath(__file__))))
+                    + "/forcedLock.txt",
+                    "w",
                 ) as f:
                     f.write("forced Lock")
                     f.close
@@ -268,10 +310,14 @@ if __name__ == "__main__":
     # triggerType = "resolve"
     solver = CIScheduler(triggerType)
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt")
-    if ((os.path.exists(
-        str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
-    )) and (checkingFlag == True) ):
-        os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt")
+    if (
+        os.path.exists(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+        )
+    ) and (checkingFlag == True):
+        os.remove(
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
+        )
     logging.info("Lock released!!!")
     logging.info(str(datetime.datetime.now()))
     # print(

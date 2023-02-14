@@ -1,8 +1,6 @@
 import unittest
-from tabnanny import verbose
 import os
 import json
-import pandas as pd
 from pathlib import Path
 from rpsMultiVMSolver import rpsOffloadingSolver
 
@@ -22,9 +20,7 @@ class TestSolver(unittest.TestCase):
         )
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
-        workflow_json["lastDecision_default"] = [
-        [0.0], [0.0], [0.0], [0.0]
-        ]
+        workflow_json["lastDecision_default"] = [[0.0], [0.0], [0.0], [0.0]]
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
         toleranceWindow = 0
@@ -34,7 +30,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
@@ -86,7 +82,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -151,7 +147,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
@@ -179,7 +175,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 0, "mem_mb": 0}]
         alpha = 0
@@ -270,7 +266,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [
             {"cores": 1, "mem_mb": 300},
@@ -282,7 +278,7 @@ class TestSolver(unittest.TestCase):
         )
         self.assertIn(
             x,
-            [  
+            [
                 #  Due to adding the mu factor set to 1 by default the decisions have changed
                 [[0.0, 0.0], [1.0, 0.0], [49.0, 51.0], [2.0, 1.0]],
                 [[0.0, 0.0], [6.0, 7.0], [50.0, 50.0], [6.0, 6.0]],
@@ -326,7 +322,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [{"cores": 100, "mem_mb": 10000}]
         alpha = 0
@@ -360,7 +356,7 @@ class TestSolver(unittest.TestCase):
             decisionMode=None,
             toleranceWindow=toleranceWindow,
             rps=self.rps,
-            testingFlag = True
+            testingFlag=True,
         )
         availResources = [
             {"cores": 10000, "mem_mb": 300000},

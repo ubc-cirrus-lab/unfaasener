@@ -19,6 +19,9 @@
 #include <map>
 using namespace std;
 
+// #define PREDICTOR_CLASS "EMA"     // Exponential Moving Average
+#define PREDICTOR_CLASS "MC"      // Markov Chain
+
 void writePrediction(double cpu_pred, double mem_pred)
 {
   std::ofstream myfile;
@@ -223,23 +226,43 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 size_t cpu_violation;
                 size_t mem_violation;
                 if (initialFlag == 1){
+                    if (PREDICTOR_CLASS=="EMA"){
                         auto cpu_result = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0, 1);
                         cpu_pred_old = cpu_result.prediction;
                         cpu_violation = cpu_result.violation;
-		        auto mem_result = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 1);
+                        auto mem_result = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 1);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
-                        initialFlag = 0;
-                        handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve", true);
+                    }
+                    else if (PREDICTOR_CLASS=="MC"){
+                        auto cpu_result = cpu_predictor.compute_predicton_MarkovChain((cpu_pred_old),0, 1);
+                        cpu_pred_old = cpu_result.prediction;
+                        cpu_violation = cpu_result.violation;
+                        auto mem_result = mem_predictor.compute_predicton_MarkovChain((mem_pred_old),1, 1);
+                        mem_pred_old = mem_result.prediction;
+                        mem_violation = mem_result.violation;
+                    }
+                    initialFlag = 0;
+                    handle_prediction_violation(cpu_pred_old, mem_pred_old, "resolve", true);
                 }
                 else
                 {
+                    if (PREDICTOR_CLASS=="EMA"){
                         auto cpu_result = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0, 0);
                         cpu_pred_old = cpu_result.prediction;
                         cpu_violation = cpu_result.violation;
                         auto mem_result = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 0);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
+                    }
+                    else if (PREDICTOR_CLASS=="MC"){
+                        auto cpu_result = cpu_predictor.compute_predicton_MarkovChain((cpu_pred_old),0, 0);
+                        cpu_pred_old = cpu_result.prediction;
+                        cpu_violation = cpu_result.violation;
+                        auto mem_result = mem_predictor.compute_predicton_MarkovChain((mem_pred_old),1, 0);
+                        mem_pred_old = mem_result.prediction;
+                        mem_violation = mem_result.violation;
+                    }                    
                 }
                 std::cout << "Total Prediction "<< cpu_pred_old <<"% of CPU consumption in the next window "<<std::endl;
                 std::cout << "Total Prediction "<< mem_pred_old <<"% of Memory consumption in the next window "<<std::endl;

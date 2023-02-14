@@ -210,8 +210,8 @@ def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     message.ack()
 
 
-with open("data.json", mode="w") as f:
-    json.dump(writtenData, f)
+# with open("data.json", mode="w") as f:
+#     json.dump(writtenData, f)
 streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
 
 

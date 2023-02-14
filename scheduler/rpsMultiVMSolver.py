@@ -1,9 +1,5 @@
 import os
 import json
-import string
-from unicodedata import name
-import pandas as pd
-import numpy as np
 import configparser
 from pathlib import Path
 from LatencyModel import LatencyModel
@@ -12,7 +8,6 @@ from Estimator import Estimator
 import itertools
 
 # Non-linear optimzation models for cost and latency
-
 
 
 class rpsOffloadingSolver:
@@ -35,7 +30,8 @@ class rpsOffloadingSolver:
                     + "/"
                     + "slackData.json"
                 ),
-                "r", os.O_NONBLOCK
+                "r",
+                os.O_NONBLOCK,
             ) as outfile:
                 self.slacksDF = json.load(outfile)
             with open(
@@ -46,7 +42,8 @@ class rpsOffloadingSolver:
                     + "/"
                     + "slackDurations.json"
                 ),
-                "r", os.O_NONBLOCK
+                "r",
+                os.O_NONBLOCK,
             ) as outfile:
                 self.slackDurationsDF = json.load(outfile)
         with open(
@@ -57,7 +54,8 @@ class rpsOffloadingSolver:
                 + "/"
                 + "pubSubSize.json"
             ),
-            "r", os.O_NONBLOCK
+            "r",
+            os.O_NONBLOCK,
         ) as outfile:
             self.pubSubSize = json.load(outfile)
         with open(
@@ -68,7 +66,8 @@ class rpsOffloadingSolver:
                 + "/"
                 + "Costs.json"
             ),
-            "r", os.O_NONBLOCK
+            "r",
+            os.O_NONBLOCK,
         ) as outfile:
             self.serverlessCosts = json.load(outfile)
         self.estimator = Estimator(workflow)
@@ -144,13 +143,12 @@ class rpsOffloadingSolver:
         """
         Returns estimated duration for the critical path
         """
-        durations = list(self.allPathsSlack.keys())
-        cpDuration = max(durations)
+        cpDuration = max(self.allPathsSlack.keys())
         return cpDuration
 
     def getSlackForPath(self):
         """
-        Returns a list consists of all paths in the workflow besides their duration as a dictionary
+        Returns a list consisting of all paths in the workflow and their duration as a dictionary
         """
         for path in self.allPaths:
             nodes = []
@@ -163,8 +161,6 @@ class rpsOffloadingSolver:
             for node in nodes:
                 duration += self.getDuration(node)
             self.allPathsSlack[duration] = path
-  
-        
 
     def getVMexecution(self, offloadingCandidate, vm):
         vm = self.estimator.getFuncExecutionTime(
@@ -172,8 +168,8 @@ class rpsOffloadingSolver:
         )
         if vm == 0:
             vm = self.estimator.getFuncExecutionTime(
-            offloadingCandidate, "s", self.decisionMode
-        )
+                offloadingCandidate, "s", self.decisionMode
+            )
 
         return vm
 
@@ -190,8 +186,8 @@ class rpsOffloadingSolver:
         )
         if vm == 0:
             vm = self.estimator.getFuncExecutionTime(
-            offloadingCandidate, "s", self.decisionMode
-        )
+                offloadingCandidate, "s", self.decisionMode
+            )
         diff = vm - serverless
         # if diff != 0:
         #     print("EXECUTION DIFF:::",offloadingCandidate, "::::", diff)
@@ -349,8 +345,9 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
-                                *
-                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], self.testingFlag)
+                                * self.estimator.get_num_per_req(
+                                    offloadingCandidates[function + 1], self.testingFlag
+                                )
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -372,8 +369,9 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
-                                *
-                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
+                                * self.estimator.get_num_per_req(
+                                    offloadingCandidates[function + 1], False
+                                )
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -411,8 +409,9 @@ class rpsOffloadingSolver:
                             ((10**5) * 2)
                             * (1 - alphaConst)
                             * self.rps
-                            *
-                                self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                            * self.estimator.get_num_per_req(
+                                offloadingCandidates[i], False
+                            )
                             * self.GetServerlessCostEstimate(offloadingCandidates[i])
                             * (
                                 (
@@ -429,17 +428,20 @@ class rpsOffloadingSolver:
                                 / 100
                             )
                         )
-                        +
-                        (
-                            
-                             (1 - alphaConst)
+                        + (
+                            (1 - alphaConst)
                             * self.rps
-                            *
-                                self.estimator.get_num_per_req(offloadingCandidates[i], False)
-                            * ( self.GetDatastoreCost("w") + self.GetDatastoreCost("d") +  self.GetDatastoreCost("r") )
+                            * self.estimator.get_num_per_req(
+                                offloadingCandidates[i], False
+                            )
+                            * (
+                                self.GetDatastoreCost("w")
+                                + self.GetDatastoreCost("d")
+                                + self.GetDatastoreCost("r")
+                            )
                             * (
                                 (
-                                     (
+                                    (
                                         model.sum(
                                             [
                                                 (offloadingDecisions[i][vm])
@@ -493,7 +495,7 @@ class rpsOffloadingSolver:
                                     #         )
                                     #     )
                                     # )
-                                    # + 
+                                    # +
                                     (
                                         (10**3)
                                         * (alphaConst)
@@ -521,7 +523,7 @@ class rpsOffloadingSolver:
             model.options.SOLVER = 1
 
             try:
-                model.solve(disp = False)
+                model.solve(disp=False)
                 offloadingDecisionsFinal = [
                     [
                         (offloadingDecisions[j][i].value)[0]
@@ -531,59 +533,60 @@ class rpsOffloadingSolver:
                 ]
 
                 usedResources = sum(
-                        [
-                            (
-                                self.rps
-                                *
-                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
-                                * (
-                                    self.getVMexecution(
-                                        offloadingCandidates[function + 1], 0
-                                    )
-                                    * 0.001
+                    [
+                        (
+                            self.rps
+                            * self.estimator.get_num_per_req(
+                                offloadingCandidates[function + 1], False
+                            )
+                            * (
+                                self.getVMexecution(
+                                    offloadingCandidates[function + 1], 0
                                 )
-                                * (offloadingDecisionsFinal[function + 1][0] / 100)
-                                * (
-                                    self.getCPU(
-                                        self.getMem(offloadingCandidates[function + 1])
-                                    )
+                                * 0.001
+                            )
+                            * (offloadingDecisionsFinal[function + 1][0] / 100)
+                            * (
+                                self.getCPU(
+                                    self.getMem(offloadingCandidates[function + 1])
                                 )
                             )
-                            for function in range(len(offloadingDecisions) - 1)
-                        ]
-                    )
+                        )
+                        for function in range(len(offloadingDecisions) - 1)
+                    ]
+                )
                 # for function in range(len(offloadingDecisions) - 1):
-                    # print("-------")
-                    # print("funct::", offloadingCandidates[function + 1])
-                    # print("CPU:", (
-                    #                 self.getCPU(
-                    #                     self.getMem(offloadingCandidates[function + 1])
-                    #                 )
-                    #             ))
-                    # print("DECISION:", (offloadingDecisionsFinal[function + 1][0] / 100))
-                    # print("VM exe time:", (
-                    #                 self.getVMexecution(
-                    #                     offloadingCandidates[function + 1], 0
-                    #                 )
-                    #                 * 0.001
-                    #             ))
-                    # print("num per req:", self.estimator.get_num_per_req(offloadingCandidates[function + 1], False))
-                    # print("rps:", self.rps)
-                    # print("-------")
+                # print("-------")
+                # print("funct::", offloadingCandidates[function + 1])
+                # print("CPU:", (
+                #                 self.getCPU(
+                #                     self.getMem(offloadingCandidates[function + 1])
+                #                 )
+                #             ))
+                # print("DECISION:", (offloadingDecisionsFinal[function + 1][0] / 100))
+                # print("VM exe time:", (
+                #                 self.getVMexecution(
+                #                     offloadingCandidates[function + 1], 0
+                #                 )
+                #                 * 0.001
+                #             ))
+                # print("num per req:", self.estimator.get_num_per_req(offloadingCandidates[function + 1], False))
+                # print("rps:", self.rps)
+                # print("-------")
                 # print("Used resources: ", usedResources)
-
 
                 self.saveNewDecision(offloadingDecisionsFinal)
                 return offloadingDecisionsFinal
             except:
-                offloadingDecisionsFinal = [
-                    [0 for i in range(len(availResources))]
-                    for j in range(len(offloadingCandidates))
-                ]
+                # offloadingDecisionsFinal = [
+                #     [0 for i in range(len(availResources))]
+                #     for j in range(len(offloadingCandidates))
+                # ]
                 print("No solution could be found!")
-                self.saveNewDecision(offloadingDecisionsFinal)
-                return offloadingDecisionsFinal
-                model.open_folder()
+                return "NotFound"
+                # self.saveNewDecision(offloadingDecisionsFinal)
+                # return offloadingDecisionsFinal
+                # model.open_folder()
 
         elif self.optimizationMode == "latency":
             self.getAllPaths()
@@ -627,8 +630,9 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
-                                *   
-                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
+                                * self.estimator.get_num_per_req(
+                                    offloadingCandidates[function + 1], False
+                                )
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -650,8 +654,9 @@ class rpsOffloadingSolver:
                         [
                             (
                                 self.rps
-                                *
-                                self.estimator.get_num_per_req(offloadingCandidates[function + 1], False)
+                                * self.estimator.get_num_per_req(
+                                    offloadingCandidates[function + 1], False
+                                )
                                 * (
                                     self.getVMexecution(
                                         offloadingCandidates[function + 1], VMIndex
@@ -821,7 +826,9 @@ class rpsOffloadingSolver:
                             ((10**5) * 2)
                             * (1 - alphaConst)
                             * self.rps
-                            *self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                            * self.estimator.get_num_per_req(
+                                offloadingCandidates[i], False
+                            )
                             * self.GetServerlessCostEstimate(offloadingCandidates[i])
                             * (
                                 (
@@ -837,27 +844,31 @@ class rpsOffloadingSolver:
                                 )
                                 # / 100
                             )
-                        +
-                        (
-                             (1 - alphaConst)
-                            * self.rps
-                            *
-                                self.estimator.get_num_per_req(offloadingCandidates[i], False)
-                            * ( self.GetDatastoreCost("w") + self.GetDatastoreCost("d") +  self.GetDatastoreCost("r") )
-                            * (
-                                (
-                                     (
-                                        model.sum(
-                                            [
-                                                (offloadingDecisions[i][vm])
-                                                for vm in range(len(availResources))
-                                            ]
+                            + (
+                                (1 - alphaConst)
+                                * self.rps
+                                * self.estimator.get_num_per_req(
+                                    offloadingCandidates[i], False
+                                )
+                                * (
+                                    self.GetDatastoreCost("w")
+                                    + self.GetDatastoreCost("d")
+                                    + self.GetDatastoreCost("r")
+                                )
+                                * (
+                                    (
+                                        (
+                                            model.sum(
+                                                [
+                                                    (offloadingDecisions[i][vm])
+                                                    for vm in range(len(availResources))
+                                                ]
+                                            )
                                         )
                                     )
+                                    / 100
                                 )
-                                / 100
                             )
-                        )
                         )
                         + model.sum(
                             [
@@ -894,12 +905,11 @@ class rpsOffloadingSolver:
                                     #         )
                                     #     )
                                     # )
-                                    # + 
+                                    # +
                                     (
                                         (10**3)
                                         * (alphaConst)
                                         * (
-
                                             model.abs2(
                                                 tempGoalVar[i][vm]
                                                 - (
@@ -919,12 +929,12 @@ class rpsOffloadingSolver:
                 )
             )
             model.options.SOLVER = 1
- 
-            model.options.OTOL = 1e-12
-            model.options.RTOL = 1e-12
+
+            model.options.OTOL = 1e-13
+            model.options.RTOL = 1e-13
 
             try:
-                model.solve(disp = False)
+                model.solve(disp=False)
                 offloadingDecisionsFinal = [
                     [
                         (offloadingDecisions[j][i].value)[0]
@@ -1234,14 +1244,15 @@ class rpsOffloadingSolver:
                 # )
                 return offloadingDecisionsFinal
             except:
-                offloadingDecisionsFinal = [
-                    [0 for i in range(len(availResources))]
-                    for j in range(len(offloadingCandidates))
-                ]
+                # offloadingDecisionsFinal = [
+                #     [0 for i in range(len(availResources))]
+                #     for j in range(len(offloadingCandidates))
+                # ]
                 print("No solution could be found!")
-                self.saveNewDecision(offloadingDecisionsFinal)
+                # self.saveNewDecision(offloadingDecisionsFinal)
                 # return offloadingDecisionsFinal, 0, 0, 0, 0, 0
-                return offloadingDecisionsFinal
+                # return offloadingDecisionsFinal
+                return "NotFound"
                 # model.open_folder()
 
     # Saving new decisions in the Json file assigned to each workflow

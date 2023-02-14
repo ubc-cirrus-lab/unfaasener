@@ -11,3 +11,4 @@ numpy
 pandas
 psutil
 wget
+scipy

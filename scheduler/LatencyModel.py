@@ -6,13 +6,17 @@ import os
 
 class LatencyModel:
     def __init__(self):
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/latencyConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/latencyConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.latencyConfig = self.config["model"]
 
     def updateModel(self, mode, polynomialDegree, points):
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/latencyConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/latencyConfig.ini"
+        )
         x = []
         y = []
         for point in points:

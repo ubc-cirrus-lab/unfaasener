@@ -1,18 +1,8 @@
-from re import S
-import subprocess
 import json
-import shlex
-import datetime
-from sys import getsizeof
-import time
 import os
 import pandas as pd
-import numpy as np
-import math
-from monitoring import monitoring
-from criticalpath import Node
 from pathlib import Path
-import statistics
+
 pd.options.mode.chained_assignment = None
 import configparser
 
@@ -32,21 +22,71 @@ class garbageCollector:
             + self.workflow
             + "/generatedDataFrame.pkl"
         )
-        dataframePathCSV = (
+        # dataframePathCSV = (
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/generatedDataFrame.csv"
+        # )
+        # dataJsonPath = (
+        #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+        #     + "/log_parser/get_workflow_logs/data/"
+        #     + self.workflow
+        #     + "/data.json"
+        # )
+
+        # self.dataframe = pd.read_pickle(dataframePath)
+        dfDir = Path(
+            str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+            + "/log_parser/get_workflow_logs/data/"
+            + self.workflow
+            + "/"
+        )
+        dfFilesNames = [
+            file.name
+            for file in dfDir.iterdir()
+            if (
+                (file.name.startswith("generatedDataFrame"))
+                and (file.name.endswith(".pkl"))
+            )
+        ]
+        if len(dfFilesNames) != 0:
+            dfFilesNames = [a.replace(".pkl", "") for a in dfFilesNames]
+            versions = [int((a.split(","))[1]) for a in dfFilesNames]
+            lastVersion = max(versions)
+            dataframePath = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
+                + "/log_parser/get_workflow_logs/data/"
+                + self.workflow
+                + "/generatedDataFrame,"
+                + str(lastVersion)
+                + ".pkl"
+            )
+            self.dataframe = pd.read_pickle(dataframePath)
+        elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log_parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
-        )
-        dataJsonPath = (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
-            + self.workflow
-            + "/data.json"
-        )
-        
-        self.dataframe = pd.read_pickle(dataframePath)
-
+        ):
+            dataframePath = (
+                str(
+                    Path(os.path.dirname(os.path.abspath(__file__)))
+                    .resolve()
+                    .parents[0]
+                )
+                + "/log_parser/get_workflow_logs/data/"
+                + self.workflow
+                + "/generatedDataFrame.csv"
+            )
+            self.dataframe = pd.read_csv(dataframePath)
+        else:
+            print("Dataframe not found!")
+            return
         with open(jsonPath, "r") as json_file:
             workflow_json = json.load(json_file)
         with open(dataJsonPath, "r") as json_file:
@@ -56,7 +96,9 @@ class garbageCollector:
         self.predecessors = workflow_json["predecessors"]
         self.successors = workflow_json["successors"]
         self.recordNum = 0
-        path = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/rankerConfig.ini"
+        path = (
+            str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/rankerConfig.ini"
+        )
         self.config = configparser.ConfigParser()
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
@@ -89,7 +131,9 @@ class garbageCollector:
             # newMergingPatternChanges
             createdSet = selectedReq["function"].copy()
             createdSet = set(createdSet.to_numpy())
-            if (selectedReq.shape[0] >= self.recordNum) and (len(createdSet) == len(self.workflowFunctions)):
+            if (selectedReq.shape[0] >= self.recordNum) and (
+                len(createdSet) == len(self.workflowFunctions)
+            ):
                 selectedRecords.append(record["reqID"])
         # print("selected::: ", selectedRecords)
         if len(selectedRecords) >= self.windowSize:
@@ -113,14 +157,14 @@ class garbageCollector:
             # )
             # self.dataframe
             selected2 = self.dataframe.loc[
-                (self.dataframe["function"] == func)
-                & (self.dataframe["host"] == "s")
+                (self.dataframe["function"] == func) & (self.dataframe["host"] == "s")
             ]
             selected2["start"] = pd.to_datetime(
                 selected2["start"], format="%Y-%m-%d %H:%M:%S.%f"
             )
             selected2 = selected2.loc[
-                ((selected2["start"]) < startDate) & (~selected2["reqID"].isin(self.selectedIDs))
+                ((selected2["start"]) < startDate)
+                & (~selected2["reqID"].isin(self.selectedIDs))
             ]
             # print(func, ",:::,",  selected2.index)
             self.dataframe.drop(
