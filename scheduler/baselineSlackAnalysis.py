@@ -257,10 +257,6 @@ class baselineSlackAnalysisClass:
         workflow.update_all()
         crit_path = [str(n) for n in workflow.get_critical_path()]
         workflow_duration = workflow.duration
-
-        # print(f"The current critical path is: {crit_path}")
-        # print("." * 50)
-        # print(f"The current workflow duration is: {workflow_duration} milliseconds")
         return workflow_duration, crit_path
 
     def completeESEF(self, initial):
