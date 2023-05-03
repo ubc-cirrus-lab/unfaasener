@@ -7,7 +7,7 @@ sudo apt install -y docker.io
 sudo apt-get install -y libpstreams-dev
 sudo apt-get install build-essential
 sudo  usermod -a -G docker  $USER
-arr=("ChatBotWorkflow" "DNAVisualizationWorkflow" "ImageProcessingWorkflow" "RegressionTuningWorkflow" "Text2SpeechCensoringWorkflow" "VideoAnalyticsWorkflow")
+arr=("DNAVisualizationWorkflow" "ImageProcessingWorkflow" "RegressionTuningWorkflow" "Text2SpeechCensoringWorkflow" "VideoAnalyticsWorkflow")
 cd ./scheduler/data
 for dirname in "${arr[@]}"
 do
