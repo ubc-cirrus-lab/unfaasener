@@ -42,7 +42,6 @@ if __name__ == "__main__":
     if initial == 1:
         start_time = time.time()
         # workflow = "Text2SpeechCensoringWorkflow"
-        # workflow = "ChatBotWorkflow"
         workflow = sys.argv[1]
         x = getWorkflowLogs(workflow)
         if mode == "latency":
@@ -57,7 +56,6 @@ if __name__ == "__main__":
             start_time = time.time()
             workflow = sys.argv[1]
             # workflow = "Text2SpeechCensoringWorkflow"
-            # workflow = "ChatBotWorkflow"
             logging.info("periodic log parser is running......")
             logging.info(str(datetime.datetime.now()))
             x = getWorkflowLogs(workflow)
