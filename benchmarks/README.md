@@ -14,4 +14,4 @@ The benchmarks have been implemented in four primary categories:
 3. AWS SNS (Simple Notification Service)'s implementation supports ImageProcessing, RegressionTuning, and VideoAnalytics benchmarks. You can find these under the [aws_SNS](./aws_SNS) directory.
 4. Finally, under [aws_step_functions](./aws_step_functions) directory you can find the implementation of ImageProcessing, RegressionTuning, VideoAnalytics, and DNAVisualization benchmarks adapted for AWS Step Functions.
 
-For more information on the contents of each benchmark, please refer to their respective directories.
+The memory configuration of the functions used in our benchmarks is included [here](./BenhmarksMemoryConfigs.md). For more information on the contents of each benchmark, please refer to their respective directories.
