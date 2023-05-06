@@ -1,0 +1,1 @@
+The DNAVisualization benchmark for Google Cloud Workflows is implemented in this directory. Since this benchmark includes only one Google Function, there is no separate workflow definition. Only the invocation of the function is taken into account for our evaluations.

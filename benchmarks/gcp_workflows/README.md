@@ -1,1 +1,1 @@
-This directory contains system benchmarks adjusted to run on [Google Cloud Workflows](https://cloud.google.com/workflows).
+This directory contains system benchmarks adjusted to run on [Google Cloud Workflows](https://cloud.google.com/workflows). The code sources for all the benchmarks are referenced in the previous directory.
