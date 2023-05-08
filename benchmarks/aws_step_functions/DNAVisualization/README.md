@@ -1,0 +1,3 @@
+This directory contains the implementation of the DNAVisualization benchmark. The original code that was taken from this [github repository](https://github.com/Benjamin-Lee/DNAvisualization.org) was modified to work on AWS.
+
+As this benchmark only contains one function, only the definition of its Lambda function is provided in this directory, and a separate state machine is not created for the purpose of our evaluations.

@@ -1,2 +1,3 @@
-### This benchmark was originally taken from the following github repository: https://github.com/ease-lab/vSwarm/
-#### We modified the code for our own purposes.
+ This directory includes the implementation of the VideoAnalytics benchmark for Google Cloud Workflows. The subdirectories contain the code for the Google Functions that participate in the workflow, while the [yaml file](./VideoAnalytics_Workflow.yaml) provides the workflow definition.
+
+To use the benchmark, you'll need to edit `VideoAnalytics_Workflow.yaml` with the appropriate paths to the Google functions in your account.

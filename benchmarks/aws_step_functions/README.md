@@ -1,1 +1,3 @@
-This directory contains system benchmarks adjusted to run on AWS step functions.
+This directory contains the benchmarks adapted to run on AWS Step Functions. Please note that we did not evaluate the Text2SpeechCensoring benchmark on AWS. For more information and details on the contents of the other four benchmarks, please refer to their respective directories.
+
+Additionally, the [powerTuning](./powerTuning) directory includes the results of power tuning for ImageProcessing and RegressionTuning benchmarks, which helped us configure the memory values for the lambda functions.
