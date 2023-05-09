@@ -360,10 +360,22 @@ class Estimator:
         for func in self.workflowFunctions:
             if func != self.initFunc:
                 selectedtopic = self.topics[self.workflowFunctions.index(func)]
-                psSize = pubsubsizeDF.loc[
+                psSizeSeries = pubsubsizeDF.loc[
                     pubsubsizeDF["Topic"] == selectedtopic, "PubsubMsgSize"
-                ].item()
-                pubSubSize[func] = psSize
+                ]
+                if len(psSizeSeries) == 0:
+                    pubSubSize[func] = 0
+                else:
+                    psSize = psSizeSeries.item()
+                    pubSubSize[func] = psSize
+        nonzero_vals = [ pubSubSize[func] for func in pubSubSize.keys() if pubSubSize[func] != 0 ]
+        if len(nonzero_vals) != 0:
+            average_nonzeroes = np.mean(np.array(nonzero_vals))
+            for func in pubSubSize.keys():
+                if pubSubSize[func] == 0:
+                    pubSubSize[func] = average_nonzeroes
+        else:
+            print("No prior data on pub/sub message size yet!")
         with open(
             (
                 (os.path.dirname(os.path.abspath(__file__)))
