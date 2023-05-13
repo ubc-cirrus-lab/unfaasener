@@ -6,10 +6,6 @@ Seamless Integration of Serverless and VM-based Cloud Applications for Increased
 
 ## Setting Up and Building the Tool
 
-First, we need to set proper permission to the script:
-```
-chmod 744 setup.sh 
-```
 To set up the dependencies for the tool, we can then simply run the following script:
 > **_NOTE:_**  In case of leader failure, the leaderFailure variable in the setup.sh needs to be set to 1 (```leaderFailure=1```) in order to retrieve host logs from the datastore.
 ```
