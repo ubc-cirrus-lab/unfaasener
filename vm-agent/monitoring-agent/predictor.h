@@ -95,7 +95,13 @@ public:
         for(i = 0; i < size; ++i) {
             if (records[i] > max_util)
             {
-                max_util = records[i];
+                if (records[i] > 100){
+                    max_util = 100;
+                } else if (records[i] < 0) {
+                    max_util = 0;
+                } else {
+                    max_util = records[i];
+                }
             }
         }
         
