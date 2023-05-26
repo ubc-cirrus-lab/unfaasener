@@ -11,7 +11,7 @@ The benchmarks have been implemented in four primary categories:
 
 1. All five benchmarks are supported for UnFaaSener with minor modifications to their base codes and are located in their respective subdirectories. 
 In these benchmarks, you need to replace `***` with your [Google Cloud Project ID](https://updraftplus.com/faqs/where-do-i-find-my-google-project-id/).
-2. All benchmarks have also been implemented for Google Cloud Workflows to facilitate comparison with UnFaaSener's results. You can find these benchmarks under the [gcp_workflows](./gcp_workflows) directory.
+2. All benchmarks have also been implemented for Google Cloud Workflows to facilitate comparison with UnFaaSener's results. You can find these benchmarks under the [gcp_workflows](./gcp_workflows) directory. For more information on GCP Workflows YAML parameters, please refer to [this guide](./gcp_workflows/README.md) that assists you in setting up your Google Workflows environments using our provided code.
 3. AWS SNS (Simple Notification Service)'s implementation supports ImageProcessing, RegressionTuning, and VideoAnalytics benchmarks. You can find these under the [aws_SNS](./aws_SNS) directory.
 4. Finally, under [aws_step_functions](./aws_step_functions) directory you can find the implementation of ImageProcessing, RegressionTuning, VideoAnalytics, and DNAVisualization benchmarks adapted for AWS Step Functions.
 
