@@ -28,13 +28,13 @@ class Estimator:
         self.workflow = workflow
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get_workflow_logs/data/"
             + self.workflow
             + ".json"
         )
         dfDir = Path(
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get_workflow_logs/data/"
             + self.workflow
             + "/"
         )
@@ -48,7 +48,7 @@ class Estimator:
         ]
         # if os.path.isfile(
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        #     + "/log_parser/get_workflow_logs/data/"
+        #     + "/log-parser/get_workflow_logs/data/"
         #     + self.workflow
         #     + "/generatedDataFrame.pkl"
         # ):
@@ -62,7 +62,7 @@ class Estimator:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame,"
                 + str(lastVersion)
@@ -71,7 +71,7 @@ class Estimator:
             serverlessDF = pd.read_pickle(dataframePath)
         elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get_workflow_logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
         ):
@@ -81,7 +81,7 @@ class Estimator:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get_workflow_logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
             )

@@ -16,7 +16,7 @@ done
 cd ../
 mkdir logs
 cd ../
-cd ./log_parser/get_workflow_logs/data
+cd ./log-parser/get_workflow_logs/data
 for dirname in "${arr[@]}"
 do
     mkdir "$dirname"
@@ -30,7 +30,7 @@ mkdir data
 cd ../../
 if [ $leaderFailure -eq 1 ]
 then
-cd ./log_parser/get_workflow_logs
+cd ./log-parser/get_workflow_logs
 if command -v python &> /dev/null
 then
     python getNewDatastoreLogs.py

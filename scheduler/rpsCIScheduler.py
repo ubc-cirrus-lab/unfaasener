@@ -53,7 +53,7 @@ class CIScheduler:
         self.dateDFData = pd.DataFrame.from_dict(self.dateDFData)
         self.dateDF = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get_workflow_logs/data/"
             + self.workflow
             + "/dateDate.pkl"
         )
@@ -72,7 +72,7 @@ class CIScheduler:
                         .resolve()
                         .parents[0]
                     )
-                    + "/log_parser/get_workflow_logs/data/"
+                    + "/log-parser/get_workflow_logs/data/"
                     + self.workflow
                     + "/dateDate.csv"
                 )
@@ -86,7 +86,7 @@ class CIScheduler:
                         .resolve()
                         .parents[0]
                     )
-                    + "/log_parser/get_workflow_logs/data/"
+                    + "/log-parser/get_workflow_logs/data/"
                     + self.workflow
                     + "/dateDate.csv"
                 )
