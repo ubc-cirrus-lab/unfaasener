@@ -66,7 +66,13 @@ class dataStoreLogParser(GetLog):
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
             + "/scheduler/key/schedulerKey.json"
         )
-        project = "ubc-serverless-ghazal"
+        configPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1]) + "/project-config.ini"
+        )
+        globalConfig = configparser.ConfigParser()
+        globalConfig.read(configPath)
+        self.projectConfig= globalConfig["settings"]
+        project = str(self.projectConfig["projectid"])
         self.datastore_client = datastore.Client()
         self.getNewLogs()
         self.saveNewLogs()

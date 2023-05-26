@@ -5,9 +5,16 @@ import subprocess
 import sys
 import wget
 from zipfile import ZipFile
+import configparser
 
+configPath = (
+    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1]) + "/project-config.ini"
+)
+globalConfig = configparser.ConfigParser()
+globalConfig.read(configPath)
+projectConfig= globalConfig["settings"]
+project_id = str(projectConfig["projectid"])
 
-project_id = "ubc-serverless-ghazal"
 subscription_id = sys.argv[1]
 # timeout = 22.0
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (

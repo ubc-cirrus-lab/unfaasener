@@ -5,12 +5,19 @@ import os
 import re
 import numpy as np
 import pandas as pd
+import configparser
 
 
 class monitoring:
     def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(os.path.dirname(os.path.abspath(__file__))))+"/key/monitoringKey.json"
-        project = "ubc-serverless-ghazal"
+        configPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0]) + "/project-config.ini"
+        )
+        globalConfig = configparser.ConfigParser()
+        globalConfig.read(configPath)
+        self.projectConfig= globalConfig["settings"]
+        project = str(self.projectConfig["projectid"])
         client = monitoring_v3.MetricServiceClient()
         q = query.Query(
             client, project, "pubsub.googleapis.com/topic/message_sizes", days=90
