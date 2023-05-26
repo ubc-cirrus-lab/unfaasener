@@ -1,16 +1,16 @@
 #!/bin/bash
 workflow="$1"
-numvm="$2"
+hostcount="$2"
 solvingMode="$3"
 mode="resolve"
 
 # making sure that by default are functions run on serverless
-# python3 ~/de-serverlessization/scheduler/resetRoutingDecisions.py $workflow $numvm
+# python3 ~/de-serverlessization/scheduler/resetRoutingDecisions.py $workflow $hostcount
 docker container stop $(docker container ls -aq)
 # clean all privious metadata, logs, and caches for that workflow
-python3 ~/de-serverlessization/scheduler/resetLastDecisions.py $workflow $numvm $solvingMode
+python3 ~/de-serverlessization/scheduler/resetLastDecisions.py $workflow $hostcount $solvingMode
 
-# clean the vm execution agent queue
+# clean the host execution agent queue
 python3 ~/de-serverlessization/host-agents/execution-agent/cleanup-queue.py vmSubscriber1 vm0
 
 # get the most recent serverless logs for the specified workflow
