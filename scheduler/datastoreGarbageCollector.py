@@ -14,11 +14,12 @@ class mergingDataGarbageCollector:
             + "/key/schedulerKey.json"
         )
         configPath = (
-            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0]) + "/project-config.ini"
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/project-config.ini"
         )
         globalConfig = configparser.ConfigParser()
         globalConfig.read(configPath)
-        self.projectConfig= globalConfig["settings"]
+        self.projectConfig = globalConfig["settings"]
         project = str(self.projectConfig["projectid"])
         self.datastore_client = datastore.Client()
         self.remove()

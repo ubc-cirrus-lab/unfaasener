@@ -19,11 +19,12 @@ import sys
 from datetime import timedelta
 
 configPath = (
-    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1]) + "/project-config.ini"
+    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+    + "/project-config.ini"
 )
 globalConfig = configparser.ConfigParser()
 globalConfig.read(configPath)
-projectConfig= globalConfig["settings"]
+projectConfig = globalConfig["settings"]
 project_id = str(projectConfig["projectid"])
 
 # subscription_id = "vmSubscriber1"
@@ -102,7 +103,9 @@ def threaded_function(arg, lastexectimestamps):
 def getFunctionParameters(functionname):
     client = functions_v1.CloudFunctionsServiceClient()
     request = functions_v1.GetFunctionRequest(
-        name="projects/"+project_id+"/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
     print(
@@ -120,7 +123,9 @@ def containerize(functionname):
 
     # Initialize request arguments
     request = functions_v1.GenerateDownloadUrlRequest(
-        name="projects/"+project_id+"/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -131,7 +136,9 @@ def containerize(functionname):
     print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
     request = functions_v1.GetFunctionRequest(
-        name="projects/"+project_id+"/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
