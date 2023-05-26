@@ -5,9 +5,17 @@ import subprocess
 import sys
 import wget
 from zipfile import ZipFile
+import configparser
 
+configPath = (
+    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+    + "/project-config.ini"
+)
+globalConfig = configparser.ConfigParser()
+globalConfig.read(configPath)
+projectConfig = globalConfig["settings"]
+project_id = str(projectConfig["projectid"])
 
-project_id = "ubc-serverless-ghazal"
 subscription_id = sys.argv[1]
 # timeout = 22.0
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
@@ -21,7 +29,9 @@ def containerize(functionname):
 
     # Initialize request arguments
     request = functions_v1.GenerateDownloadUrlRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -33,7 +43,9 @@ def containerize(functionname):
     # print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
     request = functions_v1.GetFunctionRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -66,7 +78,7 @@ def containerize(functionname):
         file_object.write("    main()\n")
         file_object.close()
         subprocess.call(
-            "cp ubc-serverless-ghazal-9bede7ba1a47.json " + functionname + "/ ",
+            "cp vmExeModule.json " + functionname + "/ ",
             shell=True,
             stdout=output,
             stderr=output,

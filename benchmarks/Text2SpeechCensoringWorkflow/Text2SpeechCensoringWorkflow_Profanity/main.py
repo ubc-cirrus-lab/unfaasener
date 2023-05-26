@@ -15,7 +15,8 @@ from flask import jsonify
 
 
 publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
+# Replace *** with your Google Cloud Project ID
+PROJECT_ID = '***'
 DSclient = datastore.Client()
 def detect(event, context):
     routingData = (event['attributes'])['routing']

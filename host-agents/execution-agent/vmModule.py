@@ -52,8 +52,14 @@ config = configparser.ConfigParser()
 config.read(path)
 rankerConfig = config["settings"]
 muFactor = rankerConfig["muFactor"]
-
-project_id = "ubc-serverless-ghazal"
+configPath = (
+    str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
+    + "/project-config.ini"
+)
+globalConfig = configparser.ConfigParser()
+globalConfig.read(configPath)
+projectConfig = globalConfig["settings"]
+project_id = str(projectConfig["projectid"])
 subscription_id = sys.argv[1]
 # timeout = 22.0
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
@@ -295,7 +301,9 @@ def threaded_function(arg, lastexectimestamps):
 def getFunctionParameters(functionname):
     client = functions_v1.CloudFunctionsServiceClient()
     request = functions_v1.GetFunctionRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
     memoryLimits[functionname] = (
@@ -309,7 +317,9 @@ def containerize(functionname):
 
     # Initialize request arguments
     request = functions_v1.GenerateDownloadUrlRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -321,7 +331,9 @@ def containerize(functionname):
     # print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
     request = functions_v1.GetFunctionRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"
+        + project_id
+        + "/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -383,7 +395,7 @@ def containerize(functionname):
         subprocess.call(
             "cp "
             + str(Path(os.path.dirname(os.path.abspath(__file__))))
-            + "/ubc-serverless-ghazal-9bede7ba1a47.json "
+            + "/vmExeModule.json "
             + str(Path(os.path.dirname(os.path.abspath(__file__))))
             + "/"
             + functionname

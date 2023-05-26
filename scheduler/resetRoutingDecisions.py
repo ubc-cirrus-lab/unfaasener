@@ -5,6 +5,7 @@ from pathlib import Path
 from google.cloud import datastore
 import sys
 import datetime
+import configparser
 
 
 class resetDicision:
@@ -24,7 +25,14 @@ class resetDicision:
             str(Path(os.path.dirname(os.path.abspath(__file__))))
             + "/key/schedulerKey.json"
         )
-        project = "ubc-serverless-ghazal"
+        configPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/project-config.ini"
+        )
+        globalConfig = configparser.ConfigParser()
+        globalConfig.read(configPath)
+        self.projectConfig = globalConfig["settings"]
+        project = str(self.projectConfig["projectid"])
         self.datastore_client = datastore.Client()
         kind = "routingDecision"
         name = self.workflow

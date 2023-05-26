@@ -14,7 +14,8 @@ from google.cloud import storage
 
 
 publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
+# Replace *** with your Google Cloud Project ID
+PROJECT_ID = '***'
 DSclient = datastore.Client()
 
 def compress(event, context):
