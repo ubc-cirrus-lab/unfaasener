@@ -11,7 +11,7 @@ class resetDicision:
     def __init__(self, workflow, vmNum):
         self.jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + ".json"
         )
@@ -48,7 +48,7 @@ class resetDicision:
         now = str(datetime.datetime.now())
         dataJSONN = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/data.json"
         )

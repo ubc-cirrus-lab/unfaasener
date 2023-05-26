@@ -14,7 +14,7 @@ rankerConfig = config["settings"]
 workflow = rankerConfig["workflow"]
 dfDir = Path(
     str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-    + "/log_parser/get_workflow_logs/data/"
+    + "/log-parser/get-workflow-logs/data/"
     + workflow
     + "/"
 )
@@ -30,7 +30,7 @@ if len(dfFilesNames) != 0:
     lastVersion = max(versions)
     dataframePath = (
         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        + "/log_parser/get_workflow_logs/data/"
+        + "/log-parser/get-workflow-logs/data/"
         + workflow
         + "/generatedDataFrame,"
         + str(lastVersion)
@@ -43,7 +43,7 @@ else:
     serverlessDF = None
 vmcachePath = (
     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    + "/vm-agent/execution-agent/data/cachedVMData.csv"
+    + "/host-agents/execution-agent/data/cachedVMData.csv"
 )
 if os.path.isfile(vmcachePath):
     vmData = pd.read_csv(vmcachePath)

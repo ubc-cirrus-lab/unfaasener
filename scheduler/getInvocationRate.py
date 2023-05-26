@@ -11,13 +11,13 @@ class InvocationRate:
         self.workflow = workflow
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + ".json"
         )
         dfDir = Path(
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/"
         )
@@ -31,7 +31,7 @@ class InvocationRate:
         ]
         # if os.path.isfile(
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        #     + "/log_parser/get_workflow_logs/data/"
+        #     + "/log-parser/get-workflow-logs/data/"
         #     + self.workflow
         #     + "/invocationRates.pkl"
         # ):
@@ -46,7 +46,7 @@ class InvocationRate:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get-workflow-logs/data/"
                 + self.workflow
                 + "/invocationRates,"
                 + str(lastVersion)
@@ -55,7 +55,7 @@ class InvocationRate:
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/invocationRates.csv"
         ):
@@ -65,7 +65,7 @@ class InvocationRate:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get-workflow-logs/data/"
                 + self.workflow
                 + "/invocationRates.csv"
             )

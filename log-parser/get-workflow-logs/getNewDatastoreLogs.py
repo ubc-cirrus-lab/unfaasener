@@ -27,7 +27,7 @@ class dataStoreLogParser(GetLog):
         )
         cachePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
-            + "/vm-agent/execution-agent/data/cachedVMData.json"
+            + "/host-agents/execution-agent/data/cachedVMData.json"
         )
         if os.path.isfile(cachePath):
             os.remove(cachePath)

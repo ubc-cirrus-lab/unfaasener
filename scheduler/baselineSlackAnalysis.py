@@ -17,18 +17,18 @@ pd.options.mode.chained_assignment = None
 class baselineSlackAnalysisClass:
     def __init__(self, workflow):
         self.workflow = workflow
-        # jsonPath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow+".json"
-        # dataframePath = os.getcwd() + "/log_parser/get_workflow_logs/data/" + self.workflow + "/NEWWgeneratedData.pkl"
+        # jsonPath = os.getcwd() + "/log-parser/get-workflow-logs/data/" + self.workflow+".json"
+        # dataframePath = os.getcwd() + "/log-parser/get-workflow-logs/data/" + self.workflow + "/NEWWgeneratedData.pkl"
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + ".json"
         )
-        # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log_parser/get_workflow_logs/data/" + self.workflow + "/generatedDataFrame.pkl"
+        # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log-parser/get-workflow-logs/data/" + self.workflow + "/generatedDataFrame.pkl"
         dfDir = Path(
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/"
         )
@@ -42,7 +42,7 @@ class baselineSlackAnalysisClass:
         ]
         # if os.path.isfile(
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-        #     + "/log_parser/get_workflow_logs/data/"
+        #     + "/log-parser/get-workflow-logs/data/"
         #     + self.workflow
         #     + "/generatedDataFrame.pkl"
         # ):
@@ -56,7 +56,7 @@ class baselineSlackAnalysisClass:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get-workflow-logs/data/"
                 + self.workflow
                 + "/generatedDataFrame,"
                 + str(lastVersion)
@@ -65,7 +65,7 @@ class baselineSlackAnalysisClass:
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
         ):
@@ -75,7 +75,7 @@ class baselineSlackAnalysisClass:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get-workflow-logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
             )

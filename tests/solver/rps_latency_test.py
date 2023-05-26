@@ -15,7 +15,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase3Workflow"
             + ".json"
         )
@@ -105,7 +105,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 200
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase10Workflow"
             + ".json"
         )
@@ -146,7 +146,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 160
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase3Workflow"
             + ".json"
         )
@@ -177,7 +177,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 300
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase10Workflow"
             + ".json"
         )

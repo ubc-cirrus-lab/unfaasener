@@ -15,7 +15,7 @@ class resetLastDicision:
         mode = mode
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + ".json"
         )
@@ -57,7 +57,7 @@ class resetLastDicision:
         #     json.dump(prevCost_json, json_file)
         pathDF = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/"
         )
@@ -80,71 +80,74 @@ class resetLastDicision:
             irPaths.append(pathDF + irName)
         dfPickel = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/generatedDataFrame.pkl"
         )
         dfCSV = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/generatedDataFrame.csv"
         )
         irPickel = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/invocationRates.pkl"
         )
         irCSV = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/invocationRates.csv"
         )
         lockFile = str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
         vmAgentLogFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/execution-agent/output2.log"
+            + "/host-agents/execution-agent/output2.log"
         )
         dateDataframepkl = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/dateDate.pkl"
         )
         dateDataframecsv = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/dateDate.csv"
         )
         prevDataJson = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/prevData.json"
         )
         triggersFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/monitoring-agent/triggers.txt"
+            + "/host-agents/monitoring-agent/triggers.txt"
         )
         utilFilePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/monitoring-agent/utilFile.txt"
+            + "/host-agents/monitoring-agent/utilFile.txt"
         )
         forcedLockFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )
-        VMcachDataframe = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.csv")
+        VMcachDataframe = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/host-agents/execution-agent/data/cachedVMData.csv"
+        )
 
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        #             + "/log_parser/get_workflow_logs/data/"+workflow+"/data.json"
+        #             + "/log-parser/get-workflow-logs/data/"+workflow+"/data.json"
         #         )
         cachePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/execution-agent/data/cachedVMData.json"
+            + "/host-agents/execution-agent/data/cachedVMData.json"
         )
         filePaths = [
             dfPickel,
@@ -160,7 +163,7 @@ class resetLastDicision:
             triggersFile,
             utilFilePath,
             forcedLockFile,
-            VMcachDataframe
+            VMcachDataframe,
         ]
         finalPaths = filePaths + dfPaths + irPaths
         for filePath in finalPaths:

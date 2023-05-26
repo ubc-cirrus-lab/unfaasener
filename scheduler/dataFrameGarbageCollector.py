@@ -12,25 +12,25 @@ class garbageCollector:
         self.workflow = workflow
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + ".json"
         )
         dataframePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/generatedDataFrame.pkl"
         )
         # dataframePathCSV = (
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        #     + "/log_parser/get_workflow_logs/data/"
+        #     + "/log-parser/get-workflow-logs/data/"
         #     + self.workflow
         #     + "/generatedDataFrame.csv"
         # )
         # dataJsonPath = (
         #     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        #     + "/log_parser/get_workflow_logs/data/"
+        #     + "/log-parser/get-workflow-logs/data/"
         #     + self.workflow
         #     + "/data.json"
         # )
@@ -38,7 +38,7 @@ class garbageCollector:
         # self.dataframe = pd.read_pickle(dataframePath)
         dfDir = Path(
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/"
         )
@@ -60,7 +60,7 @@ class garbageCollector:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get-workflow-logs/data/"
                 + self.workflow
                 + "/generatedDataFrame,"
                 + str(lastVersion)
@@ -69,7 +69,7 @@ class garbageCollector:
             self.dataframe = pd.read_pickle(dataframePath)
         elif os.path.isfile(
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + "/generatedDataFrame.csv"
         ):
@@ -79,7 +79,7 @@ class garbageCollector:
                     .resolve()
                     .parents[0]
                 )
-                + "/log_parser/get_workflow_logs/data/"
+                + "/log-parser/get-workflow-logs/data/"
                 + self.workflow
                 + "/generatedDataFrame.csv"
             )

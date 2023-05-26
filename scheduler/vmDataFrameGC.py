@@ -12,13 +12,13 @@ class VMgarbageCollector:
         self.workflow = workflow
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log_parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + ".json"
         )
         self.vmcachePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/execution-agent/data/cachedVMData.csv"
+            + "/host-agents/execution-agent/data/cachedVMData.csv"
         )
         if os.path.isfile(self.vmcachePath):
             self.dataframe = pd.read_csv(self.vmcachePath)
