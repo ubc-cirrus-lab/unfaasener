@@ -105,7 +105,7 @@ class resetLastDicision:
         lockFile = str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
         vmAgentLogFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/execution-agent/output2.log"
+            + "/host-agents/execution-agent/output2.log"
         )
         dateDataframepkl = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -127,16 +127,19 @@ class resetLastDicision:
         )
         triggersFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/monitoring-agent/triggers.txt"
+            + "/host-agents/monitoring-agent/triggers.txt"
         )
         utilFilePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/monitoring-agent/utilFile.txt"
+            + "/host-agents/monitoring-agent/utilFile.txt"
         )
         forcedLockFile = (
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )
-        VMcachDataframe = (str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])+ "/vm-agent/execution-agent/data/cachedVMData.csv")
+        VMcachDataframe = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/host-agents/execution-agent/data/cachedVMData.csv"
+        )
 
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -144,7 +147,7 @@ class resetLastDicision:
         #         )
         cachePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/vm-agent/execution-agent/data/cachedVMData.json"
+            + "/host-agents/execution-agent/data/cachedVMData.json"
         )
         filePaths = [
             dfPickel,
@@ -160,7 +163,7 @@ class resetLastDicision:
             triggersFile,
             utilFilePath,
             forcedLockFile,
-            VMcachDataframe
+            VMcachDataframe,
         ]
         finalPaths = filePaths + dfPaths + irPaths
         for filePath in finalPaths:

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd ./vm-agent/monitoring-agent
+cd ./host-agents/monitoring-agent
 ./compile.sh

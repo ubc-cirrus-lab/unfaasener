@@ -43,7 +43,7 @@ else:
     serverlessDF = None
 vmcachePath = (
     str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    + "/vm-agent/execution-agent/data/cachedVMData.csv"
+    + "/host-agents/execution-agent/data/cachedVMData.csv"
 )
 if os.path.isfile(vmcachePath):
     vmData = pd.read_csv(vmcachePath)

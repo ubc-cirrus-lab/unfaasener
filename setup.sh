@@ -24,7 +24,7 @@ done
 cd ../
 mkdir logs
 cd ../../
-cd ./vm-agent/execution-agent
+cd ./host-agents/execution-agent
 mkdir logs
 mkdir data
 cd ../../
