@@ -3,12 +3,12 @@ main:
     steps:
     - init:
         assign:
-        - project: ${sys.get_env("ubc-serverless-ghazal")}
+        - project: ${sys.get_env("***")}
         - location: "us-central1"
-        - getinput_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_GetInput"
-        - streaming_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_Streaming"
-        - decoder_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_Decoder"
-        - recognition_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_VideoAnalytics_Recognition"
+        - getinput_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_VideoAnalytics_GetInput"
+        - streaming_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_VideoAnalytics_Streaming"
+        - decoder_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_VideoAnalytics_Decoder"
+        - recognition_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_VideoAnalytics_Recognition"
     - getInput:
         call: http.post
         args:

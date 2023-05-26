@@ -15,7 +15,7 @@ import os
 
 
 publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
+PROJECT_ID = '***'
 DSclient = datastore.Client()
 
 def convert(event, context):

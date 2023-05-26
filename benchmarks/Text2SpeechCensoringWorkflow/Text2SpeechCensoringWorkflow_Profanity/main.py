@@ -15,7 +15,7 @@ from flask import jsonify
 
 
 publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
+PROJECT_ID = '***'
 DSclient = datastore.Client()
 def detect(event, context):
     routingData = (event['attributes'])['routing']

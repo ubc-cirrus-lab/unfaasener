@@ -10,7 +10,7 @@ from google.cloud import pubsub_v1
 
 
 publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
+PROJECT_ID = '***'
 
 def checking(event, context):
     datastore_client = datastore.Client()

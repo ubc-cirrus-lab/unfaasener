@@ -14,7 +14,7 @@ batch_settings = pubsub_v1.types.BatchSettings(
     max_latency=0.001,  # default 10 ms
 )
 publisher = pubsub_v1.PublisherClient(batch_settings)
-PROJECT_ID = 'ubc-serverless-ghazal'
+PROJECT_ID = '***'
 EXT = '.jpg'
 
 class VideoDecoder:

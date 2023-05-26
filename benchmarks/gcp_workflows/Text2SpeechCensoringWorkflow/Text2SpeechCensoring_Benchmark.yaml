@@ -10,16 +10,16 @@ main:
     steps:
     - init:
         assign:
-        - project: ${sys.get_env("ubc-serverless-ghazal")}
+        - project: ${sys.get_env("***")}
         - location: "us-central1"
         - object_name: "text2speech_result"
         - bucket_name: "text2speech-workflow-storage"
-        - getInput_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_GetInput"
-        - text2speech_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Text2Speech"
-        - conversion_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Conversion"
-        - compression_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Compression"
-        - profanity_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Profanity"
-        - censor_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Censor"
+        - getInput_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_GetInput"
+        - text2speech_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Text2Speech"
+        - conversion_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Conversion"
+        - compression_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Compression"
+        - profanity_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Profanity"
+        - censor_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Censor"
         - compression_out: {}
         - profanity_out: {}
     - get_input:

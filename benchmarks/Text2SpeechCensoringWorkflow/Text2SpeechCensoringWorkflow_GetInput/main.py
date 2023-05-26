@@ -15,7 +15,7 @@ batch_settings = pubsub_v1.types.BatchSettings(
 )
 publisher = pubsub_v1.PublisherClient(batch_settings)
 # publisher = pubsub_v1.PublisherClient()
-PROJECT_ID = 'ubc-serverless-ghazal'
+PROJECT_ID = '***'
 DSclient = datastore.Client()
 def get(request):
     """Responds to any HTTP request.

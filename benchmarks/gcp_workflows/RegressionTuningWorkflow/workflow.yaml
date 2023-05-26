@@ -3,13 +3,13 @@ main:
     steps:
     - init:
         assign:
-        - project: ${sys.get_env("ubc-serverless-ghazal")}
+        - project: ${sys.get_env("***")}
         - location: "us-central1"
-        - get_input_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_getInput"
-        - create_dataset_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_createDataset"
-        - first_model_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_firstModel"
-        - second_model_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_secondModel"
-        - join_url: "https://northamerica-northeast1-ubc-serverless-ghazal.cloudfunctions.net/Benchmark_RegressionTuning_joinRuns"
+        - get_input_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_RegressionTuning_getInput"
+        - create_dataset_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_RegressionTuning_createDataset"
+        - first_model_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_RegressionTuning_firstModel"
+        - second_model_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_RegressionTuning_secondModel"
+        - join_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_RegressionTuning_joinRuns"
         - first_model_result: {}
         - second_model_result: {}
     - get_input:
