@@ -10,6 +10,7 @@ main:
     steps:
     - init:
         assign:
+        # Replace *** with your Google Cloud Project ID
         - project: ${sys.get_env("***")}
         - location: "us-central1"
         - object_name: "text2speech_result"

@@ -15,6 +15,7 @@ batch_settings = pubsub_v1.types.BatchSettings(
 )
 publisher = pubsub_v1.PublisherClient(batch_settings)
 # publisher = pubsub_v1.PublisherClient()
+# Replace *** with your Google Cloud Project ID
 PROJECT_ID = '***'
 DSclient = datastore.Client()
 def get(request):

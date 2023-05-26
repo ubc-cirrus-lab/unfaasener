@@ -3,6 +3,7 @@ main:
     steps:
     - init:
         assign:
+        # Replace *** with your Google Cloud Project ID
         - project: ${sys.get_env("***")}
         - location: "us-central1"
         - get_input_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_RegressionTuning_getInput"

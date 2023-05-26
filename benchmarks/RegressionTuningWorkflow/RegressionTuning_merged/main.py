@@ -10,6 +10,7 @@ from google.cloud import pubsub_v1
 
 
 publisher = pubsub_v1.PublisherClient()
+# Replace *** with your Google Cloud Project ID
 PROJECT_ID = '***'
 
 def checking(event, context):

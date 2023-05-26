@@ -17,6 +17,7 @@ batch_settings = pubsub_v1.types.BatchSettings(
     max_latency=0.001,  # default 10 ms
 )
 publisher = pubsub_v1.PublisherClient(batch_settings)
+# Replace *** with your Google Cloud Project ID
 PROJECT_ID = '***'
 DSclient = datastore.Client()
 
