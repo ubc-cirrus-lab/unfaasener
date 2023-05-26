@@ -388,7 +388,7 @@ def containerize(functionname):
         subprocess.call(
             "cp "
             + str(Path(os.path.dirname(os.path.abspath(__file__))))
-            + "/ubc-serverless-ghazal-9bede7ba1a47.json "
+            + "/vmExeModule.json "
             + str(Path(os.path.dirname(os.path.abspath(__file__))))
             + "/"
             + functionname

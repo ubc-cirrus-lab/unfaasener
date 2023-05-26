@@ -28,7 +28,7 @@ def containerize(functionname):
 
     # Initialize request arguments
     request = functions_v1.GenerateDownloadUrlRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"+project_id+"/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -40,7 +40,7 @@ def containerize(functionname):
     # print("\nDownloading the function")
     wget.download(downloadlink, functionname + ".zip")
     request = functions_v1.GetFunctionRequest(
-        name="projects/ubc-serverless-ghazal/locations/northamerica-northeast1/functions/"
+        name="projects/"+project_id+"/locations/northamerica-northeast1/functions/"
         + functionname,
     )
 
@@ -73,7 +73,7 @@ def containerize(functionname):
         file_object.write("    main()\n")
         file_object.close()
         subprocess.call(
-            "cp ubc-serverless-ghazal-9bede7ba1a47.json " + functionname + "/ ",
+            "cp vmExeModule.json " + functionname + "/ ",
             shell=True,
             stdout=output,
             stderr=output,

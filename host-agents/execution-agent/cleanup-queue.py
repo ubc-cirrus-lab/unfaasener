@@ -170,7 +170,7 @@ def containerize(functionname):
             stderr=output,
         )
         subprocess.call(
-            "cp ubc-serverless-ghazal-9bede7ba1a47.json " + functionname + "/ ",
+            "cp vmExeModule.json " + functionname + "/ ",
             shell=True,
             stdout=output,
             stderr=output,

@@ -9,5 +9,5 @@ COPY . ./
 RUN pip install -r requirements.txt
 RUN apt update -y
 RUN apt install ffmpeg -y
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/ubc-serverless-ghazal-9bede7ba1a47.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/vmExeModule.json
 #ENTRYPOINT ["python3","main.py"]
