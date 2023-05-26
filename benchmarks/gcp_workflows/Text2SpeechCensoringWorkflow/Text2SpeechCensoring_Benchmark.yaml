@@ -1,26 +1,16 @@
-# This workflow demonstrates how to use the Cloud Functions connector.
-# This workflow creates a function from a zip archive containing the source code stored in a Cloud Storage bucket:
-# gs://your-bucket/cloud-function-source.zip.
-# Make sure cloud-function-source.zip contains properly structured Cloud Functions source code and the function returns
-# "success" when triggered.
-# Expected successful output: "SUCCESS"
-
 main:
     params: [input]
     steps:
     - init:
         assign:
-        # Replace *** with your Google Cloud Project ID
-        - project: ${sys.get_env("***")}
-        - location: "us-central1"
-        - object_name: "text2speech_result"
-        - bucket_name: "text2speech-workflow-storage"
-        - getInput_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_GetInput"
-        - text2speech_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Text2Speech"
-        - conversion_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Conversion"
-        - compression_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Compression"
-        - profanity_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Profanity"
-        - censor_url: "https://northamerica-northeast1-***.cloudfunctions.net/Benchmark_Text2SpeechCensoring_Censor"
+        - projectID: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+        - location: ${sys.get_env("GOOGLE_CLOUD_LOCATION")}
+        - getInput_url: ${"https://" + location + "-" + projectID + ".cloudfunctions.net/Benchmark_Text2SpeechCensoring_GetInput"}
+        - text2speech_url: ${"https://" + location + "-" + projectID + ".cloudfunctions.net/Benchmark_Text2SpeechCensoring_Text2Speech"}
+        - conversion_url: ${"https://" + location + "-" + projectID + ".cloudfunctions.net/Benchmark_Text2SpeechCensoring_Conversion"}
+        - compression_url: ${"https://" + location + "-" + projectID + ".cloudfunctions.net/Benchmark_Text2SpeechCensoring_Compression"}
+        - profanity_url: ${"https://" + location + "-" + projectID + ".cloudfunctions.net/Benchmark_Text2SpeechCensoring_Profanity"}
+        - censor_url: ${"https://" + location + "-" + projectID + ".cloudfunctions.net/Benchmark_Text2SpeechCensoring_Censor"}
         - compression_out: {}
         - profanity_out: {}
     - get_input:
