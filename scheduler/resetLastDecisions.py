@@ -15,7 +15,7 @@ class resetLastDicision:
         mode = mode
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + ".json"
         )
@@ -57,7 +57,7 @@ class resetLastDicision:
         #     json.dump(prevCost_json, json_file)
         pathDF = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/"
         )
@@ -80,25 +80,25 @@ class resetLastDicision:
             irPaths.append(pathDF + irName)
         dfPickel = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/generatedDataFrame.pkl"
         )
         dfCSV = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/generatedDataFrame.csv"
         )
         irPickel = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/invocationRates.pkl"
         )
         irCSV = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/invocationRates.csv"
         )
@@ -109,19 +109,19 @@ class resetLastDicision:
         )
         dateDataframepkl = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/dateDate.pkl"
         )
         dateDataframecsv = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/dateDate.csv"
         )
         prevDataJson = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + workflow
             + "/prevData.json"
         )
@@ -143,7 +143,7 @@ class resetLastDicision:
 
         # dataJSONN = (
         #             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        #             + "/log-parser/get_workflow_logs/data/"+workflow+"/data.json"
+        #             + "/log-parser/get-workflow-logs/data/"+workflow+"/data.json"
         #         )
         cachePath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])

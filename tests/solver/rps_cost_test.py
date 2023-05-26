@@ -14,7 +14,7 @@ class TestSolver(unittest.TestCase):
     def test_similar2prevdecision(self):
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase3Workflow"
             + ".json"
         )
@@ -42,7 +42,7 @@ class TestSolver(unittest.TestCase):
     def test_highPubsubCost(self):
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCaseWorkflow"
             + ".json"
         )
@@ -105,7 +105,7 @@ class TestSolver(unittest.TestCase):
     def test_highCost(self):
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCaseWorkflow"
             + ".json"
         )
@@ -187,7 +187,7 @@ class TestSolver(unittest.TestCase):
     # def test_multipleVMs_chooseTwoMostCostlyFuncs(self):
     #     jsonPath = (
     #         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    #         + "/log-parser/get_workflow_logs/data/"
+    #         + "/log-parser/get-workflow-logs/data/"
     #         + "Text2SpeechCensoringWorkflow"
     #         + ".json"
     #     )
@@ -246,7 +246,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase3Workflow"
             + ".json"
         )
@@ -302,7 +302,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase3Workflow"
             + ".json"
         )
@@ -336,7 +336,7 @@ class TestSolver(unittest.TestCase):
         toleranceWindow = 0
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-            + "/log-parser/get_workflow_logs/data/"
+            + "/log-parser/get-workflow-logs/data/"
             + "TestCase3Workflow"
             + ".json"
         )

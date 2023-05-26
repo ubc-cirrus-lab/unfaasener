@@ -14,7 +14,7 @@ rankerConfig = config["settings"]
 workflow = rankerConfig["workflow"]
 dfDir = Path(
     str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-    + "/log-parser/get_workflow_logs/data/"
+    + "/log-parser/get-workflow-logs/data/"
     + workflow
     + "/"
 )
@@ -30,7 +30,7 @@ if len(dfFilesNames) != 0:
     lastVersion = max(versions)
     dataframePath = (
         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-        + "/log-parser/get_workflow_logs/data/"
+        + "/log-parser/get-workflow-logs/data/"
         + workflow
         + "/generatedDataFrame,"
         + str(lastVersion)
