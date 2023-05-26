@@ -39,7 +39,7 @@ pidThree=$!
 
 
 # terminating background processes upon termination of this script
-trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py ${workflow} 1; python3 ~/de-serverlessization/setupTests/combineDataframes.py; exit 1" INT SIGINT SIGTERM EXIT
+trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; python3 ~/de-serverlessization/log_parser/get_workflow_logs/getWorkflowLogs.py ${workflow} 1; python3 ~/de-serverlessization/setup-tests/combineDataframes.py; exit 1" INT SIGINT SIGTERM EXIT
 wait
 
 
