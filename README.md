@@ -25,9 +25,9 @@ Then, run the following script to build those components that need to be compile
 ```
 ./build.sh
 ```
-## Deploying the system?
+## Deploying the system
 To deploy the system, follow these steps:
-1. **Giving the required credentials:** To create the necassary credentials for using UnFaaSener, follow the instructions [here](./scheduler/key/)
+1. **Giving the required credentials:** To create the necassary credentials for using UnFaaSener, follow the instructions [here](./scheduler/key/).
 2. **Adding a new host:**  In order to incorporate a new host into UnFaaSener, you must assign a new pubsub topic to the host and ensure that the host subscribes to this topic. To achieve this within Google Cloud Functions, please follow the steps outlined below:
     1. **Create a Pub/Sub Topic:** 
         * Access the Pub/Sub service page on the Google Cloud Console.
@@ -37,13 +37,13 @@ To deploy the system, follow these steps:
     2. **Configure Subscription:**
         * To enable the host to receive messages published to the topic, create a subscription for the topic.
         * Go to the "Subscriptions" section and click on "CREATE SUBSCRIPTION".
-        * Provide a unique subscription ID that will be used by the host execution agent
+        * Provide a unique subscription ID that will be used by the host execution agent.
         * Select "never expire" for the expiration period if you want the host to be available indefinitely.
             <img src="./scheduler/key/Images/expire.png" alt="expireSubsciption"/>
         * For providing a level of fault tolerance, enable dead lettering while creating the subscription. You need to choose the dead-letter topic for your host subscription, which is assigned to another host. By default, we assign the topic of (host_i + 1)%numhosts as the dead-letter topic for host_i.
             <img src="./scheduler/key/Images/deadLetter.png" alt="deadLetterTopic"/>
 1. **Deploymet script:**
-    * To ensure that all functions initially run on serverless mode by default, run [this](./scheduler/resetRoutingDecisions.py) script before sending the traffic. This script ensures that the routing decisions are reset.
+    * To ensure that all functions initially run as serverless fuctions by default, run [this](./scheduler/resetRoutingDecisions.py) script before sending the traffic. This script ensures that the routing decisions are reset.
         ```
         python3 ./scheduler/resetRoutingDecisions.py [benchmark name] [number of offloading hosts]
         ``` 
