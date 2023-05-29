@@ -1,3 +1,5 @@
  This directory includes the implementation of the ImageProcessing benchmark for Google Cloud Workflows. The subdirectories contain the code for the Google Functions that participate in the workflow, while the [yaml file](./ImageProcessing_Workflow.yaml) provides the workflow definition.
 
 To use the benchmark, you'll need to edit `ImageProcessing_Workflow.yaml` with the appropriate paths to the Google functions in your account.
+
+Please note that in order to run the Workflow instance on the GCP console, you must provide an input with the image file name in the following format: `{"fileName": <YOUR_FILE_NAME>}`. Additionally, ensure that you modify the bucket name in the workflow's functions to correctly retrieve your image. To do this, update `bucket = storage_client.bucket(<YOUR_BUCKET_NAME>)` in `main.py` file within the respective subdirectories.

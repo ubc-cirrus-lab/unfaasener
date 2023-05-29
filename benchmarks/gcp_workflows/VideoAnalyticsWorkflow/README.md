@@ -1,3 +1,5 @@
  This directory includes the implementation of the VideoAnalytics benchmark for Google Cloud Workflows. The subdirectories contain the code for the Google Functions that participate in the workflow, while the [yaml file](./VideoAnalytics_Workflow.yaml) provides the workflow definition.
 
 To use the benchmark, you'll need to edit `VideoAnalytics_Workflow.yaml` with the appropriate paths to the Google functions in your account.
+
+Please note that in order to run the Workflow instance on the GCP console, you must provide the video name and fanout number as input in the following format: `{"fanoutNum": <FANOUT_NUM_INTEGER>, "videoName": <VIDEO_FILE_NAME>}`. Note Additionally, ensure that you modify the bucket name in the workflow's functions to correctly adjust your storage instances. To do this, update `bucket = storage_client.bucket(<YOUR_BUCKET_NAME>)` in `main.py` file within the respective subdirectories. Finally, please make sure to upload the sample video files to your storage bucket before running the Workflow instance. 

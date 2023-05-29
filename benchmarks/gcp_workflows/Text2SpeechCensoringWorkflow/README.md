@@ -1,3 +1,5 @@
  This directory includes the implementation of the Text2SpeechCensoring benchmark for Google Cloud Workflows. The subdirectories contain the code for the Google Functions that participate in the workflow, while the [yaml file](./Text2SpeechCensoring_Benchmark.yaml) provides the workflow definition.
 
 To use the benchmark, you'll need to edit `Text2SpeechCensoring_Benchmark.yaml` with the appropriate paths to the Google functions in your account.
+
+Please note that in order to run the Workflow instance on the GCP console, you must provide the input text to the workflow using the following format: `{"message": <YOUR_INPUT_TEXT>}`. Additionally, ensure that you modify the bucket name in the workflow's functions to correctly adjust your storage instances. To do this, update `bucket = storage_client.bucket(<YOUR_BUCKET_NAME>)` in `main.py` file within the respective subdirectories.
