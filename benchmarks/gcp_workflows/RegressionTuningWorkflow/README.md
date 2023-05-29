@@ -1,3 +1,5 @@
  This directory includes the implementation of the RegressionTuning benchmark for Google Cloud Workflows. The subdirectories contain the code for the Google Functions that participate in the workflow, while the [yaml file](./workflow.yaml) provides the workflow definition.
 
 To use the benchmark, you'll need to edit `workflow.yaml` with the appropriate paths to the Google functions in your account.
+
+Please note that in order to run the Workflow instance on the GCP console, you must provide an input with the size of the artificial dataset to be created in the workflow using the following format: `{"samplesNum": <INTEGER_VALUE_SIZE>}`. Additionally, ensure that you modify the bucket name in the workflow's functions to correctly adjust your storage instances. To do this, update `bucket = storage_client.bucket(<YOUR_BUCKET_NAME>)` in `main.py` file within the respective subdirectories.
