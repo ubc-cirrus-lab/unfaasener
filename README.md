@@ -26,6 +26,36 @@ Then, run the following script to build those components that need to be compile
 ./build.sh
 ```
 
+## Deploying the System
+
+To deploy the system, follow these steps:
+1. **Giving the required credentials:** To create the necassary credentials for using UnFaaSener, follow the instructions [here](./scheduler/key/).
+2. **Adding a new host:** To register a new host to UnFaaSener, you must assign a new Pub/Sub topic to the host and ensure that the host subscribes to this topic. To do this in Google Cloud Functions, follow these steps:
+    1. **Create a Pub/Sub Topic:** 
+        * Access the Pub/Sub service page on the Google Cloud Console.
+        * Navigate to the *Topics* section and click on *CREATE TOPIC*. This topic will serve as the communication channel for the host.
+        * The host topics follow the naming pattern `vmTopic+n`, where `n` represents the host number. For example, if you want to add the third host, name the topic as `vmTopic3`.
+    2. **Configure the Host Subscription:**
+        * To receive messages published to the topic, create a subscription for the host.
+        * Go to the *Subscriptions* section and click on *CREATE SUBSCRIPTION*.
+        * Provide a unique subscription ID for the host execution agent to use.
+        * Select **never expire** for the expiration period if you want the host to be available indefinitely.
+            <img src="./scheduler/key/Images/expire.png" alt="expireSubsciption"/>
+        * For providing a level of fault tolerance, enable dead lettering while creating the subscription. You need to choose the dead-letter topic for your host subscription, which is assigned to another host. We suggest using a round-robin approach to assign the dead-letter topic for host_i to the topic of (host_i + 1)%numhosts.
+            <img src="./scheduler/key/Images/deadLetter.png" alt="deadLetterTopic"/>
+3. **Deployment Script:**
+    * To ensure that all functions initially run as serverless functions by default, run [this](./scheduler/resetRoutingDecisions.py) script before running the system. 
+    This script resets the routing decisions.
+        ```
+        python3 ./scheduler/resetRoutingDecisions.py [benchmark name] [number of offloading hosts]
+        ``` 
+    * Start the system using the [deployment script](./initialDeploy.sh). 
+    This script launches the system, prepares the initial state, and starts the host agents.
+    To run the script, simply use the following arguments:
+        ```
+        ./initialDeploy.sh [benchmark name] [number of offloading hosts] [optimization mode (latency/cost)]
+        ``` 
+
 ## Acknowledgments
 
 This work was supported in part by the Natural Sciences and Engineering Research Council of Canada (NSERC).
