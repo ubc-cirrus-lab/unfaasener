@@ -41,7 +41,7 @@ To deploy the system, follow these steps:
         * Provide a unique subscription ID for the host execution agent to use.
         * Select **never expire** for the expiration period if you want the host to be available indefinitely.
             <img src="./scheduler/key/Images/expire.png" alt="expireSubsciption"/>
-        * For providing a level of fault tolerance, enable dead lettering while creating the subscription. You need to choose the dead-letter topic for your host subscription, which is assigned to another host. We suggest using a round-robin approach to assign the dead-letter topic for host_i to the topic of host<sub>(i + 1)%numhosts</sub>.
+        * For providing a level of fault tolerance, enable dead lettering while creating the subscription. You need to choose the dead-letter topic for your host subscription, which is assigned to another host. We suggest using a round-robin approach to assign the dead-letter topic for host<sub>i</sub> to the topic of host<sub>(i + 1)%numhosts</sub>.
             <img src="./scheduler/key/Images/deadLetter.png" alt="deadLetterTopic"/>
 3. **Deployment Script:**
     * To ensure that all functions initially run as serverless functions by default, run [this](./scheduler/resetRoutingDecisions.py) script before running the system. 
