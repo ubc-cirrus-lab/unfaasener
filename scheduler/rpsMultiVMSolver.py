@@ -1597,6 +1597,11 @@ class rpsOffloadingSolver:
             self.getAllPaths()
             self.getSlackForPath()
             model = GEKKO(remote=False)
+
+            print('\n--------- Follow local path to view files --------------')
+            print(model.path)               # show source file path
+            print('-'*56)
+
             zero = model.Const(0)
             one = model.Const(1)
             alphaConst = model.Const(alpha)
@@ -1815,7 +1820,8 @@ class rpsOffloadingSolver:
                                     for x in expression_1[i_dur][i_c]
                                 ]
                             )
-                            + sum(
+                            + 
+                            sum(
                                 [
                                     (
                                         (
@@ -1845,7 +1851,7 @@ class rpsOffloadingSolver:
                                                     x["tmpIndex2"][0]
                                                 ][x["tmpIndex2"][1]]
                                             )
-                                            * x["coeff3"]
+                                            * x["coeff2"]
                                         )
                                         + (
                                             (
@@ -1867,7 +1873,8 @@ class rpsOffloadingSolver:
                                     for x in expression_2[i_dur][i_c]
                                 ]
                             )
-                            + (
+                            + 
+                            (
                                 (
                                     (
                                         tempGoalVar[
@@ -2378,6 +2385,31 @@ class rpsOffloadingSolver:
                 #     cost2,
                 #     cost3,
                 # )
+                json_dict = {
+                    'locality': alpha,
+                    'n_hosts': len(availResources),
+                    'n_funcs': len(offloadingDecisions),
+                    'list_mem_capacity': [availResources[VMIndex]["mem_mb"] for VMIndex in range(len(availResources))],
+                    'list_cpu_capacity': [availResources[VMIndex]["cores"] for VMIndex in range(len(availResources))],
+                    'expression_1': expression_1,
+                    'expression_2': expression_2,
+                    'expression_3': expression_3,
+                    'inequality_const': inequality_const,
+                    'list_func_costs_1': func_costs_1,
+                    'list_func_costs_2': func_costs_2,
+                    'matrix_cpu_coeff': cpu_coeffs,
+                    'matrix_mem_coeff': mem_coeffs,
+                    'matrix_prev_offloadings': matrix_prev_offloadings,
+                    'solution': offloadingDecisionsFinal
+                }
+
+                json_str = json.dumps(json_dict)
+                with open('/home/pjavan/solverJulia/inputs.txt', 'a') as f:
+                    f.write(json_str + '\n')
+
+                    f.flush()
+
+                print(offloadingDecisionsFinal)
                 return offloadingDecisionsFinal
             except:
                 # offloadingDecisionsFinal = [
