@@ -6,6 +6,7 @@ from LatencyModel import LatencyModel
 from gekko import GEKKO
 from Estimator import Estimator
 import itertools
+import subprocess
 
 # Non-linear optimzation models for cost and latency
 
@@ -571,6 +572,7 @@ class rpsOffloadingSolver:
                 print(offloadingDecisionsFinal)
                 
                 json_dict = {
+                    'mode': 'cost',
                     'locality': alpha,
                     'n_hosts': len(availResources),
                     'n_funcs': len(offloadingDecisions),
@@ -589,6 +591,12 @@ class rpsOffloadingSolver:
                     f.write(json_str + '\n')
 
                     f.flush()
+
+
+                
+                self.createJuliaInput(json_dict)
+                self.runSolver()
+                self.readJuliaOutput()
                     
                 #print(json_str)
                 return offloadingDecisionsFinal
@@ -1598,10 +1606,6 @@ class rpsOffloadingSolver:
             self.getSlackForPath()
             model = GEKKO(remote=False)
 
-            print('\n--------- Follow local path to view files --------------')
-            print(model.path)               # show source file path
-            print('-'*56)
-
             zero = model.Const(0)
             one = model.Const(1)
             alphaConst = model.Const(alpha)
@@ -2386,6 +2390,7 @@ class rpsOffloadingSolver:
                 #     cost3,
                 # )
                 json_dict = {
+                    'mode': 'latency',
                     'locality': alpha,
                     'n_hosts': len(availResources),
                     'n_funcs': len(offloadingDecisions),
@@ -2410,6 +2415,11 @@ class rpsOffloadingSolver:
                     f.flush()
 
                 print(offloadingDecisionsFinal)
+                
+                self.createJuliaInput(json_dict)
+                self.runSolver()
+                self.readJuliaOutput()
+                
                 return offloadingDecisionsFinal
             except:
                 # offloadingDecisionsFinal = [
@@ -2422,6 +2432,33 @@ class rpsOffloadingSolver:
                 # return offloadingDecisionsFinal
                 return "NotFound"
                 # model.open_folder()
+    
+    
+    def createJuliaInput(self, json_dict):
+        # print('DEBUG')
+        json_str = json.dumps(json_dict)
+        # print('DEBUG')
+        try:
+            with open('solver_input.json', 'w') as f:
+                # print('DEBUG')
+                f.write(json_str + '\n')
+                f.flush()
+            return True
+        except:
+            return False
+
+    def runSolver(self):
+        subprocess.call(["julia", "rpsMultiVMSolver.jl", "&> solver_log.txt"])
+        # os.system('julia rpsMultiVMSolver.jl &> solver_log.txt')
+
+    def readJuliaOutput(self):
+        with open("solver_output.json") as f:
+            result = json.load(f)
+            print(f'Julia -> {result}')
+
+
+    
+    
     # Saving new decisions in the Json file assigned to each workflow
     def saveNewDecision(self, offloadingDecisions):
         self.workflow_json[

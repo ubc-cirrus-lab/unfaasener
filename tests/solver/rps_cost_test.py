@@ -184,63 +184,6 @@ class TestSolver(unittest.TestCase):
         )
         self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
-    # def test_multipleVMs_chooseTwoMostCostlyFuncs(self):
-    #     jsonPath = (
-    #         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    #         + "/log-parser/get-workflow-logs/data/"
-    #         + "Text2SpeechCensoringWorkflow"
-    #         + ".json"
-    #     )
-    #     with open(jsonPath, "r") as json_file:
-    #         workflow_json = json.load(json_file)
-    #     workflow_json["lastDecision_default"] = [
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 0.0, 0.0],
-    #         [0.0, 0.0, 0.0],
-    #     ]
-    #     with open(jsonPath, "w") as json_file:
-    #         json.dump(workflow_json, json_file)
-    #     workflow = "Text2SpeechCensoringWorkflow"
-    #     toleranceWindow = 0
-    #     solver = rpsOffloadingSolver(workflow, self.mode, None, toleranceWindow)
-    #     availResources = [
-    #         {"cores": 0.4, "mem_mb": 256},
-    #         {"cores": 0.4, "mem_mb": 256},
-    #         {"cores": 0, "mem_mb": 0},
-    #     ]
-    #     alpha = 0
-    #     x = solver.suggestBestOffloadingMultiVM(
-    #         availResources=availResources, alpha=alpha, verbose=True
-    #     )
-    #     print("RESS:::", x)
-    #     self.assertIn(
-    #         x,
-    #         [
-    #             [
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 1.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [1.0, 0.0, 0.0],
-    #             ],
-    #             [
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [1.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 0.0, 0.0],
-    #                 [0.0, 1.0, 0.0],
-    #             ],
-    #         ],
-    #     )
-
     def test_rps(self):
         workflow = "TestCase3Workflow"
         toleranceWindow = 0
