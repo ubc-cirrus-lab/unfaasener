@@ -1,18 +1,17 @@
 # UnFaaSener
 [![Build Status](https://github.com/ubc-cirrus-lab/unfaasener/actions/workflows/python-app.yml/badge.svg)](https://github.com/ubc-cirrus-lab/unfaasener/actions/workflows/python-app.yml) [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/ubc-cirrus-lab/unfaasener/blob/main/LICENSE)
 
-Are you currently using serverless offerings in conjunction with pre-paid VMs? 
-Or do you have on-premise computational capacity that already incurs capital and operating costs? 
-If so, why not leverage those resources to reduce your serverless bills?
-
 UnFaaSener is a lightweight framework designed to empower serverless developers to decrease their expenses by harnessing non-serverless compute resources.
 Whether it's your VMs, on-premise servers, or personal computers, UnFaaSener allows you to make the most of these underutilized resources.
 
-UnFaaSener is not a new serverless platform, nor does it require any support from today's production serverless platforms.
-It seamlessly integrates with existing pub/sub services to glue your serverless applications and offloading hosts.
-
+UnFaaSener is not a new serverless platform.
+It uses pub/sub services to glue serverless applications and offloading hosts.
 UnFaaSener has been thoroughly tested and evaluated on [Google Cloud Functions](https://cloud.google.com/functions).
-Our [research paper](https://www.usenix.org/conference/atc23/presentation/sadeghian) on it will appear at the 2023 USENIX Annual Technical Conference ([ATC '23](https://www.usenix.org/conference/atc23)).
+
+Our paper provides in-depth insights into the design and evaluation of UnFaaSener:
+* [UnFaaSener USENIX ATC '23 paper](https://www.usenix.org/system/files/atc23-sadeghian.pdf)
+
+If you use UnFaaSener in your research, please reference our USENIX ATC 2023 paper mentioned above.
 
 ## Setting Up and Building the Tool
 
@@ -58,5 +57,8 @@ To deploy the system, follow these steps:
 
 ## Acknowledgments
 
-This work was supported in part by the Natural Sciences and Engineering Research Council of Canada (NSERC).
+This work was supported by the Natural Sciences and Engineering Research Council of Canada (NSERC) and The University of British Columbia (UBC).
 We are also thankful for cloud resources made available to us by the Digital Research Alliance of Canada, the Google Cloud Research Credits program, and the AWS Cloud Credit for Research program.
+
+In addition to authors of our paper (Ghazal Sadeghian, Mohamed Elsakhawy, Mohanna Shahrad, Joe Hattori, and Mohammad Shahrad), we acknowledge others how helped us improve UnFaaSener. 
+Xiaoyang Sofia Zhang assisted in enhancing multi-host features, and Parshan Javanrood played an important role in optimizing solver performance.
