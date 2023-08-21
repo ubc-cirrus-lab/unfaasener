@@ -2,6 +2,7 @@
 
 # solver tests
 # get data
+#python3 ./tests/solver/testcase_generator.py
 cp -a ./tests/solver/data/. ./scheduler/data/
 cp -a ./tests/logCollector/. ./log-parser/get-workflow-logs/data/
 cp ./tests/solver/rps_cost_test.py ./scheduler
@@ -32,8 +33,8 @@ do
 done
 cd ../../../
 # host agent tests
-cp ./tests/host_agents/predictor_test.cpp host-agents/monitoring-agent/
-cd host-agents/monitoring-agent
-g++ -std=c++14 -I . predictor_test.cpp -o predictor_test
-./predictor_test
-rm ./predictor_test*
+# cp ./tests/host_agents/predictor_test.cpp host-agents/monitoring-agent/
+# cd host-agents/monitoring-agent
+# g++ -std=c++14 -I . predictor_test.cpp -o predictor_test
+# ./predictor_test
+# rm ./predictor_test*

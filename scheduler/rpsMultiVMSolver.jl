@@ -14,7 +14,7 @@ function solve_cost(
     matrix_prev_offloadings
 )
     model_disc = Model(() -> MadNLP.Optimizer())
-    set_silent(model_disc)
+     set_silent(model_disc)
     set_optimizer_attribute(model_disc, "LogLevel", "Error")
     @variable(model_disc, 0 <= y[1:n_funcs, 1:n_hosts] <= 100)
     for i in 1:n_funcs
@@ -216,7 +216,7 @@ function call_latency(json_parsed)
     list_mem_capacity = [float(x) for x in json_parsed["list_mem_capacity"]]
     list_func_costs_1 = [float(x) for x in json_parsed["list_func_costs_1"]]
     list_func_costs_2 = [float(x) for x in json_parsed["list_func_costs_2"]]
-    solution = [[float(x_i) for x_i in x] for x in json_parsed["solution"]]
+    # solution = [[float(x_i) for x_i in x] for x in json_parsed["solution"]]
     expression_1 = json_parsed["expression_1"]
     expression_2 = json_parsed["expression_2"]
     expression_3 = json_parsed["expression_3"]
@@ -292,7 +292,7 @@ function call_cost(json_parsed)
     list_mem_capacity = [float(x) for x in json_parsed["list_mem_capacity"]]
     list_func_costs_1 = [float(x) for x in json_parsed["list_func_costs_1"]]
     list_func_costs_2 = [float(x) for x in json_parsed["list_func_costs_2"]]
-    solution = [[float(x_i) for x_i in x] for x in json_parsed["solution"]]
+    # solution = [[float(x_i) for x_i in x] for x in json_parsed["solution"]]
     sol = solve_cost(
         n_hosts,
         n_funcs,

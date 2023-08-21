@@ -444,10 +444,6 @@ class rpsOffloadingSolver:
                 ] for i in range(len(offloadingDecisions))
             ]
 
-            
-
-            
-            
 
             model.Minimize(
                 model.sum(
@@ -512,11 +508,40 @@ class rpsOffloadingSolver:
                 )
             )
 
-            # solve
-            model.options.SOLVER = 1
 
+            
+            # solve
+            json_dict = {
+                'mode': 'cost',
+                'locality': alpha,
+                'n_hosts': len(availResources),
+                'n_funcs': len(offloadingDecisions),
+                'list_mem_capacity': [availResources[VMIndex]["mem_mb"] for VMIndex in range(len(availResources))],
+                'list_cpu_capacity': [availResources[VMIndex]["cores"] for VMIndex in range(len(availResources))],
+                'list_func_costs_1': func_costs_1,
+                'list_func_costs_2': func_costs_2,
+                'matrix_cpu_coeff': cpu_coeffs,
+                'matrix_mem_coeff': mem_coeffs,
+                'matrix_prev_offloadings': matrix_prev_offloadings,
+                #'solution': offloadingDecisionsFinal
+            }
             try:
+                self.createJuliaInput(json_dict)
+                self.runSolver()
+                sol = self.readJuliaOutput()
+                print(f'Julia -> {sol}')
+
+                #return sol
+            except:
+                print("\nJulia Failed!")
+                #return False
+            
+            
+            # print(json_dict)
+            try:
+                model.options.SOLVER = 1
                 model.solve(disp=False)
+                # model.solve(disp=False)
                 offloadingDecisionsFinal = [
                     [
                         (offloadingDecisions[j][i].value)[0]
@@ -587,16 +612,12 @@ class rpsOffloadingSolver:
                 }
 
                 json_str = json.dumps(json_dict)
+
                 with open('/home/pjavan/solverJulia/inputs.txt', 'a') as f:
                     f.write(json_str + '\n')
 
                     f.flush()
 
-
-                
-                self.createJuliaInput(json_dict)
-                self.runSolver()
-                self.readJuliaOutput()
                     
                 #print(json_str)
                 return offloadingDecisionsFinal
@@ -2080,6 +2101,36 @@ class rpsOffloadingSolver:
             model.options.OTOL = 1e-13
             model.options.RTOL = 1e-13
 
+            json_dict = {
+                'mode': 'latency',
+                'locality': alpha,
+                'n_hosts': len(availResources),
+                'n_funcs': len(offloadingDecisions),
+                'list_mem_capacity': [availResources[VMIndex]["mem_mb"] for VMIndex in range(len(availResources))],
+                'list_cpu_capacity': [availResources[VMIndex]["cores"] for VMIndex in range(len(availResources))],
+                'expression_1': expression_1,
+                'expression_2': expression_2,
+                'expression_3': expression_3,
+                'inequality_const': inequality_const,
+                'list_func_costs_1': func_costs_1,
+                'list_func_costs_2': func_costs_2,
+                'matrix_cpu_coeff': cpu_coeffs,
+                'matrix_mem_coeff': mem_coeffs,
+                'matrix_prev_offloadings': matrix_prev_offloadings,
+                #'solution': offloadingDecisionsFinal
+            }
+
+            try:
+                self.createJuliaInput(json_dict)
+                self.runSolver()
+                sol = self.readJuliaOutput()
+                print(f'Julia -> {sol}')
+
+                #return sol
+            except:
+                print("\nJulia Failed!")
+                #return False
+
             try:
                 model.solve(disp=False)
                 offloadingDecisionsFinal = [
@@ -2416,9 +2467,9 @@ class rpsOffloadingSolver:
 
                 print(offloadingDecisionsFinal)
                 
-                self.createJuliaInput(json_dict)
-                self.runSolver()
-                self.readJuliaOutput()
+                # self.createJuliaInput(json_dict)
+                # self.runSolver()
+                # self.readJuliaOutput()
                 
                 return offloadingDecisionsFinal
             except:
@@ -2448,13 +2499,15 @@ class rpsOffloadingSolver:
             return False
 
     def runSolver(self):
-        subprocess.call(["julia", "rpsMultiVMSolver.jl", "&> solver_log.txt"])
+        subprocess.call(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
         # os.system('julia rpsMultiVMSolver.jl &> solver_log.txt')
 
     def readJuliaOutput(self):
         with open("solver_output.json") as f:
             result = json.load(f)
-            print(f'Julia -> {result}')
+            # print(f'Julia -> {result}')
+            # print(type(result))
+            return result
 
 
     
