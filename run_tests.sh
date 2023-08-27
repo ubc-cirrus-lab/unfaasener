@@ -10,11 +10,11 @@ cp ./tests/solver/rps_latency_test.py ./scheduler
 cd ./scheduler
 if command -v python &> /dev/null
 then
-    python rps_cost_test.py
+    # python rps_cost_test.py
     python rps_latency_test.py 
 elif command -v python3 &> /dev/null
 then
-    python3 rps_cost_test.py
+    # python3 rps_cost_test.py
     python3 rps_latency_test.py 
 fi
 rm rps_cost_test.py

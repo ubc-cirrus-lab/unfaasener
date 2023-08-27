@@ -6,6 +6,7 @@ from LatencyModel import LatencyModel
 from gekko import GEKKO
 from Estimator import Estimator
 import itertools
+import time
 import subprocess
 
 # Non-linear optimzation models for cost and latency
@@ -105,6 +106,15 @@ class rpsOffloadingSolver:
         self.initial = self.workflow_json["initFunc"]
         self.memories = self.workflow_json["memory"]
 
+        print('called init julia')
+        self.initJuliaSolver()
+
+    def __del__(self):
+        with open('solver_input.json', 'w') as f:
+            f.write(json.dumps({"mode": "done"}))
+            f.flush()
+        time.sleep(0.01)
+        
     def getAllPaths(self):
         """
         Returns all possible paths in the dag starting from the initial node to a terminal node
@@ -614,97 +624,6 @@ class rpsOffloadingSolver:
                 print("\nJulia Failed!")
                 return "NotFound"
                 
-
-
-
-    # def calcLatencyCost(self, alpha, offloadingCandidates, availResources, sol):
-
-    #     cost = sum(
-    #         [
-    #             (
-    #                 ((10**5) * 2)
-    #                 * (1 - alpha)
-    #                 * self.rps
-    #                 * self.GetServerlessCostEstimate(offloadingCandidates[i])
-    #                 * (
-    #                     100
-    #                     - (
-    #                         sum(
-    #                             [
-    #                                 (sol[i][vm])
-    #                                 for vm in range(len(availResources))
-    #                             ]
-    #                         )
-    #                     )
-    #                 )
-    #                 / 100
-    #             )
-    #             + sum(
-    #                 [
-    #                     (
-    #                         (
-    #                             ((10**5) * 2)
-    #                             * (1 - alpha)
-    #                             * (
-    #                                 sum(
-    #                                     [
-    #                                         (
-    #                                             1
-    #                                             - (
-    #                                                 (
-    #                                                     sol[
-    #                                                         i
-    #                                                     ][
-    #                                                         vm
-    #                                                     ]
-    #                                                     / 100
-    #                                                 )
-    #                                                 * (
-    #                                                     sol[
-    #                                                         j
-    #                                                     ][
-    #                                                         vm
-    #                                                     ]
-    #                                                     / 100
-    #                                                 )
-    #                                             )
-    #                                         )
-    #                                         * self.rps
-    #                                         * self.GetPubsubCost(
-    #                                             (offloadingCandidates[i]),
-    #                                             (offloadingCandidates[j]),
-    #                                         )
-    #                                         for j in self.getChildIndexes(
-    #                                             offloadingCandidates[i]
-    #                                         )
-    #                                     ]
-    #                                 )
-    #                             )
-    #                         )
-    #                         + (
-    #                             (10**3)
-    #                             * (alpha)
-    #                             * (
-    #                                 abs(
-    #                                     min(sol[i][vm], 1)
-    #                                     - (
-    #                                         self.IsOffloaded(
-    #                                             offloadingCandidates[i], vm
-    #                                         )
-    #                                     )
-    #                                 )
-    #                             )
-    #                         )
-    #                     )
-    #                     for vm in range(len(availResources))
-    #                 ]
-    #             )
-    #             for i in range(len(offloadingCandidates))
-    #         ]
-    #     )
-
-    #     return cost
-    
     def calcLatencyCost(self, alpha, offloadingCandidates, availResources, sol):
         
         return sum(
@@ -782,7 +701,6 @@ class rpsOffloadingSolver:
                 ]
             )
         
-
     def createJuliaInput(self, json_dict):
         # print('DEBUG')
         json_str = json.dumps(json_dict)
@@ -796,16 +714,48 @@ class rpsOffloadingSolver:
         except:
             return False
 
-    def runSolver(self):
-        subprocess.call(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
+    def initJuliaSolver(self):
+        self.resetJuliaInput()
+        self.resetJuliaOutput()
+        # subprocess.call(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
+        subprocess.Popen(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
         # os.system('julia rpsMultiVMSolver.jl &> solver_log.txt')
+
+    def runSolver(self):
+        result = None
+        t0 = time.time()
+
+        while time.time()-t0 <= 120:
+            with open("solver_output.json") as f:
+                result = json.load(f)
+
+                if "mode" in result:
+                    time.sleep(1)
+                    continue
+
+                break
+        
+        return
 
     def readJuliaOutput(self):
         with open("solver_output.json") as f:
             result = json.load(f)
             # print(f'Julia -> {result}')
             # print(type(result))
-            return result
+        self.resetJuliaInput()
+        self.resetJuliaOutput()
+        return result
+        
+    def resetJuliaInput(self):
+        self.createJuliaInput({"mode": "wait"})
+        time.sleep(0.01)
+
+    def resetJuliaOutput(self):
+        with open('solver_output.json', 'w') as f:
+            # print('DEBUG')
+            f.write(json.dumps({"mode": "wait"}))
+            f.flush()
+        time.sleep(0.01)
 
 
     def suggestBestOffloadingMultiVMGekko(self, availResources, alpha, verbose):

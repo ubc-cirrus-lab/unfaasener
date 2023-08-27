@@ -417,13 +417,28 @@ end
 
 
 function main()
-    json_parsed = JSON.parsefile("solver_input.json", inttype=Int64)
-    mode = json_parsed["mode"] 
-    if cmp(mode, "latency") == 0
-        call_latency(json_parsed)
-    else
-        call_cost(json_parsed)
+    #println("JULIA")
+    while true
+        json_parsed = JSON.parsefile("solver_input.json", inttype=Int64)
+        mode = json_parsed["mode"] 
+        if cmp(mode, "wait") == 0
+            sleep(1)
+        elseif cmp(mode, "latency") == 0
+            call_latency(json_parsed)
+            sleep(0.01)
+        elseif cmp(mode, "cost") == 0
+            call_cost(json_parsed)
+            sleep(0.01)
+        else
+            break
+        end
     end
+    
+    # if cmp(mode, "latency") == 0
+    #     call_latency(json_parsed)
+    # else
+    #     call_cost(json_parsed)
+    # end
 end
 
 
