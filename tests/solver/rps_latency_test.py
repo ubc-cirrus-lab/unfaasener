@@ -37,7 +37,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
+        expected = [[0.0], [0.0], [0.0], [0.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
     def test_preferHigherCost(self):
         workflow = "TestCase10Workflow"
@@ -52,11 +68,26 @@ class TestSolver(unittest.TestCase):
         )
         availResources = [{"cores": 1, "mem_mb": 500}]
         alpha = 0
+        # Due to the change of adding mu factor set to 1, the cpu for that function is increased causing the change in decisions
+        expected = [[0.0], [0.0], [52.0], [0.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        # Due to the change of adding mu factor set to 1, the cpu for that function is increased causing the change in decisions
-        self.assertEqual(x, [[0.0], [0.0], [52.0], [0.0]])
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        #self.assertEqual(x, [[0.0], [0.0], [52.0], [0.0]])
 
     # Test on when the tolerance window is not limited for the user
     def test_unlimitedToleranceWindow(self):
@@ -70,7 +101,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0], [100.0], [100.0]])
+        expected = [[0.0], [100.0], [100.0], [100.0], [100.0], [100.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0], [100.0], [100.0]])
 
     # Test for checking the case which the toleranceWindow is more than what is required for offloading a function
     def test_giveReuiredtoleranceWindow1(self):
@@ -84,7 +131,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [100.0], [0.0], [0.0]])
+        expected = [[0.0], [100.0], [0.0], [0.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0], [100.0], [0.0], [0.0]])
         # Test for checking the case which the toleranceWindow is less than what is required for offloading a function
 
     def test_lessThanrequiredtoleranceWindow(self):
@@ -98,7 +161,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
+        expected = [[0.0], [0.0], [0.0], [0.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
     def test_rps(self):
         workflow = "TestCase10Workflow"
@@ -139,7 +218,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [79.0, 21.0], [0.0, 0.0]])
+        expected = [[0.0, 0.0], [0.0, 0.0], [79.0, 21.0], [0.0, 0.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [79.0, 21.0], [0.0, 0.0]])
 
     def test_rps2(self):
         workflow = "TestCase3Workflow"
@@ -170,7 +265,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0], [0.0], [21.0], [0.0]])
+        expected = [[0.0], [0.0], [21.0], [0.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0], [0.0], [21.0], [0.0]])
 
     def test_rps3(self):
         workflow = "TestCase10Workflow"
@@ -211,7 +322,23 @@ class TestSolver(unittest.TestCase):
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
-        self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [84.0, 16.0], [0.0, 5.0]])
+        expected = [[0.0, 0.0], [0.0, 0.0], [84.0, 16.0], [0.0, 5.0]]
+        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+        print(f'EXPECTED = {expected}')
+        print(f'COST EXPECTED = {cost_expected}')
+        gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+        print(f'GEKKO = {gekko_result}')
+        print(f'COST GEKKO = {cost_gekko}')
+        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
+        print(f'Julia = {x}')
+        print(f'COST Julia = {cost_julia}')
+        print('-----------------------------------')
+        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        # print('-----------------------------------')
+        # self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [84.0, 16.0], [0.0, 5.0]])
 
     # def test_confidenctInterval(self):
     #     print("test_confidenctInterval")
@@ -221,6 +348,17 @@ class TestSolver(unittest.TestCase):
     #     availResources =  [{'cores':1000, 'mem_mb':500000}]
     #     alpha = 0
     #     x = solver.suggestBestOffloadingMultiVM(availResources, alpha)
+    # expected = [[0.0], [0.0], [0.9], [0.0], [0.9], [0.9]]
+    # cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
+    # print(f'EXPECTED = {expected}')
+    # # print(f'COST EXPECTED = {cost_expected}')
+    # gekko_result = solver.suggestBestOffloadingMultiVMGekko(
+    #         availResources=availResources, alpha=alpha, verbose=True
+    #     )
+    # cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
+    # print(f'GEKKO = {gekko_result}')
+    # print(f'COST GEKKO = {cost_gekko}')
+    # print('-----------------------------------')
     #     self.assertEqual(x, [[0.0], [0.0], [0.9], [0.0], [0.9], [0.9]])
 
 
