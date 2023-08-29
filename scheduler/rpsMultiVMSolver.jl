@@ -17,7 +17,6 @@ function solve_cost(
     model_disc = Model(() -> MadNLP.Optimizer())
     register(model_disc, :myMin, 1, myMin, autodiff=true)
     set_silent(model_disc)
-    set_optimizer_attribute(model_disc, "LogLevel", "Error")
     @variable(model_disc, 0 <= y[1:n_funcs, 1:n_hosts] <= 100)
     for i in 1:n_funcs
         @constraint(
@@ -98,7 +97,6 @@ function solve_latency(
     model_disc = Model(() -> MadNLP.Optimizer())
     register(model_disc, :myMin, 1, myMin, autodiff=true)
     set_silent(model_disc)
-    set_optimizer_attribute(model_disc, "LogLevel", "Error")
     @variable(model_disc, 0 <= y[1:n_funcs, 1:n_hosts] <= 100)
     for i in 1:n_funcs
         @constraint(
@@ -379,9 +377,11 @@ function call_latency(json_parsed)
 
     sol = [[floor(abs(s_i)) for s_i in s] for s in sol]
 
-    open("solver_output.json", "w") do f
-        JSON.print(f, sol)
-    end
+    # open("solver_output.json", "w") do f
+    #     JSON.print(f, sol)
+    # end
+    println(sol)
+    flush(stdout)
 end
 
 function call_cost(json_parsed)
@@ -409,20 +409,27 @@ function call_cost(json_parsed)
         matrix_prev_offloadings
     );
     sol = [[floor(abs(s_i)) for s_i in s] for s in sol]
-    open("solver_output.json", "w") do f
-        JSON.print(f, sol)
-    end
+    # open("solver_output.json", "w") do f
+    #     JSON.print(f, sol)
+    # end
+    println(sol)
+    flush(stdout)
 end
 
 
 
 function main()
-    json_parsed = JSON.parsefile("solver_input.json", inttype=Int64)
-    mode = json_parsed["mode"] 
-    if cmp(mode, "latency") == 0
-        call_latency(json_parsed)
-    else
-        call_cost(json_parsed)
+    println("Julia Started!")
+    flush(stdout)
+    for line in eachline(stdin)
+        
+        json_parsed = JSON.parse(line, inttype=Int64)
+        mode = json_parsed["mode"] 
+        if cmp(mode, "latency") == 0
+            call_latency(json_parsed)
+        else
+            call_cost(json_parsed)
+        end
     end
 end
 

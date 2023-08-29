@@ -477,16 +477,16 @@ class TestSolver(unittest.TestCase):
                 toleranceWindow = 0
                 availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
                 alpha = 0.1
+                solver = rpsOffloadingSolver(
+                    workflow=workflow,
+                    mode=self.mode,
+                    decisionMode=None,
+                    toleranceWindow=toleranceWindow,
+                    rps=self.rps,
+                    testingFlag=True,
+                )
                 for k in range(repeats):
                     start = time.time()
-                    solver = rpsOffloadingSolver(
-                        workflow=workflow,
-                        mode=self.mode,
-                        decisionMode=None,
-                        toleranceWindow=toleranceWindow,
-                        rps=self.rps,
-                        testingFlag=True,
-                    )
                     x_gekko = solver.suggestBestOffloadingMultiVMGekko(
                         availResources=availResources, alpha=alpha, verbose=True
                     )
