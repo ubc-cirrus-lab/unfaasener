@@ -331,193 +331,174 @@ class TestSolver(unittest.TestCase):
         )
         self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
-    # def test_rps(self):
-    #     workflow = "TestCase3Workflow"
-    #     toleranceWindow = 0
-    #     jsonPath = (
-    #         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    #         + "/log-parser/get-workflow-logs/data/"
-    #         + "TestCase3Workflow"
-    #         + ".json"
-    #     )
-    #     with open(jsonPath, "r") as json_file:
-    #         workflow_json = json.load(json_file)
-    #     workflow_json["lastDecision_default"] = [
-    #         [0.0, 0.0],
-    #         [0.0, 0.0],
-    #         [0.0, 0.0],
-    #         [0.0, 0.0],
-    #     ]
-    #     with open(jsonPath, "w") as json_file:
-    #         json.dump(workflow_json, json_file)
-    #     solver = rpsOffloadingSolver(
-    #         workflow=workflow,
-    #         mode=self.mode,
-    #         decisionMode=None,
-    #         toleranceWindow=toleranceWindow,
-    #         rps=self.rps,
-    #         testingFlag=True,
-    #     )
-    #     availResources = [
-    #         {"cores": 1, "mem_mb": 300},
-    #         {"cores": 1, "mem_mb": 300},
-    #     ]
-    #     alpha = 0
-    #     x = solver.suggestBestOffloadingMultiVM(
-    #         availResources=availResources, alpha=alpha, verbose=True
-    #     )
-    #     self.assertIn(
-    #         x,
-    #         [
-    #             #  Due to adding the mu factor set to 1 by default the decisions have changed
-    #             [[0.0, 0.0], [1.0, 0.0], [49.0, 51.0], [2.0, 1.0]],
-    #             [[0.0, 0.0], [6.0, 7.0], [50.0, 50.0], [6.0, 6.0]],
-    #             [[0.0, 0.0], [6.0, 7.0], [51.0, 49.0], [6.0, 7.0]],
-    #             [[0.0, 0.0], [8.0, 7.0], [50.0, 50.0], [5.0, 6.0]],
-    #             [[0.0, 0.0], [7.0, 6.0], [49.0, 51.0], [7.0, 6.0]],
-    #             [[0.0, 0.0], [7.0, 6.0], [50.0, 50.0], [6.0, 6.0]],
-    #             [[0.0, 0.0], [7.0, 7.0], [50.0, 50.0], [6.0, 6.0]],
-    #             [[0.0, 0.0], [12.0, 12.0], [50.0, 50.0], [1.0, 1.0]],
-    #             [[0.0, 0.0], [1.0, 12.0], [50.0, 50.0], [12.0, 1.0]],
-    #             [[0.0, 0.0], [12.0, 1.0], [50.0, 50.0], [1.0, 12.0]],
-    #             [[0.0, 0.0], [7.0, 6.0], [50.0, 50.0], [6.0, 7.0]],
-    #             [[0.0, 0.0], [6.0, 7.0], [50.0, 50.0], [7.0, 6.0]],
-    #             [[0.0, 0.0], [14.0, 1.0], [48.0, 52.0], [1.0, 10.0]],
-    #         ],
-    #     )
-    #     # self.assertEqual(x, [[0.0, 0.0], [6.0, 6.0], [50.0, 50.0], [7.0, 6.0]])
+    def test_rps(self):
+        workflow = "TestCase3Workflow"
+        toleranceWindow = 0
+        jsonPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log-parser/get-workflow-logs/data/"
+            + "TestCase3Workflow"
+            + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+        ]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
+        solver = rpsOffloadingSolver(
+            workflow=workflow,
+            mode=self.mode,
+            decisionMode=None,
+            toleranceWindow=toleranceWindow,
+            rps=self.rps,
+            testingFlag=True,
+        )
+        availResources = [
+            {"cores": 1, "mem_mb": 300},
+            {"cores": 1, "mem_mb": 300},
+        ]
+        alpha = 0
+        x = solver.suggestBestOffloadingMultiVM(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        print(f'SOLVED -> {x}')
+        self.assertIn(
+            x,
+            [
+                #  Due to adding the mu factor set to 1 by default the decisions have changed
+                [[0.0, 0.0], [1.0, 0.0], [49.0, 51.0], [2.0, 1.0]],
+                [[0.0, 0.0], [6.0, 7.0], [50.0, 50.0], [6.0, 6.0]],
+                [[0.0, 0.0], [6.0, 7.0], [51.0, 49.0], [6.0, 7.0]],
+                [[0.0, 0.0], [8.0, 7.0], [50.0, 50.0], [5.0, 6.0]],
+                [[0.0, 0.0], [7.0, 6.0], [49.0, 51.0], [7.0, 6.0]],
+                [[0.0, 0.0], [7.0, 6.0], [50.0, 50.0], [6.0, 6.0]],
+                [[0.0, 0.0], [7.0, 7.0], [50.0, 50.0], [6.0, 6.0]],
+                [[0.0, 0.0], [12.0, 12.0], [50.0, 50.0], [1.0, 1.0]],
+                [[0.0, 0.0], [1.0, 12.0], [50.0, 50.0], [12.0, 1.0]],
+                [[0.0, 0.0], [12.0, 1.0], [50.0, 50.0], [1.0, 12.0]],
+                [[0.0, 0.0], [7.0, 6.0], [50.0, 50.0], [6.0, 7.0]],
+                [[0.0, 0.0], [6.0, 7.0], [50.0, 50.0], [7.0, 6.0]],
+                [[0.0, 0.0], [14.0, 1.0], [48.0, 52.0], [1.0, 10.0]],
+            ],
+        )
+        # self.assertEqual(x, [[0.0, 0.0], [6.0, 6.0], [50.0, 50.0], [7.0, 6.0]])
 
-    # def test_rps2(self):
-    #     workflow = "TestCase3Workflow"
-    #     toleranceWindow = 0
-    #     jsonPath = (
-    #         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    #         + "/log-parser/get-workflow-logs/data/"
-    #         + "TestCase3Workflow"
-    #         + ".json"
-    #     )
-    #     with open(jsonPath, "r") as json_file:
-    #         workflow_json = json.load(json_file)
-    #     workflow_json["lastDecision_default"] = [
-    #         [0.0],
-    #         [0.0],
-    #         [0.0],
-    #         [0.0],
-    #     ]
-    #     with open(jsonPath, "w") as json_file:
-    #         json.dump(workflow_json, json_file)
-    #     solver = rpsOffloadingSolver(
-    #         workflow=workflow,
-    #         mode=self.mode,
-    #         decisionMode=None,
-    #         toleranceWindow=toleranceWindow,
-    #         rps=self.rps,
-    #         testingFlag=True,
-    #     )
-    #     availResources = [{"cores": 100, "mem_mb": 10000}]
-    #     alpha = 0
-    #     x = solver.suggestBestOffloadingMultiVM(
-    #         availResources=availResources, alpha=alpha, verbose=True
-    #     )
-    #     self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0]])
+    def test_rps2(self):
+        workflow = "TestCase3Workflow"
+        toleranceWindow = 0
+        jsonPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log-parser/get-workflow-logs/data/"
+            + "TestCase3Workflow"
+            + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [
+            [0.0],
+            [0.0],
+            [0.0],
+            [0.0],
+        ]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
+        solver = rpsOffloadingSolver(
+            workflow=workflow,
+            mode=self.mode,
+            decisionMode=None,
+            toleranceWindow=toleranceWindow,
+            rps=self.rps,
+            testingFlag=True,
+        )
+        availResources = [{"cores": 100, "mem_mb": 10000}]
+        alpha = 0
+        x = solver.suggestBestOffloadingMultiVM(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        print(f'SOLVED -> {x}')
+        self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0]])
 
-    # def test_rps3(self):
-    #     workflow = "TestCase3Workflow"
-    #     toleranceWindow = 0
-    #     jsonPath = (
-    #         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
-    #         + "/log-parser/get-workflow-logs/data/"
-    #         + "TestCase3Workflow"
-    #         + ".json"
-    #     )
-    #     with open(jsonPath, "r") as json_file:
-    #         workflow_json = json.load(json_file)
-    #     workflow_json["lastDecision_default"] = [
-    #         [0.0, 0.0],
-    #         [0.0, 0.0],
-    #         [0.0, 0.0],
-    #         [0.0, 0.0],
-    #     ]
-    #     with open(jsonPath, "w") as json_file:
-    #         json.dump(workflow_json, json_file)
-    #     solver = rpsOffloadingSolver(
-    #         workflow=workflow,
-    #         mode=self.mode,
-    #         decisionMode=None,
-    #         toleranceWindow=toleranceWindow,
-    #         rps=self.rps,
-    #         testingFlag=True,
-    #     )
-    #     availResources = [
-    #         {"cores": 10000, "mem_mb": 300000},
-    #         {"cores": 10000, "mem_mb": 300000},
-    #     ]
-    #     alpha = 0
-    #     x = solver.suggestBestOffloadingMultiVM(
-    #         availResources=availResources, alpha=alpha, verbose=True
-    #     )
-    #     self.assertEqual(x, [[0.0, 0.0], [50.0, 50.0], [50.0, 50.0], [50.0, 50.0]])
+    def test_rps3(self):
+        workflow = "TestCase3Workflow"
+        toleranceWindow = 0
+        jsonPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/log-parser/get-workflow-logs/data/"
+            + "TestCase3Workflow"
+            + ".json"
+        )
+        with open(jsonPath, "r") as json_file:
+            workflow_json = json.load(json_file)
+        workflow_json["lastDecision_default"] = [
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+        ]
+        with open(jsonPath, "w") as json_file:
+            json.dump(workflow_json, json_file)
+        solver = rpsOffloadingSolver(
+            workflow=workflow,
+            mode=self.mode,
+            decisionMode=None,
+            toleranceWindow=toleranceWindow,
+            rps=self.rps,
+            testingFlag=True,
+        )
+        availResources = [
+            {"cores": 10000, "mem_mb": 300000},
+            {"cores": 10000, "mem_mb": 300000},
+        ]
+        alpha = 0
+        x = solver.suggestBestOffloadingMultiVM(
+            availResources=availResources, alpha=alpha, verbose=True
+        )
+        print(f'SOLVED -> {x}')
+        self.assertEqual(x, [[0.0, 0.0], [50.0, 50.0], [50.0, 50.0], [50.0, 50.0]])
 
-    def test_rpsN(self):
-        n_tests = 1
-        n_funcs_list = [n for n in range(4, 41, 4)]
-        n_hosts_list = [1] + [n for n in range(4, 21, 4)]
-        repeats = 3
-        # n_funcs_list = [50]
-        # n_hosts_list = [25]
-        # repeats = 1
+    # def test_rpsN(self):
+    #     n_tests = 1
+    #     n_funcs_list = [n for n in range(4, 41, 4)]
+    #     n_hosts_list = [1] + [n for n in range(4, 21, 4)]
+    #     repeats = 3
+    #     # n_funcs_list = [50]
+    #     # n_hosts_list = [25]
+    #     # repeats = 1
 
-        results = []
-        print(n_hosts_list)
-        print(n_funcs_list)
-        for n_funcs in n_funcs_list:
-            for n_hosts in n_hosts_list:
-                n_funcs, n_hosts = int(n_funcs), int(n_hosts)
-                print((n_funcs, n_hosts))
-                tgen = TestCaseGenerator(n_funcs, n_hosts)
-                tgen.build()
-                workflow = "TestCaseNWorkflow"
-                toleranceWindow = 0
-                availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
-                alpha = 0.1
-                solver = rpsOffloadingSolver(
-                    workflow=workflow,
-                    mode=self.mode,
-                    decisionMode=None,
-                    toleranceWindow=toleranceWindow,
-                    rps=self.rps,
-                    testingFlag=True,
-                )
-                for k in range(repeats):
-                    start = time.time()
-                    x_gekko = solver.suggestBestOffloadingMultiVMGekko(
-                        availResources=availResources, alpha=alpha, verbose=True
-                    )
-                    end = time.time()
-                    time_gekko = end-start
-                    print(f'GEKKO = {time_gekko} -> {x_gekko}')
-                    
-                    if x_gekko == 'NotFound':
-                        cost_gekko = float('inf')
-                    else:
-                        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x_gekko)
-                    
-                    print(f'COST GEKKO {cost_gekko}')
-
-                    start = time.time()
-                    solver = rpsOffloadingSolver(
-                        workflow=workflow,
-                        mode=self.mode,
-                        decisionMode=None,
-                        toleranceWindow=toleranceWindow,
-                        rps=self.rps,
-                        testingFlag=True,
-                    )
-                    x_julia = solver.suggestBestOffloadingMultiVM(
-                        availResources=availResources, alpha=alpha, verbose=True
-                    )
-                    end = time.time()
-                    time_julia = end-start
+    #     results = []
+    #     print(n_hosts_list)
+    #     print(n_funcs_list)
+    #     for n_funcs in n_funcs_list:
+    #         for n_hosts in n_hosts_list:
+    #             n_funcs, n_hosts = int(n_funcs), int(n_hosts)
+    #             print((n_funcs, n_hosts))
+    #             tgen = TestCaseGenerator(n_funcs, n_hosts)
+    #             tgen.build()
+    #             workflow = "TestCaseNWorkflow"
+    #             toleranceWindow = 0
+    #             availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
+    #             alpha = 0.1
+    #             for k in range(repeats):
+    #                 start = time.time()
+    #                 solver = rpsOffloadingSolver(
+    #                     workflow=workflow,
+    #                     mode=self.mode,
+    #                     decisionMode=None,
+    #                     toleranceWindow=toleranceWindow,
+    #                     rps=self.rps,
+    #                     testingFlag=True,
+    #                 )
+    #                 x_gekko = solver.suggestBestOffloadingMultiVMGekko(
+    #                     availResources=availResources, alpha=alpha, verbose=True
+    #                 )
+    #                 end = time.time()
+    #                 time_gekko = end-start
+    #                 print(f'GEKKO = {time_gekko} -> {x_gekko}')
                     
     #                 if x_gekko == 'NotFound':
     #                     cost_gekko = float('inf')

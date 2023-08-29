@@ -6,6 +6,7 @@ from LatencyModel import LatencyModel
 from gekko import GEKKO
 from Estimator import Estimator
 import itertools
+import time
 import subprocess
 
 # Non-linear optimzation models for cost and latency
@@ -694,7 +695,6 @@ class rpsOffloadingSolver:
                 ]
             )
         
-
     def createJuliaInput(self, json_dict):
         # print('DEBUG')
         json_str = json.dumps(json_dict)
@@ -709,9 +709,28 @@ class rpsOffloadingSolver:
         except:
             return False
 
-    def runSolver(self):
-        subprocess.call(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
+    def initJuliaSolver(self):
+        self.resetJuliaInput()
+        self.resetJuliaOutput()
+        # subprocess.call(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
+        subprocess.Popen(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
         # os.system('julia rpsMultiVMSolver.jl &> solver_log.txt')
+
+    def runSolver(self):
+        result = None
+        t0 = time.time()
+
+        while time.time()-t0 <= 120:
+            with open("solver_output.json") as f:
+                result = json.load(f)
+
+                if "mode" in result:
+                    time.sleep(1)
+                    continue
+
+                break
+        
+        return
 
     def readJuliaOutput(self):
         #print('waiting')
