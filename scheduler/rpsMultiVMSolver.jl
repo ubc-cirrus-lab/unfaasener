@@ -375,7 +375,7 @@ function call_latency(json_parsed)
         matrix_prev_offloadings
     )
 
-    sol = [[floor(abs(s_i)) for s_i in s] for s in sol]
+    sol = [[round(abs(s_i), digits=2) for s_i in s] for s in sol]
 
     # open("solver_output.json", "w") do f
     #     JSON.print(f, sol)
@@ -408,7 +408,7 @@ function call_cost(json_parsed)
         matrix_mem_coeff,
         matrix_prev_offloadings
     );
-    sol = [[floor(abs(s_i)) for s_i in s] for s in sol]
+    sol = [[round(abs(s_i), digits=2) for s_i in s] for s in sol]
     # open("solver_output.json", "w") do f
     #     JSON.print(f, sol)
     # end

@@ -23,6 +23,7 @@ class rpsOffloadingSolver:
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.muFactor = self.rankerConfig["muFactor"]
+        self.mode = mode
         if mode == "latency":
             with open(
                 (
@@ -96,17 +97,31 @@ class rpsOffloadingSolver:
             + ".json"
         )
 
+        # with open(self.jsonPath, "r") as json_file:
+        #     self.workflow_json = json.load(json_file)
+        # self.optimizationMode = mode
+        # self.offloadingCandidates = self.workflow_json["workflowFunctions"]
+        # self.lastDecision = self.workflow_json["lastDecision" + "_" + self.decisionMode]
+        # self.successors = self.workflow_json["successors"]
+        # self.predecessors = self.workflow_json["predecessors"]
+        # self.initial = self.workflow_json["initFunc"]
+        # self.memories = self.workflow_json["memory"]
+        self.readWorkflow()
+
+        self.initJuliaSolver()
+
+    def readWorkflow(self):
         with open(self.jsonPath, "r") as json_file:
             self.workflow_json = json.load(json_file)
-        self.optimizationMode = mode
+        self.optimizationMode = self.mode
         self.offloadingCandidates = self.workflow_json["workflowFunctions"]
         self.lastDecision = self.workflow_json["lastDecision" + "_" + self.decisionMode]
         self.successors = self.workflow_json["successors"]
         self.predecessors = self.workflow_json["predecessors"]
         self.initial = self.workflow_json["initFunc"]
         self.memories = self.workflow_json["memory"]
-        self.initJuliaSolver()
-
+    
+    
     def getAllPaths(self):
         """
         Returns all possible paths in the dag starting from the initial node to a terminal node
@@ -311,6 +326,7 @@ class rpsOffloadingSolver:
         """
         # print('Says Hello!', file=self.outfile)
         # print(self.infile.readline(), end='')
+        self.readWorkflow()
         offloadingCandidates = self.offloadingCandidates
         if self.optimizationMode == "cost":
             mem_coeffs = [
@@ -699,6 +715,7 @@ class rpsOffloadingSolver:
         # print('DEBUG')
         json_str = json.dumps(json_dict)
         print(json_str, file=self.outfile)
+        #print(json_str)
         # print('DEBUG')
         try:
             with open('solver_input.json', 'w') as f:
@@ -760,6 +777,7 @@ class rpsOffloadingSolver:
         - availResources: [{'cores':C, 'mem_mb':M} ... {'cores':C, 'mem_mb':M}]
         - alpha: FP number in [0, 1]
         """
+        self.readWorkflow()
         offloadingCandidates = self.offloadingCandidates
         if self.optimizationMode == "cost":
             model = GEKKO(remote=False)
