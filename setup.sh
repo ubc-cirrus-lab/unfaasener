@@ -2,6 +2,7 @@
 
 leaderFailure=0
 pip3 install -r ./requirements.txt
+julia setupJulia.jl
 
 sudo apt install -y docker.io
 sudo apt-get install -y libpstreams-dev
