@@ -97,15 +97,6 @@ class rpsOffloadingSolver:
             + ".json"
         )
 
-        # with open(self.jsonPath, "r") as json_file:
-        #     self.workflow_json = json.load(json_file)
-        # self.optimizationMode = mode
-        # self.offloadingCandidates = self.workflow_json["workflowFunctions"]
-        # self.lastDecision = self.workflow_json["lastDecision" + "_" + self.decisionMode]
-        # self.successors = self.workflow_json["successors"]
-        # self.predecessors = self.workflow_json["predecessors"]
-        # self.initial = self.workflow_json["initFunc"]
-        # self.memories = self.workflow_json["memory"]
         self.readWorkflow()
 
         self.initJuliaSolver()
@@ -120,7 +111,6 @@ class rpsOffloadingSolver:
         self.predecessors = self.workflow_json["predecessors"]
         self.initial = self.workflow_json["initFunc"]
         self.memories = self.workflow_json["memory"]
-    
     
     def getAllPaths(self):
         """
@@ -324,10 +314,9 @@ class rpsOffloadingSolver:
         - availResources: [{'cores':C, 'mem_mb':M} ... {'cores':C, 'mem_mb':M}]
         - alpha: FP number in [0, 1]
         """
-        # print('Says Hello!', file=self.outfile)
-        # print(self.infile.readline(), end='')
         self.readWorkflow()
         offloadingCandidates = self.offloadingCandidates
+
         if self.optimizationMode == "cost":
             mem_coeffs = [
                 [
@@ -412,16 +401,10 @@ class rpsOffloadingSolver:
             }
             try:
                 self.createJuliaInput(json_dict)
-                # self.runSolver()
                 sol = self.readJuliaOutput()
-                #self.saveNewDecision(sol)
-                #print(f'Julia -> {sol}')
+                self.saveNewDecision(sol)
                 return sol
-                print(type(sol))
-                print(type(sol[0]))
-                print(type(sol[0][0]))
-
-                #return sol
+                
             except:
                 print("\nJulia Failed!")
                 return "NotFound"
@@ -613,21 +596,9 @@ class rpsOffloadingSolver:
 
             try:
                 self.createJuliaInput(json_dict)
-                # self.runSolver()
                 sol = self.readJuliaOutput()
                 self.saveNewDecision(sol)
-                # print(f'Julia -> {sol}')
-
-
-                    
-                    # print(
-                    #     f'COST -> {self.calcLatencyCost(alpha, offloadingCandidates, availResources, sol)}'
-                    # )
-
-
-
-
-                    
+            
                 return sol
                     
             except:
@@ -712,55 +683,14 @@ class rpsOffloadingSolver:
             )
         
     def createJuliaInput(self, json_dict):
-        # print('DEBUG')
         json_str = json.dumps(json_dict)
         print(json_str, file=self.outfile)
-        #print(json_str)
-        # print('DEBUG')
-        try:
-            with open('solver_input.json', 'w') as f:
-                # print('DEBUG')
-                f.write(json_str + '\n')
-                f.flush()
-            return True
-        except:
-            return False
-
-    def initJuliaSolver(self):
-        self.resetJuliaInput()
-        self.resetJuliaOutput()
-        # subprocess.call(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
-        subprocess.Popen(["julia", "rpsMultiVMSolver.jl"])#, "&> solver_log.txt"])
-        # os.system('julia rpsMultiVMSolver.jl &> solver_log.txt')
-
-    def runSolver(self):
-        result = None
-        t0 = time.time()
-
-        while time.time()-t0 <= 120:
-            with open("solver_output.json") as f:
-                result = json.load(f)
-
-                if "mode" in result:
-                    time.sleep(1)
-                    continue
-
-                break
-        
-        return
 
     def readJuliaOutput(self):
-        #print('waiting')
         json_str = self.infile.readline()
-        #print(f'got result -> {json_str}')
+        
         return json.loads(json_str)
     
-        with open("solver_output.json") as f:
-            result = json.load(f)
-            # print(f'Julia -> {result}')
-            # print(type(result))
-            return result
-
     def initJuliaSolver(self):
         (r1, w1) = os.pipe2(0)  # for parent -> child writes
         (r2, w2) = os.pipe2(0)  # for child -> parent writes
@@ -1874,7 +1804,6 @@ class rpsOffloadingSolver:
                 return "NotFound"
                 # model.open_folder()
 
-    
     
     # Saving new decisions in the Json file assigned to each workflow
     def saveNewDecision(self, offloadingCandidates):
