@@ -31,7 +31,7 @@ do
     rm -rf "$item"
 done
 cd ../../../
-host agent tests
+# host agent tests
 cp ./tests/host_agents/predictor_test.cpp host-agents/monitoring-agent/
 cd host-agents/monitoring-agent
 g++ -std=c++14 -I . predictor_test.cpp -o predictor_test

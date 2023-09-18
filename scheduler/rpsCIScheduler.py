@@ -25,6 +25,7 @@ logging.basicConfig(
 
 class CIScheduler:
     def __init__(self, triggerType):
+        self.solver = rpsOffloadingSolver()
         self.dateDFData = {}
         self.dateDFData["effected"] = []
         self.dateDFData["triggerType"] = []
@@ -185,10 +186,10 @@ class CIScheduler:
         for percent in rates.keys():
             rate = rates[percent]
             for decisionMode in decisionModes:
-                solver = rpsOffloadingSolver(
+                self.solver.configure(
                     self.workflow, mode, decisionMode, toleranceWindow, rate, False
                 )
-                x = solver.suggestBestOffloadingMultiVM(
+                x = self.solver.suggestBestOffloadingMultiVM(
                     availResources=availableResources,
                     alpha=alpha,
                     verbose=True,

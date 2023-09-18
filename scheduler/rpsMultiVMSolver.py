@@ -13,7 +13,10 @@ import subprocess
 
 
 class rpsOffloadingSolver:
-    def __init__(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
+    def __init__(self):
+        self.initJuliaSolver()
+
+    def configure(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
         self.testingFlag = testingFlag
         self.rps = rps
         path = (
@@ -99,7 +102,13 @@ class rpsOffloadingSolver:
 
         self.readWorkflow()
 
-        self.initJuliaSolver()
+        # self.initJuliaSolver()
+
+
+    def __del__(self):
+        self.outfile.close()
+        self.infile.close()
+        
 
     def readWorkflow(self):
         with open(self.jsonPath, "r") as json_file:
@@ -694,7 +703,7 @@ class rpsOffloadingSolver:
     def initJuliaSolver(self):
         (r1, w1) = os.pipe2(0)  # for parent -> child writes
         (r2, w2) = os.pipe2(0)  # for child -> parent writes
-        child = subprocess.Popen(['julia', './rpsMultiVMSolver.jl'], stdin=r1, stdout=w2)
+        child = subprocess.Popen(['julia', './rpsMultiVMSolver.jl'], stdin=r1, stdout=w2, close_fds=True)
         self.outfile = os.fdopen(w1, 'w', buffering=1)
         self.infile = os.fdopen(r2)
         print(self.infile.readline(), end='')
@@ -1820,7 +1829,8 @@ if __name__ == "__main__":
     workflow = "Text2SpeechCensoringWorkflow"
     mode = "cost"
     toleranceWindow = 0
-    solver = rpsOffloadingSolver(workflow, mode, "default", toleranceWindow, 1.4, 0)
+    solver = rpsOffloadingSolver()
+    solver.configure(workflow, mode, "default", toleranceWindow, 1.4, 0)
     # availResources =  [{'cores':100, 'mem_mb':10000}]
     availResources = [{"cores": 3, "mem_mb": 2000}]
     verbose = True

@@ -167,7 +167,8 @@ class TestSolver(unittest.TestCase):
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
         toleranceWindow = 0
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow="TestCase3Workflow",
             mode=self.mode,
             decisionMode=None,
@@ -177,9 +178,12 @@ class TestSolver(unittest.TestCase):
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 1
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
         print(f'SOLVED -> {x}')
         self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
@@ -220,7 +224,8 @@ class TestSolver(unittest.TestCase):
         ) as outfile:
             json.dump(highPubsubSize, outfile)
         toleranceWindow = 0
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow=workflow,
             mode=self.mode,
             decisionMode=None,
@@ -230,9 +235,12 @@ class TestSolver(unittest.TestCase):
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
         with open(
             (
                 (os.path.dirname(os.path.abspath(__file__)))
@@ -287,7 +295,8 @@ class TestSolver(unittest.TestCase):
         ) as outfile:
             json.dump(highCost, outfile)
         toleranceWindow = 0
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow=workflow,
             mode=self.mode,
             decisionMode=None,
@@ -297,9 +306,12 @@ class TestSolver(unittest.TestCase):
         )
         availResources = [{"cores": 1000, "mem_mb": 500000}]
         alpha = 0
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
         with open(
             (
                 (os.path.dirname(os.path.abspath(__file__)))
@@ -319,7 +331,8 @@ class TestSolver(unittest.TestCase):
 
     def test_limitedVMResources(self):
         toleranceWindow = 0
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow="TestCaseWorkflow",
             mode=self.mode,
             decisionMode=None,
@@ -329,9 +342,12 @@ class TestSolver(unittest.TestCase):
         )
         availResources = [{"cores": 0, "mem_mb": 0}]
         alpha = 0
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
         cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
         cost_exp = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, [[0.0], [0.0], [0.0], [0.0]])
         self.assertLessEqual(cost_julia, 1.1*cost_exp)
@@ -356,7 +372,8 @@ class TestSolver(unittest.TestCase):
         ]
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow=workflow,
             mode=self.mode,
             decisionMode=None,
@@ -369,9 +386,12 @@ class TestSolver(unittest.TestCase):
             {"cores": 1, "mem_mb": 300},
         ]
         alpha = 0
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
 
         cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
 
@@ -440,7 +460,8 @@ class TestSolver(unittest.TestCase):
         ]
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow=workflow,
             mode=self.mode,
             decisionMode=None,
@@ -450,9 +471,12 @@ class TestSolver(unittest.TestCase):
         )
         availResources = [{"cores": 100, "mem_mb": 10000}]
         alpha = 0
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
         self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0]])
 
     def test_rps3(self):
@@ -474,7 +498,8 @@ class TestSolver(unittest.TestCase):
         ]
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_json, json_file)
-        solver = rpsOffloadingSolver(
+        solver = rpsOffloadingSolver()
+        solver.configure(
             workflow=workflow,
             mode=self.mode,
             decisionMode=None,
@@ -487,9 +512,12 @@ class TestSolver(unittest.TestCase):
             {"cores": 10000, "mem_mb": 300000},
         ]
         alpha = 0
+        start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
+        end = time.time()
+        print(f"Julia Time: {end-start}")
         self.assertEqual(x, [[0.0, 0.0], [50.0, 50.0], [50.0, 50.0], [50.0, 50.0]])
 
     # def test_rpsN(self):
@@ -520,7 +548,8 @@ class TestSolver(unittest.TestCase):
     #             availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
     #             alpha = 0.1
 
-    #             solver = rpsOffloadingSolver(
+    #             solver = rpsOffloadingSolver()
+    #             solver.configure(
     #                 workflow=workflow,
     #                 mode=self.mode,
     #                 decisionMode=None,
@@ -567,7 +596,8 @@ class TestSolver(unittest.TestCase):
     #             availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
     #             alpha = 0.1
 
-    #             solver = rpsOffloadingSolver(
+    #             solver = rpsOffloadingSolver()
+    #             solver.configure(
     #                 workflow=workflow,
     #                 mode=self.mode,
     #                 decisionMode=None,

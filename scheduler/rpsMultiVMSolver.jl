@@ -375,7 +375,7 @@ function call_latency(json_parsed)
         matrix_prev_offloadings
     )
 
-    sol = [[round(abs(s_i), digits=2) for s_i in s] for s in sol]
+    sol = [[floor(round(abs(s_i), digits=2)) for s_i in s] for s in sol]
 
     # open("solver_output.json", "w") do f
     #     JSON.print(f, sol)
@@ -408,7 +408,7 @@ function call_cost(json_parsed)
         matrix_mem_coeff,
         matrix_prev_offloadings
     );
-    sol = [[round(abs(s_i), digits=2) for s_i in s] for s in sol]
+    sol = [[floor(round(abs(s_i), digits=2)) for s_i in s] for s in sol]
     # open("solver_output.json", "w") do f
     #     JSON.print(f, sol)
     # end
@@ -416,9 +416,21 @@ function call_cost(json_parsed)
     flush(stdout)
 end
 
+function warmup()
+    model = Model(()->MadNLP.Optimizer(print_level=MadNLP.INFO, max_iter=100))
+    set_silent(model)
+    @variable(model, x, start = 0.0)
+    @constraint(model, x <= 1)
+    @variable(model, y, start = 0.0)
+    @constraint(model, y <= 1)
+    @NLobjective(model, Max, x+y)
+    optimize!(model)
+end
+
 
 
 function main()
+    warmup()
     println("Julia Started!")
     flush(stdout)
     for line in eachline(stdin)
