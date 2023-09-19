@@ -3,6 +3,8 @@
 # solver tests
 # get data
 
+mkfifo ./scheduler/juliaStdin
+mkfifo ./scheduler/juliaStdout
 julia ./scheduler/rpsMultiVMSolver.jl &
 
 cp -a ./tests/solver/data/. ./scheduler/data/
