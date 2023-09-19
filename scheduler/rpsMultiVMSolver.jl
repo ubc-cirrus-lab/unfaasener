@@ -380,8 +380,7 @@ function call_latency(json_parsed)
     # open("solver_output.json", "w") do f
     #     JSON.print(f, sol)
     # end
-    println(sol)
-    flush(stdout)
+    return sol
 end
 
 function call_cost(json_parsed)
@@ -412,8 +411,7 @@ function call_cost(json_parsed)
     # open("solver_output.json", "w") do f
     #     JSON.print(f, sol)
     # end
-    println(sol)
-    flush(stdout)
+    return sol
 end
 
 function warmup()
@@ -431,17 +429,35 @@ end
 
 function main()
     warmup()
-    println("Julia Started!")
-    flush(stdout)
-    for line in eachline(stdin)
-        
-        json_parsed = JSON.parse(line, inttype=Int64)
-        mode = json_parsed["mode"] 
-        if cmp(mode, "latency") == 0
-            call_latency(json_parsed)
-        else
-            call_cost(json_parsed)
+    
+    # println("Julia Started!")
+    # flush(stdout)
+
+    while true        
+        f_in = open("./scheduler/juliaStdin", "r")
+        for line in eachline(f_in)
+            if cmp(line, "END") == 0
+                return
+            end
+
+            json_parsed = JSON.parse(line, inttype=Int64)
+            mode = json_parsed["mode"] 
+            
+            sol = "None"
+            
+            if cmp(mode, "latency") == 0
+                sol = call_latency(json_parsed)
+            else
+                sol = call_cost(json_parsed)
+            end
+
+            f_out = open("./scheduler/juliaStdout", "w")
+            JSON.print(f_out, sol)
+            flush(f_out)
+            close(f_out)
         end
+
+        close(f_in)
     end
 end
 

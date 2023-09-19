@@ -2,6 +2,9 @@
 
 # solver tests
 # get data
+
+julia ./scheduler/rpsMultiVMSolver.jl &
+
 cp -a ./tests/solver/data/. ./scheduler/data/
 cp -a ./tests/logCollector/. ./log-parser/get-workflow-logs/data/
 cp ./tests/solver/rps_cost_test.py ./scheduler
@@ -37,3 +40,5 @@ cd host-agents/monitoring-agent
 g++ -std=c++14 -I . predictor_test.cpp -o predictor_test
 ./predictor_test
 rm ./predictor_test*
+
+echo -n "END" > /home/pjavan/unfaasener/scheduler/juliaStdin

@@ -14,7 +14,7 @@ import subprocess
 
 class rpsOffloadingSolver:
     def __init__(self):
-        self.initJuliaSolver()
+        return
 
     def configure(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
         self.testingFlag = testingFlag
@@ -104,12 +104,10 @@ class rpsOffloadingSolver:
 
         # self.initJuliaSolver()
 
-
     def __del__(self):
         self.outfile.close()
         self.infile.close()
         
-
     def readWorkflow(self):
         with open(self.jsonPath, "r") as json_file:
             self.workflow_json = json.load(json_file)
@@ -692,22 +690,19 @@ class rpsOffloadingSolver:
             )
         
     def createJuliaInput(self, json_dict):
+        self.outfile = open("./juliaStdin", 'w')
         json_str = json.dumps(json_dict)
         print(json_str, file=self.outfile)
+        self.outfile.close()
+        
 
     def readJuliaOutput(self):
+        self.infile = open("./juliaStdout", 'r')
         json_str = self.infile.readline()
-        
+        self.infile.close()
         return json.loads(json_str)
     
-    def initJuliaSolver(self):
-        (r1, w1) = os.pipe2(0)  # for parent -> child writes
-        (r2, w2) = os.pipe2(0)  # for child -> parent writes
-        child = subprocess.Popen(['julia', './rpsMultiVMSolver.jl'], stdin=r1, stdout=w2, close_fds=True)
-        self.outfile = os.fdopen(w1, 'w', buffering=1)
-        self.infile = os.fdopen(r2)
-        print(self.infile.readline(), end='')
-
+    
     def suggestBestOffloadingMultiVMGekko(self, availResources, alpha, verbose):
         """
         Returns a list of 0's (no offloading) and 1's (offloading)
