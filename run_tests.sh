@@ -43,4 +43,6 @@ g++ -std=c++14 -I . predictor_test.cpp -o predictor_test
 ./predictor_test
 rm ./predictor_test*
 
-echo -n "END" > /home/pjavan/unfaasener/scheduler/juliaStdin
+cd ../../
+
+echo -n "END" > ./scheduler/juliaStdin
