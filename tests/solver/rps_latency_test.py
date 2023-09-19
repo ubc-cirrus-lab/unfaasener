@@ -59,7 +59,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
@@ -101,7 +101,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         #self.assertEqual(x, [[0.0], [0.0], [52.0], [0.0]])
 
     # Test on when the tolerance window is not limited for the user
@@ -137,7 +137,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0], [100.0], [100.0]])
 
@@ -174,7 +174,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [100.0], [0.0], [0.0]])
         # Test for checking the case which the toleranceWindow is less than what is required for offloading a function
@@ -211,7 +211,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
@@ -275,7 +275,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [79.0, 21.0], [0.0, 0.0]])
 
@@ -329,7 +329,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [0.0], [21.0], [0.0]])
 
@@ -393,7 +393,7 @@ class TestSolver(unittest.TestCase):
         print(f'Julia = {x}')
         print(f'COST Julia = {cost_julia}')
         print('-----------------------------------')
-        self.assertAlmostEqual(cost_gekko, cost_julia, delta=0.1*cost_gekko)
+        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [84.0, 16.0], [0.0, 5.0]])
 

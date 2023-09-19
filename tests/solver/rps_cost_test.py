@@ -660,6 +660,146 @@ class TestSolver(unittest.TestCase):
 
     #     pd.DataFrame(results).to_csv('/home/pjavan/unfaasener/tests/Timing_df_Gekko.csv')
 
+    # def test_rpsN_Jl(self):
+    #     n_tests = 1
+    #     n_funcs_list = [n for n in range(4, 41, 4)]
+    #     n_hosts_list = [1] + [n for n in range(4, 21, 4)]
+    #     # n_funcs_list = [n for n in range(4, 9, 4)]
+    #     # n_hosts_list = [1] + [n for n in range(4, 9, 4)]
+    #     repeats = 6
+    #     # n_funcs_list = [50]
+    #     # n_hosts_list = [25]
+    #     # repeats = 1
+
+    #     results = []
+    #     print(n_hosts_list)
+    #     print(n_funcs_list)
+    #     for n_funcs in n_funcs_list:
+    #         for n_hosts in n_hosts_list:
+    #             n_funcs, n_hosts = int(n_funcs), int(n_hosts)
+    #             print((n_funcs, n_hosts))
+
+    #             # random.seed(0)
+    #             # tgen = TestCaseGenerator(n_funcs, n_hosts)
+    #             # tgen.build()
+
+    #             # workflow = "TestCaseNWorkflow"
+    #             # toleranceWindow = 0
+    #             # availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
+    #             # alpha = 0.1
+
+    #             # solver = rpsOffloadingSolver()
+    #             # solver.configure(
+    #             #     workflow=workflow,
+    #             #     mode=self.mode,
+    #             #     decisionMode=None,
+    #             #     toleranceWindow=toleranceWindow,
+    #             #     rps=self.rps,
+    #             #     testingFlag=True,
+    #             # )
+    #             # gekko_stats = []
+
+                
+    #             # for k in range(repeats):
+    #             #     random.seed(k*10+1)
+    #             #     tgen = TestCaseGenerator(n_funcs, n_hosts)
+    #             #     tgen.build()
+    #             #     start = time.time()
+    #             #     x_gekko = solver.suggestBestOffloadingMultiVMGekko(
+    #             #         availResources=availResources, alpha=alpha, verbose=True
+    #             #     )
+    #             #     end = time.time()
+    #             #     time_gekko = end-start
+    #             #     print(f'GEKKO = {time_gekko} -> {x_gekko}')
+                    
+    #             #     if x_gekko == 'NotFound':
+    #             #         cost_gekko = float('inf')
+    #             #     else:
+    #             #         cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x_gekko)
+                    
+    #             #     print(f'COST GEKKO {cost_gekko}')
+                    
+    #             #     gekko_stats.append({
+    #             #         "time_gekko": time_gekko,
+    #             #         "sol_gekko": x_gekko,
+    #             #         "cost_gekko": cost_gekko,
+    #             #     })
+
+    #             #     tgen.delete()
+    #             # #######################################
+                
+    #             random.seed(0)
+    #             tgen = TestCaseGenerator(n_funcs, n_hosts)
+    #             tgen.build()
+    #             workflow = "TestCaseNWorkflow"
+    #             toleranceWindow = 0
+    #             availResources = [{"cores": 10, "mem_mb": 300}]*n_hosts
+    #             alpha = 0.1
+
+    #             solver = rpsOffloadingSolver()
+    #             solver.configure(
+    #                 workflow=workflow,
+    #                 mode=self.mode,
+    #                 decisionMode=None,
+    #                 toleranceWindow=toleranceWindow,
+    #                 rps=self.rps,
+    #                 testingFlag=True,
+    #             )
+    #             julia_stats = []
+
+    #             # random.seed(0)
+    #             for k in range(repeats):
+    #                 random.seed(k*10+1)
+    #                 tgen = TestCaseGenerator(n_funcs, n_hosts)
+    #                 tgen.build()
+    #                 start = time.time()
+    #                 x_julia = solver.suggestBestOffloadingMultiVM(
+    #                     availResources=availResources, alpha=alpha, verbose=True
+    #                 )
+    #                 end = time.time()
+    #                 time_julia = end-start
+                    
+    #                 if x_julia == 'NotFound':
+    #                     cost_julia = float('inf')
+    #                 else:
+    #                     cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x_julia)
+                    
+    #                 print(f'Julia = {time_julia} -> {x_julia}')
+    #                 print(f'COST JULIA {cost_julia}')
+
+    #                 julia_stats.append({
+    #                     "time_julia": time_julia,
+    #                     "sol_julia": x_julia,
+    #                     "cost_julia": cost_julia,
+    #                 })
+                
+    #                 tgen.delete()
+
+
+    #             for k in range(repeats):
+    #                 results.append({
+    #                     "n_funcs": n_funcs,
+    #                     "n_hosts": n_hosts,
+    #                     # "time_gekko": gekko_stats[k]["time_gekko"],
+    #                     "time_julia": julia_stats[k]["time_julia"],
+    #                     # "sol_gekko": gekko_stats[k]["sol_gekko"],
+    #                     # "cost_gekko": gekko_stats[k]["cost_gekko"],
+    #                     "sol_julia": julia_stats[k]["sol_julia"],
+    #                     "cost_julia": julia_stats[k]["cost_julia"],
+    #                 })
+
+                    
+
+
+    #                 #print(x)
+
+                
+    #             print('-----------') 
+
+    #     print(results)
+
+    #     pd.DataFrame(results).to_csv('/home/pjavan/unfaasener/tests/Timing_df_Gekko.csv')
+
 
 
 
