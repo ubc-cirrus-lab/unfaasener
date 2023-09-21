@@ -65,11 +65,7 @@ function solve_cost(
     )
     
     optimize!(model_disc)
-    # for i in 1:n_funcs
-    #     for j in 1:n_hosts
-    #         println("offloading $i on $j = $(value(y[i, j]))")
-    #     end
-    # end
+    
     result = [[value(y[i, j]) for j in 1:n_hosts] for i in 1:n_funcs]
     return result
 end
@@ -91,7 +87,6 @@ function solve_latency(
     matrix_mem_coeff,
     matrix_prev_offloadings
 )
-    # myMin(x) = round(min(round(x; digits=3), 1))
     myMin(x) = (min(x, 1))
     
     model_disc = Model(() -> MadNLP.Optimizer())
@@ -136,25 +131,6 @@ function solve_latency(
             exp2 = expression_2[i_dur][i_c]
             exp3 = expression_3[i_dur][i_c]
             ineq_c = inequality_const[i_dur]
-            
-            # println("Expression 1")
-            # for x in exp1
-            #     println("$([x["tmpIndex"][1], x["tmpIndex"][2]]) * $(x["coeff"])")
-            # end
-            # println("======================")
-
-            # println("Expression 2")
-            # for x in exp2
-            #     println("
-            #     $([x["tmpIndex1"][1], x["tmpIndex1"][2]]) * $([x["tmpIndex2"][1], x["tmpIndex2"][2]]) * $(x["coeff1"]) +
-            #     (1 - $([x["tmpIndex1"][1], x["tmpIndex1"][2]])) * $([x["tmpIndex2"][1], x["tmpIndex2"][2]]) * $(x["coeff2"]) +
-            #     $([x["tmpIndex1"][1], x["tmpIndex1"][2]]) * (1 - $([x["tmpIndex2"][1], x["tmpIndex2"][2]])) * $(x["coeff3"])
-            # ")
-            # end
-            # println("======================")
-            # println("Expression 3")
-            # println("$([(exp3["tmpIndex"])[1], (exp3["tmpIndex"])[2]]) * $(exp3["coeff"])")
-            # println("======================")
 
             @NLconstraint(
                 model_disc,
@@ -220,86 +196,8 @@ function solve_latency(
         model_disc, Min, cost_func
     )
     optimize!(model_disc)
-    # println(model_disc)
-    # for i in 1:n_funcs
-    #     for j in 1:n_hosts
-    #         println("offloading $i on $j = $(value(y[i, j]))")
-    #     end
-    # end
-    # println(model_disc)
+    
     result = [[value(y[i, j]) for j in 1:n_hosts] for i in 1:n_funcs]
-
-    # for i_dur in 1:size(expression_1)[1]
-    #     for i_c in 1:size(expression_1[1])[1]
-    #         exp1 = expression_1[i_dur][i_c]
-    #         exp2 = expression_2[i_dur][i_c]
-    #         exp3 = expression_3[i_dur][i_c]
-    #         ineq_c = inequality_const[i_dur]
-    #         EXP1 = sum(
-                        
-    #             min(result[x["tmpIndex"][1]][x["tmpIndex"][2]], 1) * 
-    #             x["coeff"]
-    #             for x in exp1
-            
-    #         )
-    #         println("EXP1 = $EXP1")
-    #         for x in exp1
-    #             println("INDEX $(x["tmpIndex"][1]) - $(x["tmpIndex"][2])")
-    #             println(min(result[x["tmpIndex"][1]][x["tmpIndex"][2]], 1))
-    #             println(x["coeff"])
-    #         end
-    #         println("---------------------------")
-    #         cons = (
-    #             (    
-    #                 sum(
-                        
-    #                     min(result[x["tmpIndex"][1]][x["tmpIndex"][2]], 1) * 
-    #                     x["coeff"]
-    #                     for x in exp1
-                    
-    #                 )
-    #                 +
-    #                 sum(
-                    
-    #                     (
-    #                         (
-    #                             min(result[x["tmpIndex1"][1]][x["tmpIndex1"][2]], 1) *
-    #                             min(result[x["tmpIndex2"][1]][x["tmpIndex2"][2]], 1) *
-    #                             x["coeff1"]
-    #                         ) 
-    #                         +
-    #                         (
-    #                             (1 - min(result[x["tmpIndex1"][1]][x["tmpIndex1"][2]], 1)) *
-    #                             min(result[x["tmpIndex2"][1]][x["tmpIndex2"][2]], 1) *
-    #                             x["coeff2"]
-    #                         ) 
-    #                         + 
-    #                         (
-    #                             min(result[x["tmpIndex1"][1]][x["tmpIndex1"][2]], 1) *
-    #                             (1 - min(result[x["tmpIndex2"][1]][x["tmpIndex2"][2]], 1)) *
-    #                             x["coeff3"]
-    #                         )
-    #                     ) for x in exp2
-                    
-    #                 )
-    #                  +
-    #                 (
-    #                     min(result[(exp3["tmpIndex"])[1]][(exp3["tmpIndex"])[2]], 1) * exp3["coeff"]
-    #                 )
-    #             )
-    #         )
-
-    #         limit =  ineq_c
-
-    #         println("$cons <= $limit")
-
-
-    #     end
-    # end
-
-
-
-
 
     return result
 end
@@ -375,11 +273,9 @@ function call_latency(json_parsed)
         matrix_prev_offloadings
     )
 
-    sol = [[floor(round(abs(s_i), digits=2)) for s_i in s] for s in sol]
-
-    # open("solver_output.json", "w") do f
-    #     JSON.print(f, sol)
-    # end
+    sol = [[(round(abs(s_i), digits=2)) for s_i in s] for s in sol]
+    sol = [[s_i >= 1 ? s_i : 0 for s_i in s] for s in sol]
+    
     return sol
 end
 
@@ -407,10 +303,9 @@ function call_cost(json_parsed)
         matrix_mem_coeff,
         matrix_prev_offloadings
     );
-    sol = [[floor(round(abs(s_i), digits=2)) for s_i in s] for s in sol]
-    # open("solver_output.json", "w") do f
-    #     JSON.print(f, sol)
-    # end
+    sol = [[(round(abs(s_i), digits=2)) for s_i in s] for s in sol]
+    sol = [[s_i >= 1 ? s_i : 0 for s_i in s] for s in sol]
+    
     return sol
 end
 

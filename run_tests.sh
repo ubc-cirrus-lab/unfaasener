@@ -45,4 +45,4 @@ rm ./predictor_test*
 
 cd ../../
 
-echo -n "END" > ./scheduler/juliaStdin
+trap "echo -n \"END\" > ./scheduler/juliaStdin;" INT SIGINT SIGTERM EXIT

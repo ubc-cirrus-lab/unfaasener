@@ -103,11 +103,7 @@ class rpsOffloadingSolver:
         self.readWorkflow()
 
         # self.initJuliaSolver()
-
-    def __del__(self):
-        self.outfile.close()
-        self.infile.close()
-        
+     
     def readWorkflow(self):
         with open(self.jsonPath, "r") as json_file:
             self.workflow_json = json.load(json_file)
