@@ -326,7 +326,6 @@ class TestSolver(unittest.TestCase):
         print(f'SOLVED -> {x}')
         cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
         cost_exp = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, [[0.0], [100.0], [100.0], [100.0]])
-        print("Sleeping!")
         # time.sleep(100)
         self.assertLessEqual(cost_julia, 1.1*cost_exp)
         # self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0]])
@@ -352,7 +351,6 @@ class TestSolver(unittest.TestCase):
         print(f"Julia Time: {end-start}")
         cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
         cost_exp = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, [[0.0], [0.0], [0.0], [0.0]])
-        print("Sleeping!")
         # time.sleep(100)
         self.assertLessEqual(cost_julia, 1.1*cost_exp)
         # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
@@ -421,7 +419,6 @@ class TestSolver(unittest.TestCase):
             for s in exps
         ])
 
-        print("Sleeping!")
         # time.sleep(100)
         self.assertLessEqual(cost_julia, 1.1*cost_exp)
 

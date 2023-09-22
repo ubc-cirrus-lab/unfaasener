@@ -25,7 +25,6 @@ logging.basicConfig(
 
 class CIScheduler:
     def __init__(self, triggerType):
-        self.solver = rpsOffloadingSolver()
         self.dateDFData = {}
         self.dateDFData["effected"] = []
         self.dateDFData["triggerType"] = []
@@ -41,6 +40,8 @@ class CIScheduler:
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.workflow = self.rankerConfig["workflow"]
+        self.solver_prog = self.rankerConfig["solver"]
+        self.solver = rpsOffloadingSolver(self.solver_prog)
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
             str(Path(os.path.dirname(os.path.abspath(__file__))))
             + "/key/schedulerKey.json"

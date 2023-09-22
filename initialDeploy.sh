@@ -14,6 +14,8 @@ docker container stop $(docker container ls -aq)
 python3 scheduler/resetLastDecisions.py $workflow $hostcount $solvingMode
 
 # initialize Julia Solver
+mkfifo ./scheduler/juliaStdin
+mkfifo ./scheduler/juliaStdout
 julia scheduler/rpsMultiVMSolver.jl &
 
 # clean the host execution agent queue

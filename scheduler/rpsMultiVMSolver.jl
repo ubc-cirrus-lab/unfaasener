@@ -1,5 +1,6 @@
 using JuMP, MadNLP
 using JSON
+using IniFile
 
 function solve_cost(
     n_hosts,
@@ -320,10 +321,24 @@ function warmup()
     optimize!(model)
 end
 
+function readConfig()
+    ini = Inifile()
+    read(ini, "./scheduler/rankerConfig.ini")
+    solver_name = get(ini, "settings", "solver")
+
+    return (cmp(solver_name, "julia") == 0)
+end
+
 
 
 function main()
     warmup()
+
+    if !readConfig()
+        run(`rm ./scheduler/juliaStdin`)
+        run(`rm ./scheduler/juliaStdout`)
+        return
+    end
     
     # println("Julia Started!")
     # flush(stdout)
@@ -332,6 +347,9 @@ function main()
         f_in = open("./scheduler/juliaStdin", "r")
         for line in eachline(f_in)
             if cmp(line, "END") == 0
+                close(f_in)
+                run(`rm ./scheduler/juliaStdin`)
+                run(`rm ./scheduler/juliaStdout`)
                 return
             end
 

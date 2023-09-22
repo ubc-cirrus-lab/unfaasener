@@ -24,7 +24,7 @@ fi
 rm rps_cost_test.py
 rm rps_latency_test.py
 cd ./data
-arr=("TestCase10Workflow" "TestCase11Workflow" "TestCase2Workflow" "TestCase3Workflow" "TestCase4Workflow" "TestCaseWorkflow")
+arr=("TestCase10Workflow" "TestCase11Workflow" "TestCase2Workflow" "TestCase3Workflow" "TestCase4Workflow" "TestCaseWorkflow" "TestCaseNWorkflow")
 for item in "${arr[@]}"
 do
     rm -rf "$item"
@@ -44,5 +44,6 @@ g++ -std=c++14 -I . predictor_test.cpp -o predictor_test
 rm ./predictor_test*
 
 cd ../../
+
 
 trap "echo -n \"END\" > ./scheduler/juliaStdin;" INT SIGINT SIGTERM EXIT

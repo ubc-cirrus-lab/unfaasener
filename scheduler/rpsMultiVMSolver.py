@@ -13,7 +13,8 @@ import subprocess
 
 
 class rpsOffloadingSolver:
-    def __init__(self):
+    def __init__(self, solver_prog="julia"):
+        self.solver_prog = solver_prog
         return
 
     def configure(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
@@ -310,6 +311,10 @@ class rpsOffloadingSolver:
         return cost
 
     def suggestBestOffloadingMultiVM(self, availResources, alpha, verbose):
+        if self.solver_prog == "gekko": return self.suggestBestOffloadingMultiVMGekko(availResources, alpha, verbose)
+        else: return self.suggestBestOffloadingMultiVMJulia(availResources, alpha, verbose)
+
+    def suggestBestOffloadingMultiVMJulia(self, availResources, alpha, verbose):
         """
         Returns a list of 0's (no offloading) and 1's (offloading)
         - optimizationMode: "cost"   or   "latency"
@@ -691,13 +696,11 @@ class rpsOffloadingSolver:
         print(json_str, file=self.outfile)
         self.outfile.close()
         
-
     def readJuliaOutput(self):
         self.infile = open("./juliaStdout", 'r')
         json_str = self.infile.readline()
         self.infile.close()
         return json.loads(json_str)
-    
     
     def suggestBestOffloadingMultiVMGekko(self, availResources, alpha, verbose):
         """
