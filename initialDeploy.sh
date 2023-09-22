@@ -47,7 +47,7 @@ pidThree=$!
 
 
 # terminating background processes upon termination of this script
-trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; echo -n \"END\" > scheduler/juliaStdin; python3 log-parser/get-workflow-logs/getWorkflowLogs.py ${workflow} 1; python3 setup-tests/combineDataframes.py; exit 1" INT SIGINT SIGTERM EXIT
+trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; echo -n \"END\" > scheduler/juliaStdin; rm scheduler/juliaStdin; python3 log-parser/get-workflow-logs/getWorkflowLogs.py ${workflow} 1; python3 setup-tests/combineDataframes.py; exit 1" INT SIGINT SIGTERM EXIT
 wait
 
 
