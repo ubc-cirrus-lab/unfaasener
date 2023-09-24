@@ -40,6 +40,8 @@ class CIScheduler:
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.workflow = self.rankerConfig["workflow"]
+        self.solver_prog = self.rankerConfig["solver"]
+        self.solver = rpsOffloadingSolver(self.solver_prog)
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
             str(Path(os.path.dirname(os.path.abspath(__file__))))
             + "/key/schedulerKey.json"
@@ -185,10 +187,10 @@ class CIScheduler:
         for percent in rates.keys():
             rate = rates[percent]
             for decisionMode in decisionModes:
-                solver = rpsOffloadingSolver(
+                self.solver.configure(
                     self.workflow, mode, decisionMode, toleranceWindow, rate, False
                 )
-                x = solver.suggestBestOffloadingMultiVM(
+                x = self.solver.suggestBestOffloadingMultiVM(
                     availResources=availableResources,
                     alpha=alpha,
                     verbose=True,

@@ -13,6 +13,11 @@ docker container stop $(docker container ls -aq)
 # clean all privious metadata, logs, and caches for that workflow
 python3 scheduler/resetLastDecisions.py $workflow $hostcount $solvingMode
 
+# initialize Julia Solver
+mkfifo ./scheduler/juliaStdin
+mkfifo ./scheduler/juliaStdout
+julia scheduler/rpsMultiVMSolver.jl &
+
 # clean the host execution agent queue
 python3 host-agents/execution-agent/cleanup-queue.py vmSubscriber1 vm0
 
@@ -42,7 +47,7 @@ pidThree=$!
 
 
 # terminating background processes upon termination of this script
-trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; python3 log-parser/get-workflow-logs/getWorkflowLogs.py ${workflow} 1; python3 setup-tests/combineDataframes.py; exit 1" INT SIGINT SIGTERM EXIT
+trap "kill ${pidOne} ${pidTwo} ${pidThree} ${pidFour}; echo -n \"END\" > scheduler/juliaStdin; rm scheduler/juliaStdin; python3 log-parser/get-workflow-logs/getWorkflowLogs.py ${workflow} 1; python3 setup-tests/combineDataframes.py; exit 1" INT SIGINT SIGTERM EXIT
 wait
 
 

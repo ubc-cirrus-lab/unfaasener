@@ -149,6 +149,23 @@ class resetLastDicision:
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/host-agents/execution-agent/data/cachedVMData.json"
         )
+        juliaStdinPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/scheduler/juliaStdin"
+        )
+        juliaStdoutPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/scheduler/juliaStdout"
+        )
+        solverInPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/scheduler/solver_input.json"
+        )
+        solverOutPath = (
+            str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
+            + "/scheduler/solver_output.json"
+        )
+
         filePaths = [
             dfPickel,
             dfCSV,
@@ -164,6 +181,11 @@ class resetLastDicision:
             utilFilePath,
             forcedLockFile,
             VMcachDataframe,
+            juliaStdinPath, 
+            juliaStdoutPath,
+            solverInPath,
+            solverOutPath
+
         ]
         finalPaths = filePaths + dfPaths + irPaths
         for filePath in finalPaths:
