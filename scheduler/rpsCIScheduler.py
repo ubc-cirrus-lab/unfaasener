@@ -227,7 +227,7 @@ class CIScheduler:
             finalDecision = np.mean(decisions, axis=0)
             # print("Average for case:", finalDecision)
             finalDecision = finalDecision / 100
-            capArray = np.zeros(len(finalDecision))
+            capArray = [0]*(len(finalDecision))
             for i in range(len(capArray)):
                 capArray[i] = np.full(len(finalDecision[i]), 0.9)
                 finalDecision[i] = np.multiply(finalDecision[i], capArray[i])

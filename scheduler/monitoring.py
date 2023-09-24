@@ -34,8 +34,7 @@ class monitoring:
             topics[col[2]] = []
             # print(col[2])
             for rec in range(len(result[col])):
-                # if "mean" in result[col][rec]:
-                x = str(result[col][rec])
+                x = str(result[col].iloc[rec])
                 if "mean" in x:
                     match = re.findall(r"mean: .+", x, flags=re.IGNORECASE)
                     mean = match[0].replace("mean:", "")
