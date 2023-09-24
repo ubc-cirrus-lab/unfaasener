@@ -120,16 +120,16 @@ class TestCaseGenerator:
 
         base_dir = './data/TestCaseNWorkflow'
         
-        with open(f"{base_dir}/Costs.json", "w") as outfile:
+        with open(f"{base_dir}/Costs.json", "w+") as outfile:
             json.dump(costs_dict, outfile)
 
-        with open(f"{base_dir}/pubSubSize.json", "w") as outfile:
+        with open(f"{base_dir}/pubSubSize.json", "w+") as outfile:
             json.dump(pubSub_dict, outfile)
 
-        with open(f"{base_dir}/slackData.json", "w") as outfile:
+        with open(f"{base_dir}/slackData.json", "w+") as outfile:
             json.dump(slack_data, outfile)
 
-        with open(f"{base_dir}/slackDurations.json", "w") as outfile:
+        with open(f"{base_dir}/slackDurations.json", "w+") as outfile:
             json.dump(slack_data, outfile)
 
     def delete(self):
