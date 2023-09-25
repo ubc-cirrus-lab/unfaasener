@@ -1,9 +1,14 @@
 # !/bin/bash
 
 leaderFailure=0
+if command -v julia &> /dev/null
+then
+    julia setupJulia.jl
+else
+    echo "Error: Please install Julia and then rerun this script."
+    exit 1
+fi 
 pip3 install -r ./requirements.txt
-julia setupJulia.jl
-
 sudo apt install -y docker.io
 sudo apt-get install -y libpstreams-dev
 sudo apt-get install build-essential
