@@ -17,6 +17,8 @@ If you use UnFaaSener in your research, please reference our USENIX ATC 2023 pap
 
 To set up the dependencies for the tool simply run the following script:
 > **_NOTE:_**  In case of leader failure, the leaderFailure variable in the setup.sh needs to be set to 1 (```leaderFailure=1```) in order to retrieve host logs from the datastore.
+
+> **_NOTE:_**  Ensure that you have [Julia](https://julialang.org/downloads/platform/) installed before running the setup script, as the default solver is implemented in Julia. Julia's solver offers superior performance, particularly for larger workflows or a higher number of offloading hosts. Nonetheless, you retain the flexibility to switch to the Gekko solver by adjusting the settings within the [rankerConfig.ini](https://github.com/ubc-cirrus-lab/unfaasener/blob/main/scheduler/rankerConfig.ini).
 ```
 ./setup.sh 
 ```
@@ -24,6 +26,7 @@ Then, run the following script to build those components that need to be compile
 ```
 ./build.sh
 ```
+> **_NOTE:_** As we are using [gcloud CLI](https://cloud.google.com/sdk/docs/install) for collecting serverless logs, make sure you have it installed in your leader host.
 
 ## Deploying the System
 
