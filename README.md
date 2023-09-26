@@ -15,8 +15,19 @@ If you use UnFaaSener in your research, please reference our USENIX ATC 2023 pap
 
 ## Setting Up and Building the Tool
 
-To set up the dependencies for the tool simply run the following script:
-> **_NOTE:_**  In case of leader failure, the leaderFailure variable in the setup.sh needs to be set to 1 (```leaderFailure=1```) in order to retrieve host logs from the datastore.
+**Before running the setup scripts, review the following notes:**
+
+1. UnFaaSener uses [gcloud CLI](https://cloud.google.com/sdk/docs/install) for collecting serverless logs. 
+Make sure you have it installed in your leader host.
+
+2. Ensure that you have [Julia](https://julialang.org/downloads/platform/) installed before running the setup script, as the default solver is implemented in Julia (Our solver has been tested with `julia version 1.9.3`). 
+Julia's solver offers superior performance, particularly for larger workflows or a higher number of offloading hosts. 
+Nonetheless, you retain the flexibility to switch to the Gekko solver by modifyiing the value of the `solver` field within the [rankerConfig.ini](https://github.com/ubc-cirrus-lab/unfaasener/blob/main/scheduler/rankerConfig.ini) (set `solver = gekko` to use the Gekko solver and `solver = julia` to use the Julia solver).
+
+3. In case of leader failure, the leaderFailure variable in the setup.sh needs to be set to 1 (```leaderFailure=1```) in order to retrieve host logs from the datastore.
+
+Now, you are ready to set up the dependencies for the tool by simply running the following script:
+
 ```
 ./setup.sh 
 ```
@@ -60,5 +71,4 @@ To deploy the system, follow these steps:
 This work was supported by the Natural Sciences and Engineering Research Council of Canada (NSERC) and The University of British Columbia (UBC).
 We are also thankful for cloud resources made available to us by the Digital Research Alliance of Canada, the Google Cloud Research Credits program, and the AWS Cloud Credit for Research program.
 
-In addition to authors of our paper (Ghazal Sadeghian, Mohamed Elsakhawy, Mohanna Shahrad, Joe Hattori, and Mohammad Shahrad), we acknowledge others how helped us improve UnFaaSener. 
-Xiaoyang Sofia Zhang assisted in enhancing multi-host features, and Parshan Javanrood played an important role in optimizing solver performance.
+In addition to authors of our paper (Ghazal Sadeghian, Mohamed Elsakhawy, Mohanna Shahrad, Joe Hattori, and Mohammad Shahrad), we acknowledge Parshan Javanrood who played an important role in optimizing UnFaaSener's solver.
