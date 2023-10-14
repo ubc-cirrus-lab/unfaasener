@@ -8,10 +8,9 @@ UnFaaSener is not a new serverless platform.
 It uses pub/sub services to glue serverless applications and offloading hosts.
 UnFaaSener has been thoroughly tested and evaluated on [Google Cloud Functions](https://cloud.google.com/functions).
 
-Our paper provides in-depth insights into the design and evaluation of UnFaaSener:
-* [UnFaaSener USENIX ATC '23 paper](https://www.usenix.org/system/files/atc23-sadeghian.pdf)
-
-If you use UnFaaSener in your research, please reference our USENIX ATC 2023 paper mentioned above.
+Our 2023 USENIX ATC paper provides in-depth insights into the design and evaluation of UnFaaSener: 
+* [Paper PDF](https://www.usenix.org/system/files/atc23-sadeghian.pdf)
+* [Presentation](https://www.youtube.com/watch?v=Yk9N5Ui6oaI)
 
 ## Setting Up and Building the Tool
 
