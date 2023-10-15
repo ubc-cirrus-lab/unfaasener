@@ -41,7 +41,22 @@ else
     fi
 fi
 
-pip3 install -r ./requirements.txt
+if command -v pip &> /dev/null
+then
+    echo "pip is installed"
+else
+    echo "pip is not installed"
+    echo "Do you want to install pip? (y/n)"
+    read installPip
+    if [ $installPip == "y" ]
+    then
+        sudo apt install -y python3-pip
+    else
+        echo "Please install pip and re-run this script."
+        exit 1
+    fi
+fi
+python3 -m pip install -r requirements.txt
 sudo apt install -y docker.io
 sudo apt-get install -y libpstreams-dev
 sudo apt-get install build-essential
