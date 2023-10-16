@@ -75,7 +75,7 @@ done
 cd ../
 if [ -d "logs" ]
 then
-    echo "Directory logs exists."
+    echo "Directory logs exists for the scheduler."
 else
     mkdir logs
 fi
@@ -93,7 +93,7 @@ done
 cd ../
 if [ -d "logs" ]
 then
-    echo "Directory logs exists."
+    echo "Directory logs exists for the log collector."
 else
     mkdir logs
 fi
@@ -101,13 +101,13 @@ cd ../../
 cd ./host-agents/execution-agent
 if [ -d "logs" ]
 then
-    echo "Directory logs exists."
+    echo "Directory logs exists for the host agents."
 else
     mkdir logs
 fi
 if [ -d "data" ]
 then
-    echo "Directory logs exists."
+    echo "Directory data exists for the host agents."
 else
     mkdir data
 fi
