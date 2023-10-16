@@ -115,12 +115,6 @@ cd ../../
 if [ $leaderFailure -eq 1 ]
 then
     cd ./log-parser/get-workflow-logs
-    if command -v python &> /dev/null
-    then
-        python getNewDatastoreLogs.py
-    elif command -v python3 &> /dev/null
-    then
-        python3 getNewDatastoreLogs.py
-    fi
+    python3 getNewDatastoreLogs.py
 fi
 echo "Please exit your current session and relogin"
