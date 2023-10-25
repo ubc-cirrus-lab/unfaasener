@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import random
 import time
-from rpsMultiVMSolver import rpsOffloadingSolver
+from rpsMultiHostSolver import rpsOffloadingSolver
 
 
 class TestCaseGenerator:

@@ -4,7 +4,7 @@ import os
 import time
 import json
 from pathlib import Path
-from rpsMultiVMSolver import rpsOffloadingSolver
+from rpsMultiHostSolver import rpsOffloadingSolver
 
 
 class TestSolver(unittest.TestCase):

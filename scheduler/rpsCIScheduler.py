@@ -8,7 +8,7 @@ import pandas as pd
 import datetime
 from pathlib import Path
 from google.cloud import datastore
-from rpsMultiVMSolver import rpsOffloadingSolver
+from rpsMultiHostSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
