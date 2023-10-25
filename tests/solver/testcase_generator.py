@@ -1,4 +1,3 @@
-import unittest
 import os
 import json
 from pathlib import Path
@@ -16,33 +15,39 @@ class TestCaseGenerator:
 
         for i in range(self.n_funcs):
             for id in range(10):
-                log_data.append({
-                    'function': f'Func_{i}',
-                    'reqID': id,
-                    'start': "",
-                    'finish': "",
-                    'mergingPoint': "",
-                    'host': "s",
-                    'duration': 100
-                })
+                log_data.append(
+                    {
+                        "function": f"Func_{i}",
+                        "reqID": id,
+                        "start": "",
+                        "finish": "",
+                        "mergingPoint": "",
+                        "host": "s",
+                        "duration": 100,
+                    }
+                )
 
         for j in range(self.n_hosts):
             for i in range(self.n_funcs):
                 for id in range(10):
-                    log_data.append({
-                        'function': f'Func_{i}',
-                        'reqID': id,
-                        'start': "",
-                        'finish': "",
-                        'mergingPoint': "",
-                        'host': f"vm{j}",
-                        'duration': 100
-                    })
+                    log_data.append(
+                        {
+                            "function": f"Func_{i}",
+                            "reqID": id,
+                            "start": "",
+                            "finish": "",
+                            "mergingPoint": "",
+                            "host": f"vm{j}",
+                            "duration": 100,
+                        }
+                    )
 
         df = pd.DataFrame(log_data)
-        df.to_csv('../log-parser/get-workflow-logs/data/TestCaseNWorkflow/generatedDataFrame.csv')
-        #df.to_csv('/home/pjavan/unfaasener/tests/logCollector/TestCaseNWorkflow/generatedDataFrame.csv')
-        
+        df.to_csv(
+            "../log-parser/get-workflow-logs/data/TestCaseNWorkflow/generatedDataFrame.csv"
+        )
+        # df.to_csv('/home/pjavan/unfaasener/tests/logCollector/TestCaseNWorkflow/generatedDataFrame.csv')
+
         costs_dict = {}
         pubSub_dict = {}
         slack_data = {}
@@ -51,9 +56,9 @@ class TestCaseGenerator:
         predecessors = []
         workflowFunctions = []
         last_dec = []
-        
+
         for i in range(self.n_funcs):
-            func_name = f'Func_{i}'
+            func_name = f"Func_{i}"
             workflowFunctions.append(func_name)
             # if i == 1:
             #     costs_dict[func_name] = {"best-case": 10000, "worst-case": 10000, "default": 10000}
@@ -63,52 +68,62 @@ class TestCaseGenerator:
             #     costs_dict[func_name] = {"best-case": 10000, "worst-case": 10000, "default": 10000}
             # elif i == 4:
             #     costs_dict[func_name] = {"best-case": 10000, "worst-case": 10000, "default": 10000}
-            # else:                
+            # else:
             #     costs_dict[func_name] = {"best-case": 4.6399999999999997e-07, "worst-case": 4.6399999999999997e-07, "default": 4.6399999999999997e-07}
-            
-            costs_dict[func_name] = {"best-case": 4.6399999999999997e-07, "worst-case": 4.6399999999999997e-07, "default": 4.6399999999999997e-07}
-            
-            pubSub_dict[func_name] = 100000000000
-            slack_data[func_name] = {"best-case": 0.0, "worst-case": 0.0, "default": 0.0}
-            if i < self.n_funcs-1:
-                slack_data[f'Func_{i}-Func_{i+1}'] = {"best-case": 0.0, "worst-case": 0.0, "default": 0.0}
-                successors.append([f'Func_{i+1}'])
-            else: successors.append([])
 
-            if i > 0: predecessors.append([f'Func_{i-1}'])
-            else: predecessors.append([])
+            costs_dict[func_name] = {
+                "best-case": 4.6399999999999997e-07,
+                "worst-case": 4.6399999999999997e-07,
+                "default": 4.6399999999999997e-07,
+            }
+
+            pubSub_dict[func_name] = 100000000000
+            slack_data[func_name] = {
+                "best-case": 0.0,
+                "worst-case": 0.0,
+                "default": 0.0,
+            }
+            if i < self.n_funcs - 1:
+                slack_data[f"Func_{i}-Func_{i+1}"] = {
+                    "best-case": 0.0,
+                    "worst-case": 0.0,
+                    "default": 0.0,
+                }
+                successors.append([f"Func_{i+1}"])
+            else:
+                successors.append([])
+
+            if i > 0:
+                predecessors.append([f"Func_{i-1}"])
+            else:
+                predecessors.append([])
 
             if random.randint(1, 10) > 5:
-                last_dec.append([1.0]*self.n_hosts)
+                last_dec.append([1.0] * self.n_hosts)
             else:
-                last_dec.append([0.0]*self.n_hosts)
-
-
+                last_dec.append([0.0] * self.n_hosts)
 
         workflow_dict = {
-            "workflow": "TestCaseNWorkflow", 
-            "workflowFunctions": workflowFunctions, 
-            "initFunc": "Func_0", 
-            "successors": successors, 
-            "predecessors": predecessors, 
-            "memory": [1/self.n_funcs]*self.n_funcs,
+            "workflow": "TestCaseNWorkflow",
+            "workflowFunctions": workflowFunctions,
+            "initFunc": "Func_0",
+            "successors": successors,
+            "predecessors": predecessors,
+            "memory": [1 / self.n_funcs] * self.n_funcs,
             "lastDecision_default": last_dec,
             "lastDecision_best-case": last_dec,
             "lastDecision_worst-case": last_dec,
-            "topics": [""] + ["dag-Profanity"]*(self.n_funcs-1)
+            "topics": [""] + ["dag-Profanity"] * (self.n_funcs - 1),
         }
 
         jsonPath = (
-            "../log-parser/get-workflow-logs/data/"
-            + "TestCaseNWorkflow"
-            + ".json"
+            "../log-parser/get-workflow-logs/data/" + "TestCaseNWorkflow" + ".json"
         )
         with open(jsonPath, "w") as json_file:
             json.dump(workflow_dict, json_file)
 
+        base_dir = "./data/TestCaseNWorkflow"
 
-        base_dir = './data/TestCaseNWorkflow'
-        
         with open(f"{base_dir}/Costs.json", "w") as outfile:
             json.dump(costs_dict, outfile)
 
@@ -122,8 +137,10 @@ class TestCaseGenerator:
             json.dump(slack_data, outfile)
 
     def delete(self):
-        base_dir = './data/TestCaseNWorkflow'
-        os.system('rm ../log-parser/get-workflow-logs/data/TestCaseNWorkflow/generatedDataFrame.csv')
+        base_dir = "./data/TestCaseNWorkflow"
+        os.system(
+            "rm ../log-parser/get-workflow-logs/data/TestCaseNWorkflow/generatedDataFrame.csv"
+        )
         os.system(f"rm {base_dir}/Costs.json")
         os.system(f"rm {base_dir}/pubSubSize.json")
         os.system(f"rm {base_dir}/slackData.json")

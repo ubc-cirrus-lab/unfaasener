@@ -16,7 +16,7 @@ python3 scheduler/resetLastDecisions.py $workflow $hostcount $solvingMode
 # initialize Julia Solver
 mkfifo ./scheduler/juliaStdin
 mkfifo ./scheduler/juliaStdout
-julia scheduler/rpsMultiVMSolver.jl &
+julia scheduler/rpsMultiHostSolver.jl &
 
 # clean the host execution agent queue
 python3 host-agents/execution-agent/cleanup-queue.py vmSubscriber1 vm0

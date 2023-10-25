@@ -4,7 +4,7 @@ import os
 import time
 import json
 from pathlib import Path
-from rpsMultiVMSolver import rpsOffloadingSolver
+from rpsMultiHostSolver import rpsOffloadingSolver
 
 
 class TestSolver(unittest.TestCase):
@@ -43,23 +43,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0], [0.0], [0.0], [0.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
@@ -79,30 +85,36 @@ class TestSolver(unittest.TestCase):
         alpha = 0
         # Due to the change of adding mu factor set to 1, the cpu for that function is increased causing the change in decisions
         expected = [[0.0], [0.0], [52.0], [0.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
         start = time.time()
         x = solver.suggestBestOffloadingMultiVM(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"Julia Time: {end-start}")
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
-        #self.assertEqual(x, [[0.0], [0.0], [52.0], [0.0]])
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
+        # self.assertEqual(x, [[0.0], [0.0], [52.0], [0.0]])
 
     # Test on when the tolerance window is not limited for the user
     def test_unlimitedToleranceWindow(self):
@@ -121,23 +133,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0], [100.0], [100.0], [100.0], [100.0], [100.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [100.0], [100.0], [100.0], [100.0], [100.0]])
 
@@ -158,23 +176,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0], [100.0], [0.0], [0.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [100.0], [0.0], [0.0]])
         # Test for checking the case which the toleranceWindow is less than what is required for offloading a function
@@ -195,23 +219,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0], [0.0], [0.0], [0.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [0.0], [0.0], [0.0]])
 
@@ -259,23 +289,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0, 0.0], [0.0, 0.0], [79.0, 21.0], [0.0, 0.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [79.0, 21.0], [0.0, 0.0]])
 
@@ -313,23 +349,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0], [0.0], [21.0], [0.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0], [0.0], [21.0], [0.0]])
 
@@ -377,23 +419,29 @@ class TestSolver(unittest.TestCase):
         end = time.time()
         print(f"Julia Time: {end-start}")
         expected = [[0.0, 0.0], [0.0, 0.0], [84.0, 16.0], [0.0, 5.0]]
-        cost_expected = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, expected)
-        print(f'EXPECTED = {expected}')
-        print(f'COST EXPECTED = {cost_expected}')
+        cost_expected = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, expected
+        )
+        print(f"EXPECTED = {expected}")
+        print(f"COST EXPECTED = {cost_expected}")
         start = time.time()
         gekko_result = solver.suggestBestOffloadingMultiVMGekko(
             availResources=availResources, alpha=alpha, verbose=True
         )
         end = time.time()
         print(f"GEKKO Time: {end-start}")
-        cost_gekko = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, gekko_result)
-        print(f'GEKKO = {gekko_result}')
-        print(f'COST GEKKO = {cost_gekko}')
-        cost_julia = solver.calcLatencyCost(alpha, solver.offloadingCandidates, availResources, x)
-        print(f'Julia = {x}')
-        print(f'COST Julia = {cost_julia}')
-        print('-----------------------------------')
-        self.assertLessEqual(cost_julia, 1.1*cost_gekko)
+        cost_gekko = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, gekko_result
+        )
+        print(f"GEKKO = {gekko_result}")
+        print(f"COST GEKKO = {cost_gekko}")
+        cost_julia = solver.calcLatencyCost(
+            alpha, solver.offloadingCandidates, availResources, x
+        )
+        print(f"Julia = {x}")
+        print(f"COST Julia = {cost_julia}")
+        print("-----------------------------------")
+        self.assertLessEqual(cost_julia, 1.1 * cost_gekko)
         # print('-----------------------------------')
         # self.assertEqual(x, [[0.0, 0.0], [0.0, 0.0], [84.0, 16.0], [0.0, 5.0]])
 

@@ -5,7 +5,7 @@
 
 mkfifo ./scheduler/juliaStdin
 mkfifo ./scheduler/juliaStdout
-julia ./scheduler/rpsMultiVMSolver.jl &
+julia ./scheduler/rpsMultiHostSolver.jl &
 
 cp -a ./tests/solver/data/. ./scheduler/data/
 cp -a ./tests/logCollector/. ./log-parser/get-workflow-logs/data/

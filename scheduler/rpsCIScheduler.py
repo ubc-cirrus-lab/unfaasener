@@ -8,7 +8,7 @@ import pandas as pd
 import datetime
 from pathlib import Path
 from google.cloud import datastore
-from rpsMultiVMSolver import rpsOffloadingSolver
+from rpsMultiHostSolver import rpsOffloadingSolver
 from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
@@ -304,13 +304,16 @@ if __name__ == "__main__":
         triggerType = "resolve"
         checkingFlag = True
         logging.info("Forced to change to resolve!!!")
-    print("LOCK CREATED!!!")
     pid = os.getpid()
     logging.info(str(pid))
     logging.info("LOCK CREATED!!!")
     logging.info(str(datetime.datetime.now()))
     # triggerType = "resolve"
-    solver = CIScheduler(triggerType)
+    try:
+        solver = CIScheduler(triggerType)
+    except:
+        logging.info("Scheduler failed to run!")
+        print("ERROR: Scheduler failed to run!")
     os.remove(str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt")
     if (
         os.path.exists(
