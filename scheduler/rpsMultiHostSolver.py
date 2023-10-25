@@ -6,7 +6,6 @@ from LatencyModel import LatencyModel
 from gekko import GEKKO
 from Estimator import Estimator
 import itertools
-import time
 import subprocess
 
 # Non-linear optimzation models for cost and latency
@@ -17,7 +16,9 @@ class rpsOffloadingSolver:
         self.solver_prog = solver_prog
         return
 
-    def configure(self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag):
+    def configure(
+        self, workflow, mode, decisionMode, toleranceWindow, rps, testingFlag
+    ):
         self.testingFlag = testingFlag
         self.rps = rps
         path = (
@@ -104,7 +105,7 @@ class rpsOffloadingSolver:
         self.readWorkflow()
 
         # self.initJuliaSolver()
-     
+
     def readWorkflow(self):
         with open(self.jsonPath, "r") as json_file:
             self.workflow_json = json.load(json_file)
@@ -115,7 +116,7 @@ class rpsOffloadingSolver:
         self.predecessors = self.workflow_json["predecessors"]
         self.initial = self.workflow_json["initFunc"]
         self.memories = self.workflow_json["memory"]
-    
+
     def getAllPaths(self):
         """
         Returns all possible paths in the dag starting from the initial node to a terminal node
@@ -311,8 +312,14 @@ class rpsOffloadingSolver:
         return cost
 
     def suggestBestOffloadingMultiVM(self, availResources, alpha, verbose):
-        if self.solver_prog == "gekko": return self.suggestBestOffloadingMultiVMGekko(availResources, alpha, verbose)
-        else: return self.suggestBestOffloadingMultiVMJulia(availResources, alpha, verbose)
+        if self.solver_prog == "gekko":
+            return self.suggestBestOffloadingMultiVMGekko(
+                availResources, alpha, verbose
+            )
+        else:
+            return self.suggestBestOffloadingMultiVMJulia(
+                availResources, alpha, verbose
+            )
 
     def suggestBestOffloadingMultiVMJulia(self, availResources, alpha, verbose):
         """
@@ -334,77 +341,82 @@ class rpsOffloadingSolver:
                             offloadingCandidates[function], self.testingFlag
                         )
                         * (
-                            self.getVMexecution(
-                                offloadingCandidates[function], VMIndex
-                            )
+                            self.getVMexecution(offloadingCandidates[function], VMIndex)
                             * 0.001
-                        ) * (self.getMem(offloadingCandidates[function]))
-                    ) for VMIndex in range(len(availResources))
-                ] for function in range(len(offloadingCandidates))
+                        )
+                        * (self.getMem(offloadingCandidates[function]))
+                    )
+                    for VMIndex in range(len(availResources))
+                ]
+                for function in range(len(offloadingCandidates))
             ]
 
-            
             cpu_coeffs = [
                 [
-                    self.rps * self.estimator.get_num_per_req(offloadingCandidates[function], False) * (
-                        self.getVMexecution(
-                            offloadingCandidates[function], VMIndex
-                        )
+                    self.rps
+                    * self.estimator.get_num_per_req(
+                        offloadingCandidates[function], False
+                    )
+                    * (
+                        self.getVMexecution(offloadingCandidates[function], VMIndex)
                         * 0.001
-                    ) * float(self.muFactor) for VMIndex in range(len(availResources))
-                ] for function in range(0, len(offloadingCandidates))
+                    )
+                    * float(self.muFactor)
+                    for VMIndex in range(len(availResources))
+                ]
+                for function in range(0, len(offloadingCandidates))
             ]
-                    
+
             func_costs_1 = [
                 ((10**5) * 2)
                 * (1 - alpha)
                 * self.rps
-                * self.estimator.get_num_per_req(
-                    offloadingCandidates[i], False
-                )
-                * (
-                    self.GetServerlessCostEstimate(offloadingCandidates[i])
-                ) for i in range(len(offloadingCandidates))
+                * self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                * (self.GetServerlessCostEstimate(offloadingCandidates[i]))
+                for i in range(len(offloadingCandidates))
             ]
-            
+
             func_costs_2 = [
                 (
                     (1 - alpha)
                     * self.rps
-                    * self.estimator.get_num_per_req(
-                        offloadingCandidates[i], False
-                    )
+                    * self.estimator.get_num_per_req(offloadingCandidates[i], False)
                     * (
                         self.GetDatastoreCost("w")
                         + self.GetDatastoreCost("d")
                         + self.GetDatastoreCost("r")
                     )
-                ) for i in range(len(offloadingCandidates))
+                )
+                for i in range(len(offloadingCandidates))
             ]
 
-            
-            
             matrix_prev_offloadings = [
                 [
-                    self.IsOffloaded(
-                        offloadingCandidates[i], vm
-                    ) for vm in range(len(availResources))
-                ] for i in range(len(offloadingCandidates))
+                    self.IsOffloaded(offloadingCandidates[i], vm)
+                    for vm in range(len(availResources))
+                ]
+                for i in range(len(offloadingCandidates))
             ]
-            
+
             # solve
             json_dict = {
-                'mode': 'cost',
-                'locality': alpha,
-                'n_hosts': len(availResources),
-                'n_funcs': len(offloadingCandidates),
-                'list_mem_capacity': [availResources[VMIndex]["mem_mb"] for VMIndex in range(len(availResources))],
-                'list_cpu_capacity': [availResources[VMIndex]["cores"] for VMIndex in range(len(availResources))],
-                'list_func_costs_1': func_costs_1,
-                'list_func_costs_2': func_costs_2,
-                'matrix_cpu_coeff': cpu_coeffs,
-                'matrix_mem_coeff': mem_coeffs,
-                'matrix_prev_offloadings': matrix_prev_offloadings,
+                "mode": "cost",
+                "locality": alpha,
+                "n_hosts": len(availResources),
+                "n_funcs": len(offloadingCandidates),
+                "list_mem_capacity": [
+                    availResources[VMIndex]["mem_mb"]
+                    for VMIndex in range(len(availResources))
+                ],
+                "list_cpu_capacity": [
+                    availResources[VMIndex]["cores"]
+                    for VMIndex in range(len(availResources))
+                ],
+                "list_func_costs_1": func_costs_1,
+                "list_func_costs_2": func_costs_2,
+                "matrix_cpu_coeff": cpu_coeffs,
+                "matrix_mem_coeff": mem_coeffs,
+                "matrix_prev_offloadings": matrix_prev_offloadings,
                 #'solution': offloadingCandidatesFinal
             }
             try:
@@ -412,13 +424,11 @@ class rpsOffloadingSolver:
                 sol = self.readJuliaOutput()
                 self.saveNewDecision(sol)
                 return sol
-                
+
             except:
                 print("\nJulia Failed!")
                 return "NotFound"
-        
-        
-        
+
         elif self.optimizationMode == "latency":
             self.getAllPaths()
             self.getSlackForPath()
@@ -433,29 +443,33 @@ class rpsOffloadingSolver:
                             offloadingCandidates[function], False
                         )
                         * (
-                            self.getVMexecution(
-                                offloadingCandidates[function], VMIndex
-                            )
+                            self.getVMexecution(offloadingCandidates[function], VMIndex)
                             * 0.001
-                        )                        
+                        )
                         * (self.getMem(offloadingCandidates[function]))
-                    ) for VMIndex in range(len(availResources))
-                ] for function in range(len(offloadingCandidates))
+                    )
+                    for VMIndex in range(len(availResources))
+                ]
+                for function in range(len(offloadingCandidates))
             ]
 
             # Constraint on checking available number of  cores for each VM
             cpu_coeffs = [
                 [
-                    self.rps * self.estimator.get_num_per_req(offloadingCandidates[function], False) * (
-                        self.getVMexecution(
-                            offloadingCandidates[function], VMIndex
-                        )
+                    self.rps
+                    * self.estimator.get_num_per_req(
+                        offloadingCandidates[function], False
+                    )
+                    * (
+                        self.getVMexecution(offloadingCandidates[function], VMIndex)
                         * 0.001
-                    ) * float(self.muFactor) for VMIndex in range(len(availResources))
-                ] for function in range(len(offloadingCandidates))
+                    )
+                    * float(self.muFactor)
+                    for VMIndex in range(len(availResources))
+                ]
+                for function in range(len(offloadingCandidates))
             ]
 
-            
             ################################################
 
             expression_1 = []
@@ -475,12 +489,13 @@ class rpsOffloadingSolver:
                 for c in combinations:
                     x_1 = [
                         {
-                            "tmpIndex": (self.offloadingCandidates.index(node), c[path.index(node) - 1]),
+                            "tmpIndex": (
+                                self.offloadingCandidates.index(node),
+                                c[path.index(node) - 1],
+                            ),
                             "coeff": (
-                                        self.addedExecLatency(
-                                            node, c[path.index(node) - 1]
-                                        )
-                                    )
+                                self.addedExecLatency(node, c[path.index(node) - 1])
+                            ),
                         }
                         for node in path[1:]
                     ]
@@ -489,8 +504,16 @@ class rpsOffloadingSolver:
 
                     x_2 = [
                         {
-                            "tmpIndex1": (self.offloadingCandidates.index(node),  c[path.index(node) - 1]),
-                            "tmpIndex2": (self.offloadingCandidates.index(path[path.index(node) + 1]), c[path.index(node)]),
+                            "tmpIndex1": (
+                                self.offloadingCandidates.index(node),
+                                c[path.index(node) - 1],
+                            ),
+                            "tmpIndex2": (
+                                self.offloadingCandidates.index(
+                                    path[path.index(node) + 1]
+                                ),
+                                c[path.index(node)],
+                            ),
                             "coeff1": (
                                 self.getCommunicationLatency(
                                     (path[path.index(node) + 1]),
@@ -517,11 +540,11 @@ class rpsOffloadingSolver:
                                     c[path.index(node) - 1],
                                     self.decisionMode,
                                 )
-                            )
+                            ),
                         }
                         for node in path[1:-1]
                     ]
-                    #print(x_2)
+                    # print(x_2)
                     X_2.append(x_2)
 
                     x_3 = {
@@ -534,174 +557,153 @@ class rpsOffloadingSolver:
                                 "s",
                                 self.decisionMode,
                             )
-                        )
+                        ),
                     }
                     X_3.append(x_3)
-                
 
-                inequality_const.append((self.getCriticalPathDuration() - duration) + self.toleranceWindow)
+                inequality_const.append(
+                    (self.getCriticalPathDuration() - duration) + self.toleranceWindow
+                )
                 expression_1.append(X_1)
                 expression_2.append(X_2)
                 expression_3.append(X_3)
 
             ################################################
 
-
             func_costs_1 = [
                 ((10**5) * 2)
                 * (1 - alpha)
                 * self.rps
-                * self.estimator.get_num_per_req(
-                    offloadingCandidates[i], False
-                )
-                * (
-                    self.GetServerlessCostEstimate(offloadingCandidates[i])
-                ) for i in range(len(offloadingCandidates))
+                * self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                * (self.GetServerlessCostEstimate(offloadingCandidates[i]))
+                for i in range(len(offloadingCandidates))
             ]
-            
+
             func_costs_2 = [
                 (
                     (1 - alpha)
                     * self.rps
-                    * self.estimator.get_num_per_req(
-                        offloadingCandidates[i], False
-                    )
+                    * self.estimator.get_num_per_req(offloadingCandidates[i], False)
                     * (
                         self.GetDatastoreCost("w")
                         + self.GetDatastoreCost("d")
                         + self.GetDatastoreCost("r")
                     )
-                ) for i in range(len(offloadingCandidates))
+                )
+                for i in range(len(offloadingCandidates))
             ]
 
-            
             matrix_prev_offloadings = [
                 [
-                    self.IsOffloaded(
-                        offloadingCandidates[i], vm
-                    ) for vm in range(len(availResources))
-                ] for i in range(len(offloadingCandidates))
+                    self.IsOffloaded(offloadingCandidates[i], vm)
+                    for vm in range(len(availResources))
+                ]
+                for i in range(len(offloadingCandidates))
             ]
 
-           
             json_dict = {
-                'mode': 'latency',
-                'locality': alpha,
-                'n_hosts': len(availResources),
-                'n_funcs': len(offloadingCandidates),
-                'list_mem_capacity': [availResources[VMIndex]["mem_mb"] for VMIndex in range(len(availResources))],
-                'list_cpu_capacity': [availResources[VMIndex]["cores"] for VMIndex in range(len(availResources))],
-                'expression_1': expression_1,
-                'expression_2': expression_2,
-                'expression_3': expression_3,
-                'inequality_const': inequality_const,
-                'list_func_costs_1': func_costs_1,
-                'list_func_costs_2': func_costs_2,
-                'matrix_cpu_coeff': cpu_coeffs,
-                'matrix_mem_coeff': mem_coeffs,
-                'matrix_prev_offloadings': matrix_prev_offloadings,
+                "mode": "latency",
+                "locality": alpha,
+                "n_hosts": len(availResources),
+                "n_funcs": len(offloadingCandidates),
+                "list_mem_capacity": [
+                    availResources[VMIndex]["mem_mb"]
+                    for VMIndex in range(len(availResources))
+                ],
+                "list_cpu_capacity": [
+                    availResources[VMIndex]["cores"]
+                    for VMIndex in range(len(availResources))
+                ],
+                "expression_1": expression_1,
+                "expression_2": expression_2,
+                "expression_3": expression_3,
+                "inequality_const": inequality_const,
+                "list_func_costs_1": func_costs_1,
+                "list_func_costs_2": func_costs_2,
+                "matrix_cpu_coeff": cpu_coeffs,
+                "matrix_mem_coeff": mem_coeffs,
+                "matrix_prev_offloadings": matrix_prev_offloadings,
             }
 
             try:
                 self.createJuliaInput(json_dict)
                 sol = self.readJuliaOutput()
                 self.saveNewDecision(sol)
-            
+
                 return sol
-                    
+
             except:
                 print("\nJulia Failed!")
                 return "NotFound"
-                 
+
     def calcLatencyCost(self, alpha, offloadingCandidates, availResources, sol):
-        
         return sum(
-                [
-                    (
-                        ((10**5) * 2)
-                        * (1 - alpha)
-                        * self.rps
-                        * self.estimator.get_num_per_req(
-                            offloadingCandidates[i], False
+            [
+                (
+                    ((10**5) * 2)
+                    * (1 - alpha)
+                    * self.rps
+                    * self.estimator.get_num_per_req(offloadingCandidates[i], False)
+                    * self.GetServerlessCostEstimate(offloadingCandidates[i])
+                    * (
+                        (
+                            100
+                            - (sum([(sol[i][vm]) for vm in range(len(availResources))]))
                         )
-                        * self.GetServerlessCostEstimate(offloadingCandidates[i])
+                        / 100
+                    )
+                    + (
+                        (1 - alpha)
+                        * self.rps
+                        * self.estimator.get_num_per_req(offloadingCandidates[i], False)
                         * (
-                            (
-                                100
-                                - (
-                                    sum(
-                                        [
-                                            (sol[i][vm])
-                                            for vm in range(len(availResources))
-                                        ]
-                                    )
-                                )
-                            )
+                            self.GetDatastoreCost("w")
+                            + self.GetDatastoreCost("d")
+                            + self.GetDatastoreCost("r")
+                        )
+                        * (
+                            ((sum([(sol[i][vm]) for vm in range(len(availResources))])))
                             / 100
                         )
-                        + (
-                            (1 - alpha)
-                            * self.rps
-                            * self.estimator.get_num_per_req(
-                                offloadingCandidates[i], False
-                            )
-                            * (
-                                self.GetDatastoreCost("w")
-                                + self.GetDatastoreCost("d")
-                                + self.GetDatastoreCost("r")
-                            )
-                            * (
-                                (
-                                    (
-                                        sum(
-                                            [
-                                                (sol[i][vm])
-                                                for vm in range(len(availResources))
-                                            ]
-                                        )
-                                    )
-                                )
-                                / 100
-                            )
-                        )
                     )
-                    + sum(
-                        [
+                )
+                + sum(
+                    [
+                        (
                             (
-                                (
-                                    (10**3)
-                                    * (alpha)
-                                    * (
-                                        abs(
-                                            min(sol[i][vm], 1)
-                                            - (
-                                                self.IsOffloaded(
-                                                    offloadingCandidates[i], vm
-                                                )
+                                (10**3)
+                                * (alpha)
+                                * (
+                                    abs(
+                                        min(sol[i][vm], 1)
+                                        - (
+                                            self.IsOffloaded(
+                                                offloadingCandidates[i], vm
                                             )
                                         )
                                     )
                                 )
                             )
-                            for vm in range(len(availResources))
-                        ]
-                    )
-                    for i in range(len(sol))
-                ]
-            )
-        
+                        )
+                        for vm in range(len(availResources))
+                    ]
+                )
+                for i in range(len(sol))
+            ]
+        )
+
     def createJuliaInput(self, json_dict):
-        self.outfile = open("./juliaStdin", 'w')
+        self.outfile = open("./juliaStdin", "w")
         json_str = json.dumps(json_dict)
         print(json_str, file=self.outfile)
         self.outfile.close()
-        
+
     def readJuliaOutput(self):
-        self.infile = open("./juliaStdout", 'r')
+        self.infile = open("./juliaStdout", "r")
         json_str = self.infile.readline()
         self.infile.close()
         return json.loads(json_str)
-    
+
     def suggestBestOffloadingMultiVMGekko(self, availResources, alpha, verbose):
         """
         Returns a list of 0's (no offloading) and 1's (offloading)
@@ -927,9 +929,9 @@ class rpsOffloadingSolver:
 
             # solve
             model.options.SOLVER = 1
-            
+
             try:
-                model.solve(disp=False)    
+                model.solve(disp=False)
                 offloadingDecisionsFinal = [
                     [
                         (offloadingDecisions[j][i].value)[0]
@@ -1076,12 +1078,10 @@ class rpsOffloadingSolver:
                     #     print("")
                     # print("======================")
 
-                    # print("Expression 3")    
+                    # print("Expression 3")
                     # print(f"{[self.offloadingCandidates.index(path[1]),c[0]]} * {self.getCommunicationLatency((path[1]),(path[0]),c[0],'s',self.decisionMode,)}")
                     # print("======================")
 
-
-                    
                     model.Equation(
                         (
                             sum(
@@ -1125,8 +1125,7 @@ class rpsOffloadingSolver:
                                                 self.decisionMode,
                                             )
                                         )
-                                        + 
-                                        (
+                                        + (
                                             (
                                                 1
                                                 - (
@@ -1152,8 +1151,7 @@ class rpsOffloadingSolver:
                                                 self.decisionMode,
                                             )
                                         )
-                                        + 
-                                        (
+                                        + (
                                             (
                                                 tempGoalVar[
                                                     self.offloadingCandidates.index(
@@ -1183,7 +1181,6 @@ class rpsOffloadingSolver:
                                     for node in path[1:-1]
                                 ]
                             )
-                           
                             + (
                                 (
                                     (
@@ -1339,7 +1336,6 @@ class rpsOffloadingSolver:
                 #                                     node, c[path.index(node) - 1]
                 #                                 ))
 
-
                 #         print('---------------------------')
                 #         cons = (
                 #             (
@@ -1466,36 +1462,7 @@ class rpsOffloadingSolver:
 
                 #         print(f'{cons} <= {limit}')
 
-
                 #         continue
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 cost = sum(
                     [
@@ -1630,7 +1597,7 @@ class rpsOffloadingSolver:
                         for i in range(len(offloadingDecisionsFinal))
                     ]
                 )
-                
+
                 cost1 = sum(
                     [
                         (
@@ -1807,7 +1774,6 @@ class rpsOffloadingSolver:
                 return "NotFound"
                 # model.open_folder()
 
-    
     # Saving new decisions in the Json file assigned to each workflow
     def saveNewDecision(self, offloadingCandidates):
         self.workflow_json[
