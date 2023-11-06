@@ -1,2 +1,2 @@
-- python3 vmModule.pyi vm_topic_name vm_name ==> to listen on the pub-sub topic for the VM vm_name
-e.g. python3 vmModule.py vmSubscriber1 vm1
+- python3 vmModule.py host_topic_name host_name ==> to listen on the pub-sub topic for the host host_name
+e.g. python3 vmModule.py hostSubscriber1 host1

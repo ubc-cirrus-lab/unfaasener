@@ -31,8 +31,8 @@ class dataGarbageCollector:
 
 
 if __name__ == "__main__":
-    interuptTime = 60 * 60
-    time.sleep(interuptTime)
+    interruptTime = 60 * 60
+    time.sleep(interruptTime)
     while True:
         logging.info("GC is running......")
         logging.info(str(datetime.datetime.now()))
@@ -41,4 +41,4 @@ if __name__ == "__main__":
         print("--- %s seconds ---" % (time.time() - start_time))
         timeSpent = "time spent: " + str((time.time() - start_time))
         logging.info(timeSpent)
-        time.sleep(interuptTime)
+        time.sleep(interruptTime)

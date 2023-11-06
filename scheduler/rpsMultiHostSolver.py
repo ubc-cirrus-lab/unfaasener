@@ -240,7 +240,7 @@ class rpsOffloadingSolver:
 
     def IsOffloaded(self, offloadingCandidate, vm):
         """
-        Returns previous offloadind decision for the function
+        Returns previous offloading decision for the function
         """
         decision = self.lastDecision[
             self.offloadingCandidates.index(offloadingCandidate)
@@ -270,7 +270,7 @@ class rpsOffloadingSolver:
 
     def getChildIndexes(self, offloadingCandidate):
         """
-        Returns indexes for the children of a function based on sucessors
+        Returns indexes for the children of a function based on successors
         """
         childrenIndexes = []
         children = self.successors[self.offloadingCandidates.index(offloadingCandidate)]
@@ -280,7 +280,7 @@ class rpsOffloadingSolver:
 
     def getParentIndexes(self, offloadingCandidate):
         """
-        Returns indexes for the parents of a function based on sucessors
+        Returns indexes for the parents of a function based on successors
         """
         parentIndexes = []
         parents = self.predecessors[

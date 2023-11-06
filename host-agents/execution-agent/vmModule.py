@@ -582,7 +582,7 @@ def processReqs(jsonfile, before):
     # This part allows reuse of existing containers , but impacts the usability of the system at high RequestPerSecond
     # It is disabled to enable the system to create more containers as more requests arrive
     # These containers are then stopped by the thread
-    # TO -renable it , just remove the line what sets conts = {}
+    # TO enable it , just remove the line what sets conts = {}
     # conts = {} #THis line can be removed to allow reusing containers
     execution_complete = 0
     localcontsPerFunct = contsPerFunct.copy()

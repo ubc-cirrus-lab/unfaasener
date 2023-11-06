@@ -227,18 +227,18 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 size_t mem_violation;
                 if (initialFlag == 1){
                     if (PREDICTOR_CLASS=="EMA"){
-                        auto cpu_result = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0, 1);
+                        auto cpu_result = cpu_predictor.compute_prediction_ExponentialMovingAverage((cpu_pred_old),0, 1);
                         cpu_pred_old = cpu_result.prediction;
                         cpu_violation = cpu_result.violation;
-                        auto mem_result = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 1);
+                        auto mem_result = mem_predictor.compute_prediction_ExponentialMovingAverage((mem_pred_old),1, 1);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
                     }
                     else if (PREDICTOR_CLASS=="MC"){
-                        auto cpu_result = cpu_predictor.compute_predicton_MarkovChain((cpu_pred_old),0, 1);
+                        auto cpu_result = cpu_predictor.compute_prediction_MarkovChain((cpu_pred_old),0, 1);
                         cpu_pred_old = cpu_result.prediction;
                         cpu_violation = cpu_result.violation;
-                        auto mem_result = mem_predictor.compute_predicton_MarkovChain((mem_pred_old),1, 1);
+                        auto mem_result = mem_predictor.compute_prediction_MarkovChain((mem_pred_old),1, 1);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
                     }
@@ -248,18 +248,18 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                 else
                 {
                     if (PREDICTOR_CLASS=="EMA"){
-                        auto cpu_result = cpu_predictor.compute_predicton_ExponentialMovingAverage((cpu_pred_old),0, 0);
+                        auto cpu_result = cpu_predictor.compute_prediction_ExponentialMovingAverage((cpu_pred_old),0, 0);
                         cpu_pred_old = cpu_result.prediction;
                         cpu_violation = cpu_result.violation;
-                        auto mem_result = mem_predictor.compute_predicton_ExponentialMovingAverage((mem_pred_old),1, 0);
+                        auto mem_result = mem_predictor.compute_prediction_ExponentialMovingAverage((mem_pred_old),1, 0);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
                     }
                     else if (PREDICTOR_CLASS=="MC"){
-                        auto cpu_result = cpu_predictor.compute_predicton_MarkovChain((cpu_pred_old),0, 0);
+                        auto cpu_result = cpu_predictor.compute_prediction_MarkovChain((cpu_pred_old),0, 0);
                         cpu_pred_old = cpu_result.prediction;
                         cpu_violation = cpu_result.violation;
-                        auto mem_result = mem_predictor.compute_predicton_MarkovChain((mem_pred_old),1, 0);
+                        auto mem_result = mem_predictor.compute_prediction_MarkovChain((mem_pred_old),1, 0);
                         mem_pred_old = mem_result.prediction;
                         mem_violation = mem_result.violation;
                     }                    
@@ -395,7 +395,7 @@ int result = sched_setaffinity(0, sizeof(mask), &mask);
                         }
                 }
 
-                // update docker utilixation
+                // update docker utilization
                 prev_docker_utilization_cores_used = docker_cores_used;
                 prev_docker_utilization = docker_cpusum;
 

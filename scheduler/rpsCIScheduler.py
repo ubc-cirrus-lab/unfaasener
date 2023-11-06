@@ -167,7 +167,7 @@ class CIScheduler:
         if mode == "cost":
             decisionModes = ["default"]
         else:
-            totalTripleDecisioin = x.tripleCaseDicision(len(cpus))
+            totalTripleDecisioin = x.tripleCaseDecision(len(cpus))
             if totalTripleDecisioin == True:
                 decisionModes = ["default", "worst-case", "best-case"]
                 logging.info("latency mode, similar distributions")

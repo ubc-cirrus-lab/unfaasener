@@ -21,7 +21,7 @@ class predictor
     double ema_margin = 0.2;
     double violation_margin = 0.2;
     int size;
-    // tje following variables are for the Markiv Chain predictor
+    // tje following variables are for the Markov Chain predictor
     double mc_margin = 0.05;
     double mc_res_margin = 1;
     double mc_util_res = 4; // 4%
@@ -44,7 +44,7 @@ public:
         }
     }
     
-    auto compute_predicton_ExponentialMovingAverage(double old_value, int type, int initialFlag)
+    auto compute_prediction_ExponentialMovingAverage(double old_value, int type, int initialFlag)
     {
         // type: 0 -> cpu, 1 -> memory
         size_t violation = 0;
@@ -75,7 +75,7 @@ public:
         return result {prediction, violation};
     }
 
-    auto compute_predicton_MarkovChain(double old_value, int type, int initialFlag)
+    auto compute_prediction_MarkovChain(double old_value, int type, int initialFlag)
     {
         // type: 0 -> cpu, 1 -> memory
         size_t violation = 0;

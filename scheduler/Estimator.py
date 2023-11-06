@@ -784,14 +784,14 @@ class Estimator:
         # res = self.distributions_Chisquared_Test(vmDurations, serverlessDuration)
         return res
 
-    def tripleCaseDicision(self, totalVMs):
+    def tripleCaseDecision(self, totalVMs):
         thresholdParam = 0.3
         individualDecisions = []
         for vmNum in range(totalVMs):
             for func in self.workflowFunctions:
-                seperateDicision = self.compareDistributions(func, vmNum)
-                if seperateDicision != "NotFound":
-                    individualDecisions.append(seperateDicision)
+                separateDecision = self.compareDistributions(func, vmNum)
+                if separateDecision != "NotFound":
+                    individualDecisions.append(separateDecision)
         print("individualDecisions, ", individualDecisions)
         if len(individualDecisions) == 0:
             return False
