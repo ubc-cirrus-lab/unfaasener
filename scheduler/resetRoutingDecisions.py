@@ -8,7 +8,7 @@ import datetime
 import configparser
 
 
-class resetDicision:
+class resetDecision:
     def __init__(self, workflow, vmNum):
         self.jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
@@ -81,4 +81,4 @@ class resetDicision:
 if __name__ == "__main__":
     workflow = sys.argv[1]
     vmNum = sys.argv[2]
-    reset = resetDicision(workflow, vmNum)
+    reset = resetDecision(workflow, vmNum)

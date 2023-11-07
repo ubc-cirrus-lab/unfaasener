@@ -13,7 +13,7 @@ int test_buffer_size_check() {
     double cpu_pred_old = 0;
     size_t cpu_violation;
     try {
-        auto pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+        auto pred_result = cpu_predictor.compute_prediction_ExponentialMovingAverage(cpu_pred_old, 0, 1);
     } catch(std::exception &e) {
         cout << "Exp correctly thrown by EMA predictor when buffer size is zero.\n";
         return 0;
@@ -34,7 +34,7 @@ int test_const_zeros_ema() {
     cpu_utilization_buffer.push(double(0.0));
     double cpu_pred_old = 0;
     size_t cpu_violation;
-    auto pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+    auto pred_result = cpu_predictor.compute_prediction_ExponentialMovingAverage(cpu_pred_old, 0, 1);
     std::cout << "Predicted Value with zero trace (EMA): " << pred_result.prediction << "\n";
     cpu_violation = pred_result.violation;
     return 0;
@@ -52,7 +52,7 @@ int test_large_values_ema() {
     cpu_utilization_buffer.push(double(1000.0));
     double cpu_pred_old = 0;
     size_t cpu_violation;
-    auto pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+    auto pred_result = cpu_predictor.compute_prediction_ExponentialMovingAverage(cpu_pred_old, 0, 1);
     std::cout << "Predicted Value with large values (EMA): " << pred_result.prediction << "\n";
     if (pred_result.prediction > 100) {
         std::cout << "Error: predicted value is larger than the largest value in the trace.\n";
@@ -73,17 +73,17 @@ int test_trace1_ema() {
     size_t cpu_violation;
 
     cpu_utilization_buffer.push(double(0));
-    auto pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+    auto pred_result = cpu_predictor.compute_prediction_ExponentialMovingAverage(cpu_pred_old, 0, 1);
     std::cout << "Real: 10, Pred: " << pred_result.prediction << "\n";
     cpu_pred_old = pred_result.prediction;
 
     for (int i=0; i<10; i++){
         cpu_utilization_buffer.push(double(10));
-        pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+        pred_result = cpu_predictor.compute_prediction_ExponentialMovingAverage(cpu_pred_old, 0, 1);
         std::cout << "Real: 0, Pred: " << pred_result.prediction << "\n";
         cpu_pred_old = pred_result.prediction;
         cpu_utilization_buffer.push(double(0));
-        pred_result = cpu_predictor.compute_predicton_ExponentialMovingAverage(cpu_pred_old, 0, 1);
+        pred_result = cpu_predictor.compute_prediction_ExponentialMovingAverage(cpu_pred_old, 0, 1);
         std::cout << "Real: 10, Pred: " << pred_result.prediction << "\n";
         cpu_pred_old = pred_result.prediction;
     }
@@ -103,7 +103,7 @@ int test_const_zeros_mc() {
     cpu_utilization_buffer.push(double(0.0));
     double cpu_pred_old = 0;
     size_t cpu_violation;
-    auto pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+    auto pred_result = cpu_predictor.compute_prediction_MarkovChain(cpu_pred_old, 0, 1);
     std::cout << "Predicted Value with zero trace (MC): " << pred_result.prediction << "\n";
     return 0;
 }
@@ -120,7 +120,7 @@ int test_large_values_mc() {
     cpu_utilization_buffer.push(double(1000.0));
     double cpu_pred_old = 0;
     size_t cpu_violation;
-    auto pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+    auto pred_result = cpu_predictor.compute_prediction_MarkovChain(cpu_pred_old, 0, 1);
     std::cout << "Predicted Value with large values (MC): " << pred_result.prediction << "\n";
     if (pred_result.prediction > 100) {
         std::cout << "Error: predicted value is larger than the largest value in the trace.\n";
@@ -141,17 +141,17 @@ int test_trace1_mc() {
     size_t cpu_violation;
 
     cpu_utilization_buffer.push(double(0));
-    auto pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+    auto pred_result = cpu_predictor.compute_prediction_MarkovChain(cpu_pred_old, 0, 1);
     std::cout << "Recent:0, Future:10, Pred:" << pred_result.prediction << "\n";
     cpu_pred_old = pred_result.prediction;
 
     for (int i=0; i<10; i++){
         cpu_utilization_buffer.push(double(10));
-        pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+        pred_result = cpu_predictor.compute_prediction_MarkovChain(cpu_pred_old, 0, 1);
         std::cout << "Recent:10, Future:0, Pred:" << pred_result.prediction << "\n";
         cpu_pred_old = pred_result.prediction;
         cpu_utilization_buffer.push(double(0));
-        pred_result = cpu_predictor.compute_predicton_MarkovChain(cpu_pred_old, 0, 1);
+        pred_result = cpu_predictor.compute_prediction_MarkovChain(cpu_pred_old, 0, 1);
         std::cout << "Recent:0, Future:10, Pred:" << pred_result.prediction << "\n";
         cpu_pred_old = pred_result.prediction;
     }

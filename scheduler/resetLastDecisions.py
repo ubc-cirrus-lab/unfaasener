@@ -8,7 +8,7 @@ import configparser
 import datetime
 
 
-class resetLastDicision:
+class resetLastDecision:
     def __init__(self, workflow, vmNum, mode):
         workflow = workflow
         vmNum = vmNum
@@ -204,4 +204,4 @@ if __name__ == "__main__":
     workflow = sys.argv[1]
     vmNum = int(sys.argv[2])
     mode = sys.argv[3]
-    reset = resetLastDicision(workflow, vmNum, mode)
+    reset = resetLastDecision(workflow, vmNum, mode)

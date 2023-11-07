@@ -29,7 +29,7 @@ class getWorkflowLogs:
 
 
 if __name__ == "__main__":
-    interuptTime = 60
+    interruptTime = 60
     initial = int(sys.argv[2])
     path = (
         str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[1])
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         print("--- %s seconds ---" % (time.time() - start_time))
     else:
         print("---------getting new logs:---------------")
-        time.sleep(interuptTime)
+        time.sleep(interruptTime)
         while True:
             start_time = time.time()
             workflow = sys.argv[1]
@@ -66,4 +66,4 @@ if __name__ == "__main__":
             print("--- %s seconds ---" % (time.time() - start_time))
             timeSpent = "time spent: " + str((time.time() - start_time))
             logging.info(timeSpent)
-            time.sleep(interuptTime)
+            time.sleep(interruptTime)

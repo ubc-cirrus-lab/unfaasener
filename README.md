@@ -21,7 +21,7 @@ Make sure you have it installed in your leader host.
 
 2. Ensure that you have [Julia](https://julialang.org/downloads/platform/) installed before running the setup script, as the default solver is implemented in Julia (Our solver has been tested with `julia version 1.9.3`). 
 Julia's solver offers superior performance, particularly for larger workflows or a higher number of offloading hosts. 
-Nonetheless, you retain the flexibility to switch to the Gekko solver by modifyiing the value of the `solver` field within the [rankerConfig.ini](https://github.com/ubc-cirrus-lab/unfaasener/blob/main/scheduler/rankerConfig.ini) (set `solver = gekko` to use the Gekko solver and `solver = julia` to use the Julia solver).
+Nonetheless, you retain the flexibility to switch to the Gekko solver by modifying the value of the `solver` field within the [rankerConfig.ini](https://github.com/ubc-cirrus-lab/unfaasener/blob/main/scheduler/rankerConfig.ini) (set `solver = gekko` to use the Gekko solver and `solver = julia` to use the Julia solver).
 
 3. In case of leader failure, the leaderFailure variable in the setup.sh needs to be set to 1 (```leaderFailure=1```) in order to retrieve host logs from the datastore.
 
@@ -38,7 +38,7 @@ Then, run the following script to build those components that need to be compile
 ## Deploying the System
 
 To deploy the system, follow these steps:
-1. **Giving the required credentials:** To create the necassary credentials for using UnFaaSener, follow the instructions [here](./scheduler/key/).
+1. **Giving the required credentials:** To create the necessary credentials for using UnFaaSener, follow the instructions [here](./scheduler/key/).
 2. **Adding a new host:** To register a new host to UnFaaSener, you must assign a new Pub/Sub topic to the host and ensure that the host subscribes to this topic. To do this in Google Cloud Functions, follow these steps:
     1. **Create a Pub/Sub Topic:** 
         * Access the Pub/Sub service page on the Google Cloud Console.
