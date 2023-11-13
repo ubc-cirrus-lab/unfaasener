@@ -52,20 +52,14 @@ public:
         size = utilization_records->size();
         if (size == 0)
             throw std::logic_error( "Exception: record buffer has size 0!" );
-        int i = 0;
-        double records[size];
-        while (i < size)
-        {
-            records[i] = utilization_records->pop();
-            i++;
-        }
-        // calculate the max for the records array
-        for(i = 0; i < size; ++i) {
-            if (records[i] > max_util)
-            {
-                max_util = records[i];
+
+        for (int i = 0; i < size; ++i) {
+            double util = utilization_records->pop();
+            if (util > max_util) {
+                max_util = util;
             }
         }
+
         prediction = (alpha *  max_util  + (1-alpha)*old_value ) * (1+ema_margin);
         if ( prediction > 100)
             prediction = 100;
