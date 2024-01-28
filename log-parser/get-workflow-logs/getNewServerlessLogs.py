@@ -174,7 +174,7 @@ class getNewLogs(GetLog):
             self.tempTimeStampRecorded[function] = lastLog_date[0]
             print("Time for  func: ", function, " is::", lastLog_date[0])
             endFlag = False
-            while endFlag != True:
+            while endFlag is False:
                 tempDate = datetime.datetime.strptime(
                     self.tempTimeStampRecorded[function], "%Y-%m-%d %H:%M:%S.%f"
                 )

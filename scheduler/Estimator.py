@@ -432,7 +432,7 @@ class Estimator:
 
     # newMergingPatternChanges
     def get_num_per_req(self, func, test):
-        if test == True:
+        if test is True:
             return 1
         selectedInits = self.dataframe.loc[(self.dataframe["function"] == func)]
         counts = (selectedInits.groupby(["reqID"]).size().reset_index(name="counts"))[

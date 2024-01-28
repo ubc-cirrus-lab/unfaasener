@@ -168,7 +168,7 @@ class CIScheduler:
             decisionModes = ["default"]
         else:
             totalTripleDecisioin = x.tripleCaseDecision(len(cpus))
-            if totalTripleDecisioin == True:
+            if totalTripleDecisioin is True:
                 decisionModes = ["default", "worst-case", "best-case"]
                 logging.info("latency mode, similar distributions")
             else:
@@ -234,10 +234,10 @@ class CIScheduler:
             finalDecision = list(finalDecision)
             for function in range(len(finalDecision)):
                 allZero = all(item == 0 for item in list(finalDecision[function]))
-                if allZero == False:
+                if allZero is False:
                     AllZeroesFlag = False
                     break
-            if AllZeroesFlag == True:
+            if AllZeroesFlag is True:
                 for function in range(len(finalDecision)):
                     if function != 0:
                         vmOffset = np.full(len(finalDecision[function]), 0.05)
@@ -319,7 +319,7 @@ if __name__ == "__main__":
         os.path.exists(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )
-    ) and (checkingFlag == True):
+    ) and (checkingFlag is True):
         os.remove(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )

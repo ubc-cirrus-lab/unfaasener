@@ -292,7 +292,7 @@ class baselineSlackAnalysisClass:
                 if d[1] == d2[0]:
                     terminalFlag = False
                     break
-            if terminalFlag == True:
+            if terminalFlag is True:
                 terminals.append(d[1])
         for t in terminals:
             self.lf[t] = duration
