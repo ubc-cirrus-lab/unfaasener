@@ -46,7 +46,6 @@ class LatencyModel:
                 (float(vmCoefficients[i])) - (float(serverlessCoefficients[i]))
             )
         return addedLatency
-        # return 0
 
 
 if __name__ == "__main__":

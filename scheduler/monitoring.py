@@ -32,18 +32,15 @@ class monitoring:
         pubsubMeanMsgSize = {}
         for col in result.columns:
             topics[col[2]] = []
-            # print(col[2])
             for rec in range(len(result[col])):
                 x = str(result[col].iloc[rec])
                 if "mean" in x:
                     match = re.findall(r"mean: .+", x, flags=re.IGNORECASE)
                     mean = match[0].replace("mean:", "")
                     topics[col[2]].append(float(mean))
-            # print(result[col][1])
         for topic in topics:
             nptopic = np.array(topics[topic])
             pubsubMeanMsgSize[topic] = np.mean(nptopic)
-        # print(pubsubMeanMsgSize)
         topic = []
         size = []
 

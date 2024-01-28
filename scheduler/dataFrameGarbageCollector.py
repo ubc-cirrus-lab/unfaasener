@@ -103,7 +103,6 @@ class garbageCollector:
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
-        # self.windowSize = 50
         self.slackData = {}
         self.dependencies = []
         self.recordNum = len(self.workflowFunctions)
@@ -128,14 +127,12 @@ class garbageCollector:
                 (self.dataframe["reqID"] == record["reqID"])
                 & (self.dataframe["host"] == "s")
             ]
-            # newMergingPatternChanges
             createdSet = selectedReq["function"].copy()
             createdSet = set(createdSet.to_numpy())
             if (selectedReq.shape[0] >= self.recordNum) and (
                 len(createdSet) == len(self.workflowFunctions)
             ):
                 selectedRecords.append(record["reqID"])
-        # print("selected::: ", selectedRecords)
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]
         self.finalRecodreqID = selectedRecords[-1]
@@ -144,18 +141,12 @@ class garbageCollector:
     def getLastObservations(self):
         print(self.finalRecodreqID)
         for func in self.workflowFunctions:
-            # print("BEFORE::", self.dataframe.shape[0])
             selectedReq = self.dataframe.loc[
                 (self.dataframe["reqID"] == self.finalRecodreqID)
                 & (self.dataframe["function"] == func)
             ]
             selectedReqForFunc = selectedReq.iloc[0]["start"]
             startDate = selectedReqForFunc
-            # startDate = datetime.date((selectedReqForFunc["start"])
-            # self.dataframe["start"] = pd.to_datetime(
-            #     self.dataframe["start"], format="%Y-%m-%d %H:%M:%S.%f"
-            # )
-            # self.dataframe
             selected2 = self.dataframe.loc[
                 (self.dataframe["function"] == func) & (self.dataframe["host"] == "s")
             ]
@@ -166,15 +157,7 @@ class garbageCollector:
                 ((selected2["start"]) < startDate)
                 & (~selected2["reqID"].isin(self.selectedIDs))
             ]
-            # print(func, ",:::,",  selected2.index)
-            self.dataframe.drop(
-                selected2.index,
-                inplace=True,
-            )
-            # print("AFTER::", self.dataframe.shape[0])
-            # selected = pd.merge(self.dataframe,selected, indicator=True, how='outer').query('_merge=="left_only"').drop('_merge', axis=1)
-            # print("func:::", func)
-            # print(selected2)
+            self.dataframe.drop(selected2.index, inplace=True)
 
 
 if __name__ == "__main__":

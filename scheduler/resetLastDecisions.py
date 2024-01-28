@@ -181,11 +181,10 @@ class resetLastDecision:
             utilFilePath,
             forcedLockFile,
             VMcachDataframe,
-            juliaStdinPath, 
+            juliaStdinPath,
             juliaStdoutPath,
             solverInPath,
-            solverOutPath
-
+            solverOutPath,
         ]
         finalPaths = filePaths + dfPaths + irPaths
         for filePath in finalPaths:
@@ -194,10 +193,6 @@ class resetLastDecision:
                 print(filePath, "has been deleted")
             else:
                 print(filePath, "does not exist")
-
-
-# print(initFunc)
-# sys.exit(0)
 
 
 if __name__ == "__main__":

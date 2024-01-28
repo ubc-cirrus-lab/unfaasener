@@ -13,7 +13,6 @@ from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
 
-# import psutil, os
 import logging
 
 logging.basicConfig(
@@ -222,10 +221,8 @@ class CIScheduler:
                     decisions.append(x)
             if len(decisions) == 0:
                 continue
-            # print("decisions::", decisions)
             AllZeroesFlag = True
             finalDecision = np.mean(decisions, axis=0)
-            # print("Average for case:", finalDecision)
             finalDecision = finalDecision / 100
             capArray = [0]*(len(finalDecision))
             for i in range(len(capArray)):
@@ -271,7 +268,6 @@ if __name__ == "__main__":
     initType = sys.argv[1]
     if initType == "forced":
         triggerType = "resolve"
-    # Added by mohamed to allow locking
     if os.path.exists(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
     ):
@@ -308,7 +304,6 @@ if __name__ == "__main__":
     logging.info(str(pid))
     logging.info("LOCK CREATED!!!")
     logging.info(str(datetime.datetime.now()))
-    # triggerType = "resolve"
     try:
         solver = CIScheduler(triggerType)
     except:
@@ -325,10 +320,4 @@ if __name__ == "__main__":
         )
     logging.info("Lock released!!!")
     logging.info(str(datetime.datetime.now()))
-    # print(
-    #     "LOCK removed-> search for lock file:",
-    #     os.path.exists(
-    #         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
-    #     ),
-    # )
     print("--- %s seconds ---" % (time.time() - start_time))

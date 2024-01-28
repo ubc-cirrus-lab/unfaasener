@@ -54,7 +54,6 @@ class dataStoreLogParser(GetLog):
             self.startTest = datetime.datetime.strptime(
                 (startDate), "%Y-%m-%d %H:%M:%S.%f"
             )
-        # self.startTest = datetime.datetime.strptime((startDate), "%Y-%m-%d %H:%M:%S.%f")
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -272,10 +271,7 @@ class dataStoreLogParser(GetLog):
 
     def keepWindowSize(self, df):
         serverlessDF = df.loc[df["host"] == "s"]
-        df.drop(
-            df[(df["host"] == "s")].index,
-            inplace=True,
-        )
+        df.drop(df[(df["host"] == "s")].index, inplace=True)
         df["start"] = pd.to_datetime(df["start"], utc=True)
         df.sort_values(by=["start"], ascending=False, inplace=True)
         vmSelectedDF = df.groupby(["host", "function"]).head(self.windowSize)

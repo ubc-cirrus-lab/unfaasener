@@ -17,15 +17,12 @@ pd.options.mode.chained_assignment = None
 class baselineSlackAnalysisClass:
     def __init__(self, workflow):
         self.workflow = workflow
-        # jsonPath = os.getcwd() + "/log-parser/get-workflow-logs/data/" + self.workflow+".json"
-        # dataframePath = os.getcwd() + "/log-parser/get-workflow-logs/data/" + self.workflow + "/NEWWgeneratedData.pkl"
         jsonPath = (
             str(Path(os.path.dirname(os.path.abspath(__file__))).resolve().parents[0])
             + "/log-parser/get-workflow-logs/data/"
             + self.workflow
             + ".json"
         )
-        # dataframePath = str(Path(os.getcwd()).resolve().parents[0]) + "/log-parser/get-workflow-logs/data/" + self.workflow + "/generatedDataFrame.pkl"
         dfDir = Path(
             str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
             + "/log-parser/get-workflow-logs/data/"
@@ -112,7 +109,6 @@ class baselineSlackAnalysisClass:
                     len(self.predecessors[self.workflowFunctions.index(func)])
                 ) - 1
         self.memories = workflow_json["memory"]
-        # self.dataframe = pd.read_pickle(dataframePath)
         self.selectedIDs = self.selectRecords()
         self.observations = self.getObservations()
         self.slackCalculations()
@@ -131,22 +127,18 @@ class baselineSlackAnalysisClass:
                 (self.dataframe["reqID"] == record["reqID"])
                 & (self.dataframe["host"] == "s")
             ]
-            # newMergingPatternChanges
             createdSet = selectedReq["function"].copy()
             createdSet = set(createdSet.to_numpy())
             if (selectedReq.shape[0] >= self.recordNum) and (
                 len(createdSet) == len(self.workflowFunctions)
             ):
-                # if selectedReq.shape[0] >= self.recordNum:
                 selectedRecords.append(record["reqID"])
         if len(selectedRecords) >= self.windowSize:
             selectedRecords = selectedRecords[: self.windowSize]
-        # print("SELECTEDRECORDS::::", selectedRecords)
         return selectedRecords
 
     def getObservations(self):
         for func in self.workflowFunctions:
-            # newMergingPatternChanges
             for reqID in self.selectedIDs:
                 df2 = self.dataframe.loc[
                     (
@@ -155,11 +147,8 @@ class baselineSlackAnalysisClass:
                     )
                 ]
                 if df2.shape[0] == 1:
-                    # merging = self.dataframe.loc[((self.dataframe["reqID"] == reqID) & (self.dataframe["function"] == func)), "mergingPoint"]
-                    # if merging == None:
                     selectedDuration = df2.iloc[0]["duration"]
                     self.slackData[func].append(selectedDuration)
-                    # self.dataframe.loc[((self.dataframe["reqID"] == reqID) & (self.dataframe["function"] == func)), "duration"]
                 elif len(self.predecessors[self.workflowFunctions.index(func)]) > 1:
                     start = df2["start"].max()
                     finish = df2["finish"].max()
@@ -169,7 +158,6 @@ class baselineSlackAnalysisClass:
                     duration = df2["duration"].mean()
                     self.slackData[func].append(duration)
         for entry in self.slackData.keys():
-            # newMergingPatternChanges
             if entry not in self.workflowFunctions:
                 for reqID in self.selectedIDs:
                     prevFunc = entry.split("-")[0]
@@ -206,14 +194,10 @@ class baselineSlackAnalysisClass:
                         ]
                     else:
                         start = self.avg_datetime(dfNext["start"])
-                        # start = dfNext.loc[dfNext["mergingPoint"] == prevFunc].iloc[0][
-                        #     "start"
-                        # ]
 
                     duration = ((start - finish).total_seconds()) * 1000
                     self.slackData[entry].append(duration)
 
-    # newMergingPatternChanges
     def avg_datetime(self, series):
         dt_min = series.min()
         deltas = [x - dt_min for x in series]
@@ -231,8 +215,6 @@ class baselineSlackAnalysisClass:
         return upperBound
 
     def getMedian(self, array):
-        # median = array.quantile(0.5)
-
         median = statistics.median(array)
         statistics.quantiles
         return median
@@ -353,7 +335,6 @@ class baselineSlackAnalysisClass:
             for col in self.slackData.keys():
                 slack = self.lf[col] - self.ef[col]
                 slackResults[col][decisionMode] = slack
-        # print(slackResults)
         with open(
             (
                 (os.path.dirname(os.path.abspath(__file__)))
