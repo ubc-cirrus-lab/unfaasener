@@ -19,7 +19,7 @@ class predictor
     double max_util, prediction = 0.0;
     double alpha = 0.85;
     double ema_margin = 0.2;
-    double violation_margin = 0.2;
+    double violation_margin_percent = 20;
     int size;
     // tje following variables are for the Markov Chain predictor
     double mc_margin = 0.05;
@@ -63,7 +63,7 @@ public:
         prediction = (alpha *  max_util  + (1-alpha)*old_value ) * (1+ema_margin);
         if ( prediction > 100)
             prediction = 100;
-        if ( (int(max_util) - int(old_value) > 100*violation_margin ) || (int(old_value) - int(max_util) > 100*violation_margin ) || (prediction > old_value + 100*violation_margin)|| (prediction + 100 *violation_margin < old_value ) || (initialFlag == 1))
+        if ( (int(max_util) - int(old_value) > violation_margin_percent ) || (int(old_value) - int(max_util) > violation_margin_percent ) || (prediction > old_value + violation_margin_percent)|| (prediction + violation_margin_percent < old_value ) || (initialFlag == 1))
             violation = 1;
         struct result {double prediction; size_t violation;};
         return result {prediction, violation};
@@ -128,7 +128,7 @@ public:
         if (prediction > 100)
             prediction = 100;
 
-        if ( (int(max_util) - int(old_value) > 100*violation_margin ) || (int(old_value) - int(max_util) > 100*violation_margin ) || (prediction > old_value + 100*violation_margin)|| (prediction + 100 *violation_margin < old_value ) || (initialFlag == 1))
+        if ( (int(max_util) - int(old_value) > violation_margin_percent ) || (int(old_value) - int(max_util) > violation_margin_percent ) || (prediction > old_value + violation_margin_percent)|| (prediction + violation_margin_percent < old_value ) || (initialFlag == 1))
             violation = 1;
         
         struct result {double prediction; size_t violation;};
