@@ -245,7 +245,7 @@ class Estimator:
                 )
                 # if (selectedInits.shape[0]) >= self.windowSize:
                 #     selectedInits = selectedInits.head(self.windowSize)
-                for i, record in selectedInits.iterrows():
+                for _, record in selectedInits.iterrows():
                     durations.append(record["duration"])
                 if mode == "best-case":
                     if host == "s":
@@ -368,7 +368,9 @@ class Estimator:
                 else:
                     psSize = psSizeSeries.item()
                     pubSubSize[func] = psSize
-        nonzero_vals = [ pubSubSize[func] for func in pubSubSize.keys() if pubSubSize[func] != 0 ]
+        nonzero_vals = [
+            pubSubSize[func] for func in pubSubSize.keys() if pubSubSize[func] != 0
+        ]
         if len(nonzero_vals) != 0:
             average_nonzeroes = np.mean(np.array(nonzero_vals))
             for func in pubSubSize.keys():
@@ -404,16 +406,13 @@ class Estimator:
         if (len(selectedInits) == 0) and (len(durations) == 0):
             return 0
         if len(selectedInits) != 0:
-            # newMergingPatternChanges
             g = selectedInits.groupby(selectedInits["reqID"], sort=False)
             selectedInits = pd.concat(
                 islice(map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None)
             )
-            # grouped = selectedInits.groupby('reqID')
-            # selectedInits = pd.concat([grouped.get_group(group) for i, group in enumerate(grouped.groups) if i>=len(grouped)-self.windowSize])
             # if (selectedInits.shape[0]) >= self.windowSize:
             #     selectedInits = selectedInits.head(self.windowSize)
-            for i, record in selectedInits.iterrows():
+            for _, record in selectedInits.iterrows():
                 durations.append(record["duration"])
         if mode == "best-case":
             if host == "s":
@@ -430,9 +429,8 @@ class Estimator:
             exeTime = self.getMean(durations)
         return exeTime
 
-    # newMergingPatternChanges
     def get_num_per_req(self, func, test):
-        if test == True:
+        if test is True:
             return 1
         selectedInits = self.dataframe.loc[(self.dataframe["function"] == func)]
         counts = (selectedInits.groupby(["reqID"]).size().reset_index(name="counts"))[
@@ -474,7 +472,6 @@ class Estimator:
             #     "NOTFOUND:::", parent, "::", parentHost, "-->", child, ":::", childHost
             # )
             return "NotFound"
-        # newMergingPatternChanges
         selectedInitsParentFinish = (
             selectedInitsParent[(selectedInitsParent.reqID.isin(reqs))]
         )[["reqID", "finish"]]
@@ -585,7 +582,6 @@ class Estimator:
             if type(x) == str
             else x.replace(tzinfo=None)
         )
-        # newDF['duration'] =  (newDF['start'] - newDF['end']).dt.microseconds* 0.001
         newDF["duration"] = (
             (newDF["start"] - newDF["end"]).dt.total_seconds().mul(1000).astype(int)
         )
@@ -626,7 +622,7 @@ class Estimator:
                 )
                 # if (selectedInits.shape[0]) >= self.windowSize:
                 #     selectedInits = selectedInits.head(self.windowSize)
-                for i, record in selectedInits.iterrows():
+                for _, record in selectedInits.iterrows():
                     durations.append(record["duration"])
                 if mode == "best-case":
                     et = self.getUpperBound(durations)
@@ -666,7 +662,7 @@ class Estimator:
         )
         # if (selectedInits.shape[0]) >= self.windowSize:
         #     selectedInits = selectedInits.head(self.windowSize)
-        for i, record in selectedInits.iterrows():
+        for _, record in selectedInits.iterrows():
             durations.append(record["duration"])
         if mode == "best-case":
             et = self.getUpperBound(durations)
@@ -688,14 +684,14 @@ class Estimator:
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
         if (len(selectedInits) == 0) and (len(durations) == 0):
-            # print("No records found for {} running in {}".format(func, host))
+            print("No records found for {} running in {}".format(func, host))
             return []
         if len(selectedInits) != 0:
             g = selectedInits.groupby(selectedInits["reqID"], sort=False)
             selectedInits = pd.concat(
                 islice(map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None)
             )
-            for i, record in selectedInits.iterrows():
+            for _, record in selectedInits.iterrows():
                 durations.append(record["duration"])
         return durations
 
@@ -706,7 +702,7 @@ class Estimator:
         vmStd = np.std(np.array(vmDurations))
         serverlessStd = np.std(np.array(serverlessDuration))
         SMD = abs(vmMean - serverlessMean) / math.sqrt(
-            ((vmStd**2) + (serverlessStd**2)) / 2
+            ((vmStd ** 2) + (serverlessStd ** 2)) / 2
         )
         print("SMD::", SMD)
         if SMD < 0.1:

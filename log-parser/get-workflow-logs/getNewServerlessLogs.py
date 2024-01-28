@@ -33,7 +33,6 @@ class getNewLogs(GetLog):
         self.config.read(path)
         self.rankerConfig = self.config["settings"]
         self.windowSize = int(self.rankerConfig["windowSize"])
-        # self.windowSize = 50
         self.dictData["function"] = []
         self.dictData["reqID"] = []
         self.dictData["start"] = []
@@ -141,7 +140,6 @@ class getNewLogs(GetLog):
                 self.tempTimeStampRecorded = copy.deepcopy(workflow_json)
                 if func in workflow_json.keys():
                     lastRecordedTimestamp = str(workflow_json[func])
-                    # lastRecordedTimestamp = str(workflow_json[func][0]["time_utc"]
                     arrayTS = lastRecordedTimestamp.split()
                     self.lastTimestamp = arrayTS[0] + "T" + arrayTS[1]
                     print("TT::::", self.lastTimestamp)
@@ -174,7 +172,7 @@ class getNewLogs(GetLog):
             self.tempTimeStampRecorded[function] = lastLog_date[0]
             print("Time for  func: ", function, " is::", lastLog_date[0])
             endFlag = False
-            while endFlag != True:
+            while endFlag is False:
                 tempDate = datetime.datetime.strptime(
                     self.tempTimeStampRecorded[function], "%Y-%m-%d %H:%M:%S.%f"
                 )

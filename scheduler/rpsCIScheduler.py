@@ -1,7 +1,6 @@
 # import rankerConfig
 import time
 import numpy as np
-import sys
 import configparser
 import os
 import pandas as pd
@@ -13,7 +12,6 @@ from Estimator import Estimator
 from getInvocationRate import InvocationRate
 import sys
 
-# import psutil, os
 import logging
 
 logging.basicConfig(
@@ -168,7 +166,7 @@ class CIScheduler:
             decisionModes = ["default"]
         else:
             totalTripleDecisioin = x.tripleCaseDecision(len(cpus))
-            if totalTripleDecisioin == True:
+            if totalTripleDecisioin is True:
                 decisionModes = ["default", "worst-case", "best-case"]
                 logging.info("latency mode, similar distributions")
             else:
@@ -222,10 +220,8 @@ class CIScheduler:
                     decisions.append(x)
             if len(decisions) == 0:
                 continue
-            # print("decisions::", decisions)
             AllZeroesFlag = True
             finalDecision = np.mean(decisions, axis=0)
-            # print("Average for case:", finalDecision)
             finalDecision = finalDecision / 100
             capArray = [0]*(len(finalDecision))
             for i in range(len(capArray)):
@@ -234,10 +230,10 @@ class CIScheduler:
             finalDecision = list(finalDecision)
             for function in range(len(finalDecision)):
                 allZero = all(item == 0 for item in list(finalDecision[function]))
-                if allZero == False:
+                if allZero is False:
                     AllZeroesFlag = False
                     break
-            if AllZeroesFlag == True:
+            if AllZeroesFlag is True:
                 for function in range(len(finalDecision)):
                     if function != 0:
                         vmOffset = np.full(len(finalDecision[function]), 0.05)
@@ -271,11 +267,10 @@ if __name__ == "__main__":
     initType = sys.argv[1]
     if initType == "forced":
         triggerType = "resolve"
-    # Added by mohamed to allow locking
     if os.path.exists(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
     ):
-        print("LOCK EXISTSSS!!")
+        print("LOCK EXISTS!!")
         if initType == "forced":
             logging.info(str(datetime.datetime.now()))
             logging.info("Forced trigger!!!")
@@ -308,7 +303,6 @@ if __name__ == "__main__":
     logging.info(str(pid))
     logging.info("LOCK CREATED!!!")
     logging.info(str(datetime.datetime.now()))
-    # triggerType = "resolve"
     try:
         solver = CIScheduler(triggerType)
     except:
@@ -319,16 +313,10 @@ if __name__ == "__main__":
         os.path.exists(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )
-    ) and (checkingFlag == True):
+    ) and (checkingFlag is True):
         os.remove(
             str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/forcedLock.txt"
         )
     logging.info("Lock released!!!")
     logging.info(str(datetime.datetime.now()))
-    # print(
-    #     "LOCK removed-> search for lock file:",
-    #     os.path.exists(
-    #         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
-    #     ),
-    # )
     print("--- %s seconds ---" % (time.time() - start_time))

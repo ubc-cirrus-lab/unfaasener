@@ -368,7 +368,7 @@ class rpsOffloadingSolver:
             ]
 
             func_costs_1 = [
-                ((10**5) * 2)
+                ((10 ** 5) * 2)
                 * (1 - alpha)
                 * self.rps
                 * self.estimator.get_num_per_req(offloadingCandidates[i], False)
@@ -544,18 +544,13 @@ class rpsOffloadingSolver:
                         }
                         for node in path[1:-1]
                     ]
-                    # print(x_2)
                     X_2.append(x_2)
 
                     x_3 = {
                         "tmpIndex": (self.offloadingCandidates.index(path[1]), c[0]),
                         "coeff": (
                             self.getCommunicationLatency(
-                                (path[1]),
-                                (path[0]),
-                                c[0],
-                                "s",
-                                self.decisionMode,
+                                (path[1]), (path[0]), c[0], "s", self.decisionMode
                             )
                         ),
                     }
@@ -571,7 +566,7 @@ class rpsOffloadingSolver:
             ################################################
 
             func_costs_1 = [
-                ((10**5) * 2)
+                ((10 ** 5) * 2)
                 * (1 - alpha)
                 * self.rps
                 * self.estimator.get_num_per_req(offloadingCandidates[i], False)
@@ -640,7 +635,7 @@ class rpsOffloadingSolver:
         return sum(
             [
                 (
-                    ((10**5) * 2)
+                    ((10 ** 5) * 2)
                     * (1 - alpha)
                     * self.rps
                     * self.estimator.get_num_per_req(offloadingCandidates[i], False)
@@ -671,7 +666,7 @@ class rpsOffloadingSolver:
                     [
                         (
                             (
-                                (10**3)
+                                (10 ** 3)
                                 * (alpha)
                                 * (
                                     abs(
@@ -814,7 +809,7 @@ class rpsOffloadingSolver:
                 model.sum(
                     [
                         (
-                            ((10**5) * 2)
+                            ((10 ** 5) * 2)
                             * (1 - alphaConst)
                             * self.rps
                             * self.estimator.get_num_per_req(
@@ -905,7 +900,7 @@ class rpsOffloadingSolver:
                                     # )
                                     # +
                                     (
-                                        (10**3)
+                                        (10 ** 3)
                                         * (alphaConst)
                                         * (
                                             model.abs2(
@@ -956,7 +951,6 @@ class rpsOffloadingSolver:
             self.getAllPaths()
             self.getSlackForPath()
             model = GEKKO(remote=False)
-            # print(f'GEKKO Path = {model.path}')
             zero = model.Const(0)
             one = model.Const(1)
             alphaConst = model.Const(alpha)
@@ -1209,7 +1203,7 @@ class rpsOffloadingSolver:
                 model.sum(
                     [
                         (
-                            ((10**5) * 2)
+                            ((10 ** 5) * 2)
                             * (1 - alphaConst)
                             * self.rps
                             * self.estimator.get_num_per_req(
@@ -1260,7 +1254,7 @@ class rpsOffloadingSolver:
                             [
                                 (
                                     (
-                                        (10**3)
+                                        (10 ** 3)
                                         * (alphaConst)
                                         * (
                                             model.abs2(
@@ -1467,7 +1461,7 @@ class rpsOffloadingSolver:
                 cost = sum(
                     [
                         (
-                            ((10**5) * 2)
+                            ((10 ** 5) * 2)
                             * (1 - alpha)
                             * self.rps
                             * self.GetServerlessCostEstimate(offloadingCandidates[i])
@@ -1488,7 +1482,7 @@ class rpsOffloadingSolver:
                             [
                                 (
                                     (
-                                        ((10**5) * 2)
+                                        ((10 ** 5) * 2)
                                         * (1 - alpha)
                                         * (
                                             sum(
@@ -1554,7 +1548,7 @@ class rpsOffloadingSolver:
                                         )
                                     )
                                     + (
-                                        (10**3)
+                                        (10 ** 3)
                                         * (alpha)
                                         * (
                                             #  max((
@@ -1601,7 +1595,7 @@ class rpsOffloadingSolver:
                 cost1 = sum(
                     [
                         (
-                            ((10**5) * 2)
+                            ((10 ** 5) * 2)
                             * (1 - alpha)
                             * self.rps
                             * self.GetServerlessCostEstimate(offloadingCandidates[i])
@@ -1627,7 +1621,7 @@ class rpsOffloadingSolver:
                             [
                                 (
                                     (
-                                        ((10**5) * 2)
+                                        ((10 ** 5) * 2)
                                         * (1 - alpha)
                                         * (
                                             sum(
@@ -1706,7 +1700,7 @@ class rpsOffloadingSolver:
                             [
                                 (
                                     (
-                                        (10**3)
+                                        (10 ** 3)
                                         * (alpha)
                                         * (
                                             #  max((

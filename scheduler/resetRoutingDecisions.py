@@ -1,4 +1,3 @@
-import sys
 import os
 import json
 from pathlib import Path
@@ -70,7 +69,7 @@ class resetDecision:
         rates = [25, 50, 75, 95]
         for percent in rates:
             finalDecision = []
-            for i in range(self.functionNum):
+            for _ in range(self.functionNum):
                 eachFunc = [0] * int(self.vmNum)
                 finalDecision.append(eachFunc)
             self.routing["routing" + "_" + str(percent)] = str(finalDecision)

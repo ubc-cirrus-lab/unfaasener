@@ -81,8 +81,6 @@ class InvocationRate:
     def getRPS(self):
         self.dataframe["start"] = pd.to_datetime(self.dataframe["start"])
         self.dataframe.sort_values(by=["start"], ascending=True, inplace=True)
-        # print(self.dataframe["start"])
-        # print(self.dataframe["start"].diff())
         diff = (
             self.dataframe["start"]
             .diff()
@@ -94,7 +92,6 @@ class InvocationRate:
         diff = diff[1:]
         diff = diff / 1000
         diff = 1 / diff
-        # print(diff)
         percentiles = [25, 50, 75, 95]
         results = {}
         medianIR = np.percentile(diff, 50)
@@ -117,9 +114,6 @@ class InvocationRate:
         # countt = np.array(np.unique(x, return_counts=True)).T
         # print(countt)
         ## m = np.amax(x)
-
-        # Per95 = np.percentile(x, 96)
-        # print(Per95)
 
 
 if __name__ == "__main__":

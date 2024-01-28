@@ -3,7 +3,6 @@ from datetime import timedelta
 import datetime
 import os
 from pathlib import Path
-import datetime
 import configparser
 
 
@@ -28,7 +27,6 @@ class mergingDataGarbageCollector:
         query = self.datastore_client.query(kind="Merging")
         results = list(query.fetch())
         for res in results:
-            # print(res.key.id_or_name)
             if (res["Date"].replace(tzinfo=None)) <= (
                 datetime.datetime.utcnow() - timedelta(minutes=60 * 4)
             ):
