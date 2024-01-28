@@ -123,7 +123,7 @@ class garbageCollector:
         selectedInits["start"] = pd.to_datetime(selectedInits["start"])
         selectedInits.sort_values(by=["start"], ascending=False, inplace=True)
         selectedRecords = []
-        for i, record in selectedInits.iterrows():
+        for _, record in selectedInits.iterrows():
             selectedReq = self.dataframe.loc[
                 (self.dataframe["reqID"] == record["reqID"])
                 & (self.dataframe["host"] == "s")

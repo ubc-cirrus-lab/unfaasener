@@ -245,7 +245,7 @@ class Estimator:
                 )
                 # if (selectedInits.shape[0]) >= self.windowSize:
                 #     selectedInits = selectedInits.head(self.windowSize)
-                for i, record in selectedInits.iterrows():
+                for _, record in selectedInits.iterrows():
                     durations.append(record["duration"])
                 if mode == "best-case":
                     if host == "s":
@@ -413,7 +413,7 @@ class Estimator:
             # selectedInits = pd.concat([grouped.get_group(group) for i, group in enumerate(grouped.groups) if i>=len(grouped)-self.windowSize])
             # if (selectedInits.shape[0]) >= self.windowSize:
             #     selectedInits = selectedInits.head(self.windowSize)
-            for i, record in selectedInits.iterrows():
+            for _, record in selectedInits.iterrows():
                 durations.append(record["duration"])
         if mode == "best-case":
             if host == "s":
@@ -626,7 +626,7 @@ class Estimator:
                 )
                 # if (selectedInits.shape[0]) >= self.windowSize:
                 #     selectedInits = selectedInits.head(self.windowSize)
-                for i, record in selectedInits.iterrows():
+                for _, record in selectedInits.iterrows():
                     durations.append(record["duration"])
                 if mode == "best-case":
                     et = self.getUpperBound(durations)
@@ -666,7 +666,7 @@ class Estimator:
         )
         # if (selectedInits.shape[0]) >= self.windowSize:
         #     selectedInits = selectedInits.head(self.windowSize)
-        for i, record in selectedInits.iterrows():
+        for _, record in selectedInits.iterrows():
             durations.append(record["duration"])
         if mode == "best-case":
             et = self.getUpperBound(durations)
@@ -695,7 +695,7 @@ class Estimator:
             selectedInits = pd.concat(
                 islice(map(itemgetter(1), g), max(0, g.ngroups - self.windowSize), None)
             )
-            for i, record in selectedInits.iterrows():
+            for _, record in selectedInits.iterrows():
                 durations.append(record["duration"])
         return durations
 

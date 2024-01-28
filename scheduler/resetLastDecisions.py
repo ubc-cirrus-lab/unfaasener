@@ -37,7 +37,7 @@ class resetLastDecision:
             self.config.write(configfile)
         for decisionMode in decisionModes:
             finalDecision = []
-            for i in range(functionNum):
+            for _ in range(functionNum):
                 eachFunc = [0] * int(vmNum)
                 finalDecision.append(eachFunc)
             workflow_json["lastDecision" + "_" + decisionMode] = finalDecision
