@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from google.cloud import pubsub_v1
 
@@ -90,16 +91,16 @@ def delete_subscriber(subscriber, subscription_id, args):
 def check_args(args):
     if not args.create and not args.delete:
         print("Specify either --create or --delete flag to indicate mode.")
-        exit(1)
+        sys.exit(1)
     if args.create and args.delete:
         print("Specify either --create or --delete flag to indicate mode.")
-        exit(1)
+        sys.exit(1)
     if args.delete and args.index is None:
         print("Specify --index value to indicate which VM topic & subscriber to delete")
-        exit(1)
+        sys.exit(1)
     if args.create and args.index is not None:
         print("Do not specify --index value when creating VM topic & subscriber")
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
