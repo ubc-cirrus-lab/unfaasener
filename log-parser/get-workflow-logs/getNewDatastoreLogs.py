@@ -6,7 +6,6 @@ from google.cloud import datastore
 import pandas as pd
 from getNewLogs import GetLog
 import datetime
-import configparser
 import logging
 
 logging.basicConfig(

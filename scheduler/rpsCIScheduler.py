@@ -1,7 +1,6 @@
 # import rankerConfig
 import time
 import numpy as np
-import sys
 import configparser
 import os
 import pandas as pd
@@ -271,7 +270,7 @@ if __name__ == "__main__":
     if os.path.exists(
         str(Path(os.path.dirname(os.path.abspath(__file__)))) + "/lock.txt"
     ):
-        print("LOCK EXISTSSS!!")
+        print("LOCK EXISTS!!")
         if initType == "forced":
             logging.info(str(datetime.datetime.now()))
             logging.info("Forced trigger!!!")

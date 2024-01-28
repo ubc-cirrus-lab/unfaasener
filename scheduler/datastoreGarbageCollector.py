@@ -3,7 +3,6 @@ from datetime import timedelta
 import datetime
 import os
 from pathlib import Path
-import datetime
 import configparser
 
 

@@ -5,7 +5,6 @@ import datetime
 from pathlib import Path
 import os
 import json
-import subprocess
 import docker
 from google.cloud import functions_v1
 import wget
@@ -14,8 +13,6 @@ import subprocess
 import sys
 import configparser
 from time import sleep
-import docker
-import sys
 from datetime import timedelta
 
 configPath = (
