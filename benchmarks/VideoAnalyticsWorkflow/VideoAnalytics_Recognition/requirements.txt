@@ -1,4 +1,4 @@
-torch==1.12.1
+torch==1.13.1
 torchvision==0.13.1
 Pillow==10.0.1
 google-cloud-storage==1.43.0
