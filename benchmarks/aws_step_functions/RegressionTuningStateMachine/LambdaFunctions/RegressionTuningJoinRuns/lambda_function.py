@@ -20,9 +20,16 @@ def lambda_handler(event, context):
     print(event)
     n_samples = json.loads(event[0]['body'])['data']['n_samples']
     reqID = json.loads(event[0]['body'])['data']['reqID']
-    firstModel = json.loads(event[0]['body'])['data']['firstModel']
-    secondModel = json.loads(event[1]['body'])['data']['secondModel']
-    
+    firstModel = None
+    secondModel = None
+
+    for item in event:
+        data = json.loads(item['body'])['data']
+        if 'firstModel' in data:
+            firstModel = data['firstModel']
+        if 'secondModel' in data:
+            secondModel = data['secondModel']
+
     modelLists = []
     modelLists.append(firstModel)
     modelLists.append(secondModel)
