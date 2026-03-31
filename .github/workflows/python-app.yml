@@ -13,18 +13,22 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.10
+    - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
+        python-version: "3.12"
     - name: Install dependencies
       run: |
+        python -m venv .venv
+        . .venv/bin/activate
         python -m pip install --upgrade pip
         pip install flake8 pytest
         bash setup.sh
     - name: Test with unittest
       run: |
+        . .venv/bin/activate
         ./run_tests.sh

@@ -353,7 +353,7 @@ function main()
                 return
             end
 
-            json_parsed = JSON.parse(line, inttype=Int64)
+            json_parsed = JSON.parse(line)
             mode = json_parsed["mode"] 
             
             sol = "None"
